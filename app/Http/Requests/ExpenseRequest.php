@@ -15,6 +15,7 @@ class ExpenseRequest extends FormRequest
             'amount' => 'required|numeric|min:0.01',
             'description' => 'nullable|string',
             'expense_date' => 'required|date',
+            'payment_method' => 'nullable|in:cash,card,upi,bank_transfer',
         ];
     }
 }

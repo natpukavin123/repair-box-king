@@ -19,7 +19,7 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                    <select x-model="form.expense_category_id" class="form-select-custom">
+                    <select x-model="form.category_id" class="form-select-custom">
                         <option value="">Select</option>
                         @foreach($categories as $c)
                             <option value="{{ $c->id }}">{{ $c->name }}</option>
@@ -65,7 +65,7 @@
 function createExpensePage() {
     return {
         saving: false,
-        form: { expense_category_id: '', amount: '', expense_date: new Date().toISOString().split('T')[0], payment_method: 'cash', description: '' },
+        form: { category_id: '', amount: '', expense_date: new Date().toISOString().split('T')[0], payment_method: 'cash', description: '' },
         async save() {
             this.saving = true;
             const r = await RepairBox.ajax('/expenses', 'POST', this.form);

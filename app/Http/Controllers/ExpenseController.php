@@ -41,7 +41,7 @@ class ExpenseController extends Controller
             'reference_module' => 'expenses',
             'reference_id' => $expense->id,
             'amount' => $expense->amount,
-            'payment_method' => 'cash',
+            'payment_method' => $expense->payment_method ?? 'cash',
             'direction' => 'OUT',
             'description' => $expense->description ?? 'Expense',
             'created_by' => auth()->id(),
@@ -62,15 +62,39 @@ class ExpenseController extends Controller
         return response()->json(['success' => true, 'message' => 'Expense deleted']);
     }
 
+    // ── Expense Categories ─────────────────────────────────────────────
+
     public function categories()
     {
-        if (request()->ajax() && request()->isMethod('get')) {
-            return response()->json(ExpenseCategory::withCount('expenses')->get());
+        return response()->json(ExpenseCategory::withCount('expenses')->orderBy('name')->get());
+    }
+
+    public function storeCategory()
+    {
+        $data = request()->validate([
+            'name' => 'required|string|max:150',
+            'description' => 'nullable|string',
+        ]);
+        $cat = ExpenseCategory::create($data);
+        return response()->json(['success' => true, 'data' => $cat]);
+    }
+
+    public function updateCategory(ExpenseCategory $category)
+    {
+        $data = request()->validate([
+            'name' => 'required|string|max:150',
+            'description' => 'nullable|string',
+        ]);
+        $category->update($data);
+        return response()->json(['success' => true, 'data' => $category]);
+    }
+
+    public function destroyCategory(ExpenseCategory $category)
+    {
+        if ($category->expenses()->exists()) {
+            return response()->json(['success' => false, 'message' => 'Cannot delete: category has expenses'], 422);
         }
-        if (request()->isMethod('post')) {
-            $data = request()->validate(['name' => 'required|string|max:150', 'description' => 'nullable|string']);
-            $cat = ExpenseCategory::create($data);
-            return response()->json(['success' => true, 'data' => $cat]);
-        }
+        $category->delete();
+        return response()->json(['success' => true, 'message' => 'Category deleted']);
     }
 }

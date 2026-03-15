@@ -4,9 +4,19 @@
 
 @section('content')
 <div x-data="expensesPage()" x-init="load()" class="page-list">
-    <div class="flex items-center justify-end gap-2 mb-4">
-        <button @click="showCat = true; catForm = {name: ''}" class="btn-secondary">Categories</button>
-        <a href="/expenses/create" class="btn-primary"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add Expense</a>
+    <div class="flex items-center justify-between gap-2 mb-4">
+        <div class="flex items-center gap-2">
+            <select x-model="filter.category_id" @change="load()" class="form-select-custom text-sm" style="min-width:140px">
+                <option value="">All Categories</option>
+                <template x-for="c in categories" :key="c.id"><option :value="c.id" x-text="c.name"></option></template>
+            </select>
+            <input x-model="filter.date_from" @change="load()" type="date" class="form-input-custom text-sm" placeholder="From" style="width:140px">
+            <input x-model="filter.date_to" @change="load()" type="date" class="form-input-custom text-sm" placeholder="To" style="width:140px">
+        </div>
+        <div class="flex items-center gap-2">
+            <button @click="showCat = true; loadCategories()" class="btn-secondary">Categories</button>
+            <a href="/expenses/create" class="btn-primary"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add Expense</a>
+        </div>
     </div>
     <div class="card">
         <div class="card-body p-0">
@@ -17,7 +27,7 @@
                         <template x-for="(e, i) in items" :key="e.id">
                             <tr>
                                 <td x-text="i+1"></td>
-                                <td x-text="e.expense_category ? e.expense_category.name : '-'"></td>
+                                <td x-text="e.category ? e.category.name : '-'"></td>
                                 <td class="max-w-xs truncate" x-text="e.description || '-'"></td>
                                 <td class="font-semibold text-red-600" x-text="'₹' + Number(e.amount).toFixed(2)"></td>
                                 <td>
@@ -26,10 +36,10 @@
                                         <template x-if="e.payment_method === 'upi'"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg></template>
                                         <template x-if="e.payment_method === 'card'"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg></template>
                                         <template x-if="e.payment_method === 'bank_transfer'"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg></template>
-                                        <span x-text="e.payment_method === 'bank_transfer' ? 'Bank' : (e.payment_method || '-').toUpperCase()"></span>
+                                        <span x-text="e.payment_method === 'bank_transfer' ? 'Bank' : (e.payment_method || 'cash').toUpperCase()"></span>
                                     </span>
                                 </td>
-                                <td x-text="e.expense_date"></td>
+                                <td x-text="fmtDate(e.expense_date)"></td>
                                 <td class="whitespace-nowrap">
                                     <button @click="edit(e)" class="text-primary-600 hover:text-primary-800 mr-1"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
                                     <button @click="remove(e)" class="text-red-600 hover:text-red-800"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
@@ -56,14 +66,14 @@
         </div>
     </div>
 
-    <!-- Expense Modal -->
+    <!-- Edit Expense Modal -->
     <div x-show="showModal" class="modal-overlay" x-cloak @click.self="showModal = false">
         <div class="modal-container">
             <div class="modal-header"><h3 class="text-lg font-semibold">Edit Expense</h3><button @click="showModal = false" class="text-gray-400 hover:text-gray-600">&times;</button></div>
             <div class="modal-body">
                 <div class="space-y-4">
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                        <select x-model="form.expense_category_id" class="form-select-custom"><option value="">Select</option><template x-for="c in categories" :key="c.id"><option :value="c.id" x-text="c.name"></option></template></select>
+                        <select x-model="form.category_id" class="form-select-custom"><option value="">Select</option><template x-for="c in categories" :key="c.id"><option :value="c.id" x-text="c.name"></option></template></select>
                     </div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Amount *</label><input x-model="form.amount" type="number" step="0.01" class="form-input-custom"></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Date *</label><input x-model="form.expense_date" type="date" class="form-input-custom"></div>
@@ -79,14 +89,41 @@
 
     <!-- Categories Modal -->
     <div x-show="showCat" class="modal-overlay" x-cloak @click.self="showCat = false">
-        <div class="modal-container">
+        <div class="modal-container" style="max-width:500px">
             <div class="modal-header"><h3 class="text-lg font-semibold">Expense Categories</h3><button @click="showCat = false" class="text-gray-400 hover:text-gray-600">&times;</button></div>
             <div class="modal-body">
-                <div class="space-y-2 mb-4">
-                    <template x-for="c in categories" :key="c.id"><div class="flex items-center justify-between px-3 py-2 bg-gray-50 rounded"><span x-text="c.name"></span></div></template>
+                <div class="space-y-2 mb-4 max-h-64 overflow-y-auto">
+                    <template x-for="c in catList" :key="c.id">
+                        <div class="flex items-center justify-between px-3 py-2 bg-gray-50 rounded group">
+                            <template x-if="editingCat !== c.id">
+                                <div class="flex items-center justify-between w-full">
+                                    <div>
+                                        <span class="font-medium" x-text="c.name"></span>
+                                        <span class="text-xs text-gray-400 ml-2" x-text="(c.expenses_count || 0) + ' expenses'"></span>
+                                    </div>
+                                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button @click="editingCat = c.id; editCatName = c.name" class="text-primary-600 hover:text-primary-800 p-1" title="Edit">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                        </button>
+                                        <button @click="deleteCat(c)" class="text-red-600 hover:text-red-800 p-1" title="Delete">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+                            <template x-if="editingCat === c.id">
+                                <div class="flex items-center gap-2 w-full">
+                                    <input x-model="editCatName" type="text" class="form-input-custom flex-1 text-sm" @keydown.enter="updateCat(c)" @keydown.escape="editingCat = null">
+                                    <button @click="updateCat(c)" class="btn-primary text-xs px-2 py-1">Save</button>
+                                    <button @click="editingCat = null" class="btn-secondary text-xs px-2 py-1">Cancel</button>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <div x-show="catList.length === 0" class="text-center text-gray-400 py-4">No categories yet</div>
                 </div>
-                <div class="flex gap-2">
-                    <input x-model="catForm.name" type="text" class="form-input-custom flex-1" placeholder="New category name">
+                <div class="flex gap-2 pt-2 border-t">
+                    <input x-model="catForm.name" type="text" class="form-input-custom flex-1" placeholder="New category name" @keydown.enter="saveCat()">
                     <button @click="saveCat()" class="btn-primary">Add</button>
                 </div>
             </div>
@@ -99,25 +136,100 @@
 <script>
 function expensesPage() {
     return {
-        items: [], categories: [], showModal: false, showCat: false, editing: null, saving: false, loading: true,
-        form: { expense_category_id: '', amount: '', expense_date: '', payment_method: 'cash', description: '' },
+        items: [], categories: [], catList: [], showModal: false, showCat: false,
+        editing: null, saving: false, loading: true,
+        editingCat: null, editCatName: '',
+        form: { category_id: '', amount: '', expense_date: '', payment_method: 'cash', description: '' },
         catForm: { name: '' },
+        filter: { category_id: '', date_from: '', date_to: '' },
+
+        fmtDate(d) {
+            if (!d) return '-';
+            const dt = new Date(d);
+            if (isNaN(dt)) return d;
+            return dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        },
+
         async load() {
             this.loading = true;
-            const [r, c] = await Promise.all([RepairBox.ajax('/expenses'), RepairBox.ajax('/expenses/categories')]);
-            if(r.data) this.items = r.data; if(c.data) this.categories = c.data;
+            const params = new URLSearchParams();
+            if (this.filter.category_id) params.set('category_id', this.filter.category_id);
+            if (this.filter.date_from) params.set('date_from', this.filter.date_from);
+            if (this.filter.date_to) params.set('date_to', this.filter.date_to);
+            const qs = params.toString() ? '?' + params.toString() : '';
+            const [r, c] = await Promise.all([
+                RepairBox.ajax('/expenses' + qs),
+                RepairBox.ajax('/expenses/categories')
+            ]);
+            if (r.data) this.items = r.data;
+            if (Array.isArray(c)) this.categories = c;
+            else if (c.data) this.categories = c.data;
             this.loading = false;
         },
-        edit(e) { this.editing = e.id; this.form = { expense_category_id: e.expense_category_id, amount: e.amount, expense_date: e.expense_date, payment_method: e.payment_method || 'cash', description: e.description || '' }; this.showModal = true; },
+
+        async loadCategories() {
+            const c = await RepairBox.ajax('/expenses/categories');
+            if (Array.isArray(c)) this.catList = c;
+            else if (c.data) this.catList = c.data;
+        },
+
+        edit(e) {
+            this.editing = e.id;
+            this.form = {
+                category_id: e.category_id,
+                amount: e.amount,
+                expense_date: e.expense_date ? e.expense_date.substring(0, 10) : '',
+                payment_method: e.payment_method || 'cash',
+                description: e.description || ''
+            };
+            this.showModal = true;
+        },
+
         async save() {
             this.saving = true;
             const r = await RepairBox.ajax(`/expenses/${this.editing}`, 'PUT', this.form);
-            this.saving = false; if(r.success !== false) { RepairBox.toast('Updated', 'success'); this.showModal = false; this.load(); }
+            this.saving = false;
+            if (r.success !== false) { RepairBox.toast('Updated', 'success'); this.showModal = false; this.load(); }
         },
-        async remove(e) { if(!await RepairBox.confirm('Delete?')) return; const r = await RepairBox.ajax(`/expenses/${e.id}`, 'DELETE'); if(r.success !== false) { RepairBox.toast('Deleted', 'success'); this.load(); } },
+
+        async remove(e) {
+            if (!await RepairBox.confirm('Delete this expense?')) return;
+            const r = await RepairBox.ajax(`/expenses/${e.id}`, 'DELETE');
+            if (r.success !== false) { RepairBox.toast('Deleted', 'success'); this.load(); }
+        },
+
         async saveCat() {
+            if (!this.catForm.name.trim()) return;
             const r = await RepairBox.ajax('/expenses/categories', 'POST', this.catForm);
-            if(r.success !== false) { RepairBox.toast('Category added', 'success'); this.catForm = {name:''}; this.load(); }
+            if (r.success !== false) {
+                RepairBox.toast('Category added', 'success');
+                this.catForm = { name: '' };
+                this.loadCategories();
+                this.load();
+            }
+        },
+
+        async updateCat(c) {
+            if (!this.editCatName.trim()) return;
+            const r = await RepairBox.ajax(`/expenses/categories/${c.id}`, 'PUT', { name: this.editCatName });
+            if (r.success !== false) {
+                RepairBox.toast('Category updated', 'success');
+                this.editingCat = null;
+                this.loadCategories();
+                this.load();
+            }
+        },
+
+        async deleteCat(c) {
+            if (!await RepairBox.confirm(`Delete category "${c.name}"?`)) return;
+            const r = await RepairBox.ajax(`/expenses/categories/${c.id}`, 'DELETE');
+            if (r.success !== false) {
+                RepairBox.toast('Category deleted', 'success');
+                this.loadCategories();
+                this.load();
+            } else {
+                RepairBox.toast(r.message || 'Cannot delete category', 'error');
+            }
         }
     };
 }

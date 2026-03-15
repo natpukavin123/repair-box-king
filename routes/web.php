@@ -101,9 +101,12 @@ Route::middleware('auth')->group(function () {
     // Services
     Route::resource('services', ServiceController::class)->except(['edit', 'show']);
 
-    // Expenses
+    // Expenses – category routes MUST come before the resource to avoid {expense} swallowing "categories"
+    Route::get('expenses/categories', [ExpenseController::class, 'categories'])->name('expenses.categories');
+    Route::post('expenses/categories', [ExpenseController::class, 'storeCategory'])->name('expenses.categories.store');
+    Route::put('expenses/categories/{category}', [ExpenseController::class, 'updateCategory'])->name('expenses.categories.update');
+    Route::delete('expenses/categories/{category}', [ExpenseController::class, 'destroyCategory'])->name('expenses.categories.destroy');
     Route::resource('expenses', ExpenseController::class)->except(['edit', 'show']);
-    Route::match(['get', 'post'], 'expense-categories', [ExpenseController::class, 'categories']);
 
     // Ledger
     Route::get('ledger', [LedgerController::class, 'index'])->name('ledger.index');

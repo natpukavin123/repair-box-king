@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Expense extends Model
 {
-    protected $fillable = ['category_id', 'amount', 'description', 'expense_date', 'created_by'];
+    protected $fillable = ['category_id', 'amount', 'description', 'expense_date', 'payment_method', 'created_by'];
 
     protected $casts = [
         'amount' => 'decimal:2',
