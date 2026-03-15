@@ -20,12 +20,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Force HTTPS when APP_URL is https or when behind Railway's proxy.
-        // This ensures @vite(), asset(), and url() all generate https:// links.
-        if (
-            str_starts_with(config('app.url', ''), 'https://') ||
-            ($this->app->environment('production') && isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
-        ) {
+        // Force HTTPS when APP_URL is https.
+        // This ensures @vite(), asset(), and url() all generate https:// links
+        // when running behind Railway's reverse proxy.
+        if (str_starts_with(config('app.url', 'http://'), 'https://')) {
             URL::forceScheme('https');
         }
     }

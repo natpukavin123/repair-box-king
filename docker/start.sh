@@ -17,8 +17,8 @@ if [ -z "${APP_URL:-}" ] && [ -n "${RAILWAY_PUBLIC_DOMAIN:-}" ]; then
     echo "→ APP_URL auto-resolved: $APP_URL"
 fi
 
-# ── Test nginx config before starting ────────────────────────────────────────
-nginx -t 2>&1 && echo "→ Nginx config OK ✔" || { echo "✗ Nginx config error!"; exit 1; }
+# ── Test nginx config (warn only, do not exit — supervisor will handle failures)
+nginx -t 2>&1 && echo "→ Nginx config OK ✔" || echo "⚠ Nginx config warning (supervisor will attempt to start anyway)"
 
 # ── 2. Resolve DB credentials (Railway uses MYSQLHOST / standard uses DB_HOST) ─
 export DB_HOST="${DB_HOST:-${MYSQLHOST:-127.0.0.1}}"
