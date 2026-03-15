@@ -56,7 +56,8 @@ for i in $(seq 1 $MAX); do
     if [ "$i" -ge "$MAX" ]; then
         echo "[init] ✗ MySQL not reachable after $MAX attempts."
         echo "[init]   DB_HOST=$DB_HOST  DB_PORT=$DB_PORT  DB_USERNAME=$DB_USERNAME"
-        exit 1
+        echo "[init]   App may still serve cached responses. Check DB config in Railway."
+        exit 0
     fi
     echo "[init]   ... attempt $i/$MAX"
     sleep 3
