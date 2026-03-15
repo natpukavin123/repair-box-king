@@ -12,10 +12,13 @@ echo "→ Port: $APP_PORT"
 sed -i "s/__PORT__/$APP_PORT/g" /etc/nginx/http.d/default.conf
 
 # ── 1b. Resolve APP_URL from Railway env if not explicitly set ─────────────────
-if [[ -z "${APP_URL:-}" && -n "${RAILWAY_PUBLIC_DOMAIN:-}" ]]; then
+if [ -z "${APP_URL:-}" ] && [ -n "${RAILWAY_PUBLIC_DOMAIN:-}" ]; then
     export APP_URL="https://${RAILWAY_PUBLIC_DOMAIN}"
     echo "→ APP_URL auto-resolved: $APP_URL"
 fi
+
+# ── Test nginx config before starting ────────────────────────────────────────
+nginx -t 2>&1 && echo "→ Nginx config OK ✔" || { echo "✗ Nginx config error!"; exit 1; }
 
 # ── 2. Resolve DB credentials (Railway uses MYSQLHOST / standard uses DB_HOST) ─
 export DB_HOST="${DB_HOST:-${MYSQLHOST:-127.0.0.1}}"
@@ -24,18 +27,20 @@ export DB_DATABASE="${DB_DATABASE:-${MYSQLDATABASE:-repair_box}}"
 export DB_USERNAME="${DB_USERNAME:-${MYSQLUSER:-root}}"
 export DB_PASSWORD="${DB_PASSWORD:-${MYSQLPASSWORD:-}}"
 
-# ── 3. Write .env quickly (no artisan yet) ────────────────────────────────────
+# ── 3. Write .env (minimal — PHP-FPM inherits all Railway env vars via clear_env=no)
+# Only write values that Artisan commands need before FPM is fully running.
+# All other config comes from the process environment injected by Railway.
 echo "→ Writing .env..."
 cat > .env << ENVEOF
 APP_NAME="${APP_NAME:-RepairBox}"
-APP_ENV="${APP_ENV:-production}"
+APP_ENV=${APP_ENV:-production}
 APP_KEY=${APP_KEY}
 APP_DEBUG=${APP_DEBUG:-false}
 APP_URL=${APP_URL:-http://localhost}
-ASSET_URL=${ASSET_URL:-${APP_URL:-}}
 APP_TIMEZONE=${APP_TIMEZONE:-UTC}
+APP_LOCALE=${APP_LOCALE:-en}
 
-LOG_CHANNEL=stderr
+LOG_CHANNEL=${LOG_CHANNEL:-stderr}
 LOG_LEVEL=${LOG_LEVEL:-error}
 
 DB_CONNECTION=mysql
@@ -69,6 +74,8 @@ MAIL_FROM_NAME="${APP_NAME:-RepairBox}"
 ADMIN_EMAIL=${ADMIN_EMAIL:-}
 ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
 ADMIN_NAME=${ADMIN_NAME:-Administrator}
+
+DEMO_MODE=${DEMO_MODE:-false}
 ENVEOF
 echo ".env written ✔"
 
