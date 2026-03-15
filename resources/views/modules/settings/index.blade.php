@@ -289,6 +289,8 @@ function settingsPage() {
             this.saving = true;
             try {
                 const formData = new FormData();
+                // Laravel method spoofing: POST + _method=PUT so PHP parses multipart/form-data
+                formData.append('_method', 'PUT');
                 // Append each setting individually with array notation
                 Object.keys(this.settings).forEach(key => {
                     if (key !== 'shop_icon' && this.settings[key] !== null) {
@@ -300,8 +302,11 @@ function settingsPage() {
                 }
 
                 const response = await fetch('/settings', {
-                    method: 'PUT',
-                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    },
                     body: formData
                 });
 
