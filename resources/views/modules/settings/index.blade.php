@@ -63,18 +63,20 @@
     <div x-show="tab==='service-types'" class="card">
         <div class="card-header flex items-center justify-between">
             <h3 class="text-lg font-semibold">Service Types</h3>
-            <button @click="stForm={name:'',default_price:'',description:''}; stEditing=null; showStModal=true" class="btn-primary text-sm">Add Type</button>
+            <button @click="stForm={name:'',default_price:'',description:'',sac_code:''}; stEditing=null; selectedSac=null; sacSearch=''; sacResults=[]; sacSearched=false; showStModal=true" class="btn-primary text-sm">Add Type</button>
         </div>
         <div class="card-body p-0">
             <table class="data-table">
-                <thead><tr><th>Name</th><th>Default Price</th><th>Status</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Name</th><th>Default Price</th><th>SAC Code</th><th>GST%</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody>
                     <template x-for="st in serviceTypes" :key="st.id">
                         <tr>
                             <td class="font-medium" x-text="st.name"></td>
                             <td x-text="st.default_price ? RepairBox.formatCurrency(st.default_price) : '-'"></td>
+                            <td><span class="font-mono text-xs text-gray-700" x-text="st.sac_code || '-'"></span></td>
+                            <td><span class="badge badge-success text-xs" x-show="st.tax_rate" x-text="st.tax_rate?.percentage + '%'"></span><span x-show="!st.tax_rate" class="text-gray-400 text-xs">-</span></td>
                             <td><span class="badge" :class="st.status==='active' ? 'badge-success' : 'badge-danger'" x-text="st.status || 'active'"></span></td>
-                            <td><button @click="stEditing=st.id; stForm={name:st.name,default_price:st.default_price||'',description:st.description||'',status:st.status||'active'}; showStModal=true" class="text-primary-600 hover:text-primary-800"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button></td>
+                            <td><button @click="openEditSt(st)" class="text-primary-600 hover:text-primary-800"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button></td>
                         </tr>
                     </template>
                     <tr x-show="serviceTypes.length===0"><td colspan="4" class="text-center text-gray-400 py-6">No service types</td></tr>
@@ -188,18 +190,80 @@
     {{-- Service Type Modal --}}
     <div x-show="showStModal" class="modal-overlay" x-cloak @click.self="showStModal=false">
         <div class="modal-container">
-            <div class="modal-header"><h3 class="text-lg font-semibold" x-text="stEditing ? 'Edit Service Type' : 'Add Service Type'"></h3><button @click="showStModal=false" class="text-gray-400 hover:text-gray-600">&times;</button></div>
+            <div class="modal-header">
+                <h3 class="text-lg font-semibold" x-text="stEditing ? 'Edit Service Type' : 'Add Service Type'"></h3>
+                <button @click="showStModal=false" class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
             <div class="modal-body space-y-4">
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label><input x-model="stForm.name" type="text" class="form-input-custom"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Default Price</label><input x-model="stForm.default_price" type="number" step="0.01" class="form-input-custom"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label><textarea x-model="stForm.description" class="form-input-custom" rows="2"></textarea></div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                    <input x-model="stForm.name" type="text" class="form-input-custom">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Default Price</label>
+                    <input x-model="stForm.default_price" type="number" step="0.01" class="form-input-custom">
+                </div>
+
+                {{-- SAC Code — master-driven lookup --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        SAC Code
+                        <span class="text-xs text-gray-400 font-normal ml-1">Search from master — GST rate auto-maps</span>
+                    </label>
+                    <div x-show="selectedSac" class="flex items-center gap-2 mb-2 p-2 bg-blue-50 border border-blue-200 rounded">
+                        <div class="flex-1 min-w-0">
+                            <span class="font-semibold text-blue-800 text-sm" x-text="selectedSac?.code"></span>
+                            <span class="text-blue-600 text-sm mx-1">—</span>
+                            <span class="text-blue-700 text-sm" x-text="selectedSac?.description"></span>
+                        </div>
+                        <span class="badge badge-success text-xs whitespace-nowrap" x-text="(selectedSac?.tax_rate?.percentage ?? 0) + '% GST'"></span>
+                        <button type="button" @click="clearSac()" class="text-red-400 hover:text-red-600 text-lg leading-none">&times;</button>
+                    </div>
+                    <div x-show="!selectedSac" class="relative">
+                        <input x-model="sacSearch"
+                               @input.debounce.300ms="searchSac()"
+                               type="text" class="form-input-custom"
+                               placeholder="Type SAC code or description to search...">
+                        <div x-show="sacResults.length > 0"
+                             class="absolute z-10 w-full bg-white border border-gray-200 rounded shadow-lg mt-0.5 max-h-40 overflow-y-auto">
+                            <template x-for="s in sacResults" :key="s.id">
+                                <button type="button" @click="selectSac(s)"
+                                        class="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-0 text-sm">
+                                    <span class="font-semibold text-gray-800" x-text="s.code"></span>
+                                    <span class="text-gray-500 mx-1">—</span>
+                                    <span class="text-gray-700" x-text="s.description"></span>
+                                    <span class="float-right text-xs text-green-600 font-medium"
+                                          x-text="(s.tax_rate?.percentage ?? 0) + '% GST'"></span>
+                                </button>
+                            </template>
+                        </div>
+                        <p x-show="sacSearched && sacResults.length === 0 && sacSearch.length > 0"
+                           class="text-xs text-gray-400 mt-1">
+                            No SAC codes found. Add them via <a href="/tax" class="text-primary-600 underline" target="_blank">Tax &amp; GST</a>.
+                        </p>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea x-model="stForm.description" class="form-input-custom" rows="2"></textarea>
+                </div>
                 <template x-if="stEditing">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                        <select x-model="stForm.status" class="form-select-custom"><option value="active">Active</option><option value="inactive">Inactive</option></select>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select x-model="stForm.status" class="form-select-custom">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
                     </div>
                 </template>
             </div>
-            <div class="modal-footer"><button @click="showStModal=false" class="btn-secondary">Cancel</button><button @click="saveServiceType()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save</button></div>
+            <div class="modal-footer">
+                <button @click="showStModal=false" class="btn-secondary">Cancel</button>
+                <button @click="saveServiceType()" class="btn-primary" :disabled="saving">
+                    <span x-show="saving" class="spinner mr-1"></span> Save
+                </button>
+            </div>
         </div>
     </div>
 
@@ -242,6 +306,7 @@ function settingsPage() {
         tab: 'general', saving: false, iconFile: null, previewIcon: '',
         settings: {}, settingKeys: ['shop_name','shop_address','shop_phone','shop_email','shop_gst','currency_symbol','invoice_prefix','repair_prefix','tax_percentage','low_stock_threshold','invoice_paper_size','invoice_design_variant','invoice_header_title','invoice_header_subtitle','invoice_footer_text'],
         serviceTypes: [], showStModal: false, stEditing: null, stForm: {},
+        sacSearch: '', sacResults: [], sacLoading: false, sacSearched: false, selectedSac: null,
         rechargeProviders: [], showRpModal: false, rpForm: {},
         emailTemplates: [], showEtModal: false, etEditing: null, etForm: {},
         backups: [],
@@ -340,6 +405,28 @@ function settingsPage() {
             const r = await RepairBox.ajax(this.stEditing ? `/service-types/${this.stEditing}` : '/service-types', this.stEditing ? 'PUT' : 'POST', this.stForm);
             this.saving = false; if(r.success !== false) { RepairBox.toast('Saved', 'success'); this.showStModal = false; const st = await RepairBox.ajax('/service-types'); if(st.data) this.serviceTypes = st.data; }
         },
+        openEditSt(st) {
+            this.stEditing = st.id;
+            this.stForm = { name: st.name, default_price: st.default_price || '', description: st.description || '', status: st.status || 'active', sac_code: st.sac_code || '' };
+            this.selectedSac = null; this.sacSearch = ''; this.sacResults = []; this.sacSearched = false;
+            if (st.sac_code) {
+                RepairBox.ajax('/tax/hsn-search?type=sac&q=' + encodeURIComponent(st.sac_code)).then(r => {
+                    const arr = r.data ?? [];
+                    const match = arr.find(s => s.code === st.sac_code);
+                    if (match) this.selectedSac = match;
+                });
+            }
+            this.showStModal = true;
+        },
+        async searchSac() {
+            if (this.sacSearch.length < 1) { this.sacResults = []; return; }
+            this.sacLoading = true;
+            const r = await RepairBox.ajax('/tax/hsn-search?type=sac&q=' + encodeURIComponent(this.sacSearch));
+            this.sacLoading = false; this.sacSearched = true;
+            this.sacResults = r.data ?? [];
+        },
+        selectSac(s) { this.selectedSac = s; this.stForm.sac_code = s.code; this.sacResults = []; this.sacSearch = ''; },
+        clearSac() { this.selectedSac = null; this.stForm.sac_code = ''; this.sacSearch = ''; this.sacResults = []; },
         async saveRechargeProvider() {
             this.saving = true;
             const r = await RepairBox.ajax('/recharge-providers', 'POST', this.rpForm);

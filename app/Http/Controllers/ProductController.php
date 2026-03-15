@@ -61,7 +61,7 @@ class ProductController extends Controller
     public function search()
     {
         $q = request('q', '');
-        $products = Product::with('inventory')
+        $products = Product::with('inventory', 'taxRate')
             ->where('status', 'active')
             ->where(fn($query) => $query->where('name', 'like', "%{$q}%")->orWhere('sku', 'like', "%{$q}%")->orWhere('barcode', 'like', "%{$q}%"))
             ->take(20)->get();

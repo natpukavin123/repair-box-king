@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Vendor extends Model
 {
-    protected $fillable = ['name', 'phone', 'address', 'specialization', 'status'];
+    protected $fillable = ['name', 'phone', 'address', 'gstin', 'specialization', 'status'];
 
     public function repairVendors()
     {

@@ -23,14 +23,14 @@
     $shopName  = \App\Models\Setting::getValue('shop_name', 'RepairBox');
     $shopUpiId = \App\Models\Setting::getValue('upi_id', '');
 
-    $igstRate = 0; $cgstRate = 0; $sgstRate = 0;
+    // Use stored tax data from the invoice
+    $isIgst = (bool) $invoice->is_igst;
 
     $customerGstin   = $invoice->customer->gstin   ?? '-';
     $customerAddress = $invoice->customer->address ?? '-';
 
     $lineItems = collect();
     foreach ($invoice->items as $item) {
-        $tax = $igstRate > 0 ? round($item->price * $item->quantity * $igstRate / 100, 2) : 0;
         $lineItems->push([
             'name'    => $item->item_name,
             'sub'     => $item->serial_number ?? null,
@@ -38,16 +38,19 @@
             'qty'     => $item->quantity,
             'rate'    => $item->price,
             'taxable' => $item->price * $item->quantity,
-            'igst'    => $tax,
-            'total'   => $item->price * $item->quantity + $tax,
+            'tax_rate'=> (float) $item->tax_rate,
+            'igst'    => (float) $item->igst_amount,
+            'cgst'    => (float) $item->cgst_amount,
+            'sgst'    => (float) $item->sgst_amount,
+            'total'   => $item->price * $item->quantity + (float) $item->tax_amount,
         ]);
     }
 
     $taxableAmount = $lineItems->sum('taxable');
-    $igstAmount    = $lineItems->sum('igst');
-    $cgstAmount    = $cgstRate > 0 ? round($taxableAmount * $cgstRate / 100, 2) : 0;
-    $sgstAmount    = $sgstRate > 0 ? round($taxableAmount * $sgstRate / 100, 2) : 0;
-    $totalTax      = $igstAmount + $cgstAmount + $sgstAmount;
+    $igstAmount    = (float) $invoice->igst_amount;
+    $cgstAmount    = (float) $invoice->cgst_amount;
+    $sgstAmount    = (float) $invoice->sgst_amount;
+    $totalTax      = (float) $invoice->tax_amount;
     $subTotal      = $taxableAmount + $totalTax;
     $discount      = $invoice->discount ?? 0;
     $grandTotal    = $subTotal - $discount;
@@ -56,8 +59,9 @@
     $balanceDue    = max(0, $grandTotal - $totalPaidIn);
 
     $amountInWords = numWords($grandTotal);
-    $showIgst      = $igstRate > 0;
-    $showCgstSgst  = !$showIgst && ($cgstRate > 0 || $sgstRate > 0);
+    $showIgst      = $isIgst && $totalTax > 0;
+    $showCgstSgst  = !$isIgst && $totalTax > 0;
+    $hasTax        = $totalTax > 0;
 @endphp
 
 @section('invoice-content')
@@ -123,13 +127,13 @@
                     <td class="tr">{{ number_format($item['rate'], 2) }}</td>
                     <td class="tr">{{ number_format($item['taxable'], 2) }}</td>
                     @if($showIgst)
-                        <td class="tc">{{ $igstRate }}.00</td>
+                        <td class="tc">{{ number_format($item['tax_rate'], 0) }}%</td>
                         <td class="tr">{{ number_format($item['igst'], 2) }}</td>
                     @elseif($showCgstSgst)
-                        <td class="tc">{{ $cgstRate }}.00</td>
-                        <td class="tr">{{ number_format(round($item['taxable']*$cgstRate/100,2),2) }}</td>
-                        <td class="tc">{{ $sgstRate }}.00</td>
-                        <td class="tr">{{ number_format(round($item['taxable']*$sgstRate/100,2),2) }}</td>
+                        <td class="tc">{{ number_format($item['tax_rate']/2, 0) }}%</td>
+                        <td class="tr">{{ number_format($item['cgst'], 2) }}</td>
+                        <td class="tc">{{ number_format($item['tax_rate']/2, 0) }}%</td>
+                        <td class="tr">{{ number_format($item['sgst'], 2) }}</td>
                     @endif
                     <td class="tr"><strong>{{ number_format($item['total'], 2) }}</strong></td>
                 </tr>
@@ -200,17 +204,17 @@
             <div class="s-hdr">Tax Summary</div>
             <table class="tax-tbl">
                 <tr><td>Taxable Amount</td><td>{{ number_format($taxableAmount,2) }}</td></tr>
-                @if($igstAmount>0)
-                <tr><td>Add : IGST ({{ $igstRate }}%)</td><td>{{ number_format($igstAmount,2) }}</td></tr>
+                @if($showIgst && $igstAmount>0)
+                <tr><td>Add : IGST</td><td>{{ number_format($igstAmount,2) }}</td></tr>
                 @endif
-                @if($cgstAmount>0)
-                <tr><td>Add : CGST ({{ $cgstRate }}%)</td><td>{{ number_format($cgstAmount,2) }}</td></tr>
+                @if($showCgstSgst && $cgstAmount>0)
+                <tr><td>Add : CGST</td><td>{{ number_format($cgstAmount,2) }}</td></tr>
                 @endif
-                @if($sgstAmount>0)
-                <tr><td>Add : SGST ({{ $sgstRate }}%)</td><td>{{ number_format($sgstAmount,2) }}</td></tr>
+                @if($showCgstSgst && $sgstAmount>0)
+                <tr><td>Add : SGST</td><td>{{ number_format($sgstAmount,2) }}</td></tr>
                 @endif
                 <tr class="sep"><td>Total Tax</td><td>{{ number_format($totalTax,2) }}</td></tr>
-                @if($totalTax==0)
+                @if(!$hasTax)
                 <tr class="note"><td colspan="2">* Tax rates not configured yet</td></tr>
                 @endif
                 @if($discount > 0)

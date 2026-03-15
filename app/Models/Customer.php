@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Customer extends Model
 {
     protected $fillable = [
-        'name', 'mobile_number', 'email', 'address', 'notes',
-        'loyalty_points', 'total_spent', 'last_visit',
+        'name', 'mobile_number', 'email', 'address', 'gstin', 'billing_state',
+        'notes', 'loyalty_points', 'total_spent', 'last_visit',
     ];
 
     protected $casts = [

@@ -6,9 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class RepairPart extends Model
 {
-    protected $fillable = ['repair_id', 'part_id', 'product_id', 'quantity', 'cost_price'];
+    protected $fillable = ['repair_id', 'part_id', 'product_id', 'quantity', 'cost_price', 'hsn_code', 'tax_rate', 'tax_amount'];
 
-    protected $casts = ['cost_price' => 'decimal:2'];
+    protected $casts = [
+        'cost_price' => 'decimal:2',
+        'tax_rate' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
+    ];
 
     public function repair()
     {

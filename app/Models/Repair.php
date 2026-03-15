@@ -156,7 +156,14 @@ class Repair extends Model
 
     public function getGrandTotalAttribute(): float
     {
-        return $this->total_parts + (float) $this->service_charge + $this->total_services;
+        return $this->total_parts + (float) $this->service_charge + $this->total_services + $this->total_tax;
+    }
+
+    public function getTotalTaxAttribute(): float
+    {
+        $partsTax = $this->parts->sum('tax_amount');
+        $servicesTax = $this->repairServices->sum('tax_amount');
+        return (float) $partsTax + (float) $servicesTax;
     }
 
     public function getBalanceDueAttribute(): float

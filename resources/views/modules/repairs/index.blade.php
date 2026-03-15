@@ -132,7 +132,7 @@
                                                     : 'bg-white border-gray-200 text-gray-300'"
                                                 x-text="idx + 1">
                                             </div>
-                                            <div x-show="idx < progressSteps.length - 1" class="w-4 h-0.5" :class="stepReached(r.status, step.key) && stepReached(r.status, progressSteps[idx+1].key) ? 'bg-green-500' : 'bg-gray-200'"></div>
+                                            <div x-show="idx < progressSteps.length - 1" class="w-4 h-0.5" :class="stepReached(r.status, step.key) && stepReached(r.status, progressSteps[idx+1]?.key) ? 'bg-green-500' : 'bg-gray-200'"></div>
                                         </div>
                                     </template>
                                 </div>

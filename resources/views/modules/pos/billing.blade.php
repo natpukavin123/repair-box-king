@@ -26,6 +26,9 @@
                             <span class="text-primary-600 font-bold text-sm" x-text="'₹' + Number(p.selling_price).toFixed(2)"></span>
                             <span class="text-xs px-2 py-0.5 rounded-full" :class="(p.inventory ? p.inventory.current_stock : 0) > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'" x-text="'Stock: ' + (p.inventory ? p.inventory.current_stock : 0)"></span>
                         </div>
+                        <div x-show="p.tax_rate" class="mt-1">
+                            <span class="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-medium" x-text="'GST ' + parseFloat(p.tax_rate?.percentage || 0).toFixed(0) + '%'"></span>
+                        </div>
                     </button>
                 </template>
                 <div x-show="searchResults.length === 0" class="col-span-full text-center text-gray-400 py-12">
@@ -39,8 +42,9 @@
                     <button @click="addService(s)" class="card p-3 text-left hover:shadow-lg hover:border-primary-300 border-2 border-transparent transition-all">
                         <p class="font-medium text-sm text-gray-900 truncate" x-text="s.name"></p>
                         <p class="text-xs text-gray-500 truncate" x-text="s.description || ''"></p>
-                        <div class="mt-2">
+                        <div class="mt-2 flex items-center gap-2">
                             <span class="text-primary-600 font-bold text-sm" x-text="'₹' + Number(s.default_price || 0).toFixed(2)"></span>
+                            <span x-show="s.tax_rate" class="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-medium" x-text="'GST ' + parseFloat(s.tax_rate?.percentage || 0).toFixed(0) + '%'"></span>
                         </div>
                     </button>
                 </template>
@@ -115,6 +119,7 @@
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-900 truncate" x-text="item.item_name"></p>
                                 <p class="text-xs text-gray-500" x-text="'₹' + Number(item.price).toFixed(2) + ' × ' + item.quantity"></p>
+                                <p class="text-xs text-orange-500" x-show="item.tax_rate_percent > 0" x-text="'GST ' + item.tax_rate_percent + '% = ₹' + (item.price * item.quantity * item.tax_rate_percent / 100).toFixed(2)"></p>
                             </div>
                             <div class="flex items-center gap-1">
                                 <button @click="item.quantity > 1 ? item.quantity-- : null" class="w-6 h-6 rounded bg-gray-200 text-gray-700 flex items-center justify-center hover:bg-gray-300">−</button>
@@ -128,9 +133,15 @@
                     <div x-show="cart.length === 0" class="text-center text-gray-400 py-8 text-sm">Cart is empty</div>
                 </div>
 
-                <!-- Totals -->
                 <div class="border-t px-4 py-3 space-y-1 text-sm">
                     <div class="flex justify-between"><span class="text-gray-500">Subtotal</span><span x-text="'₹' + subtotal().toFixed(2)"></span></div>
+                    <div x-show="taxTotal() > 0" class="flex justify-between text-orange-600 font-medium">
+                        <span class="flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
+                            GST (est.)
+                        </span>
+                        <span x-text="'₹' + taxTotal().toFixed(2)"></span>
+                    </div>
                     <div class="flex justify-between items-center">
                         <span class="text-gray-500">Discount</span>
                         <div class="flex items-center gap-1"><span>₹</span><input x-model.number="form.discount" type="number" step="0.01" min="0" class="w-20 text-right text-sm border border-gray-300 rounded px-2 py-1"></div>
@@ -199,13 +210,13 @@ function posBilling() {
         addProduct(p) {
             const existing = this.cart.find(c => c.product_id === p.id && c.item_type === 'product');
             if (existing) { existing.quantity++; return; }
-            this.cart.push({ item_type: 'product', product_id: p.id, item_name: p.name, quantity: 1, price: Number(p.selling_price) });
+            this.cart.push({ item_type: 'product', product_id: p.id, item_name: p.name, quantity: 1, price: Number(p.selling_price), tax_rate_percent: p.tax_rate ? parseFloat(p.tax_rate.percentage) : 0, hsn_code: p.hsn_code || '' });
         },
 
         addService(s) {
             const existing = this.cart.find(c => c.service_id === s.id && c.item_type === 'service');
             if (existing) { existing.quantity++; return; }
-            this.cart.push({ item_type: 'service', product_id: null, service_id: s.id, item_name: s.name, quantity: 1, price: Number(s.default_price || 0) });
+            this.cart.push({ item_type: 'service', product_id: null, service_id: s.id, item_name: s.name, quantity: 1, price: Number(s.default_price || 0), tax_rate_percent: s.tax_rate ? parseFloat(s.tax_rate.percentage) : 0, sac_code: s.sac_code || '' });
         },
 
         addManualItem() {
@@ -235,12 +246,14 @@ function posBilling() {
         },
 
         subtotal() { return this.cart.reduce((s, i) => s + i.price * i.quantity, 0); },
-        grandTotal() { return Math.max(0, this.subtotal() - (Number(this.form.discount) || 0)); },
+        taxTotal() { return this.cart.reduce((s, i) => s + (i.price * i.quantity * (i.tax_rate_percent || 0) / 100), 0); },
+        grandTotal() { return Math.max(0, this.subtotal() + this.taxTotal() - (Number(this.form.discount) || 0)); },
 
         async submitInvoice() {
             if (this.cart.length === 0) return;
             if (!this.form.customer_id) { RepairBox.toast('Please select a customer', 'error'); return; }
             this.form.items = this.cart;
+            this.form.customer_billing_state = this.selectedCustomer?.billing_state || '';
             if (this.form.payments.length === 1) this.form.payments[0].amount = this.grandTotal();
             this.saving = true;
             const r = await RepairBox.ajax('/invoices', 'POST', this.form);

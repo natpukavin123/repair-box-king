@@ -219,10 +219,20 @@ class RepairController extends Controller
             return response()->json(['success' => false, 'message' => 'Parts can only be added during in-progress status.'], 422);
         }
 
+        // Auto-populate GST info from Part master.
+        // effectiveTaxPercent cascades: tax_rate_id → hsn_code master → system default.
+        $partModel = \App\Models\Part::with('taxRate')->find($data['part_id']);
+        if ($partModel) {
+            $data['hsn_code'] = $partModel->hsn_code;
+            $taxPercent = $partModel->effective_tax_percent;
+            $data['tax_rate'] = $taxPercent;
+            $data['tax_amount'] = round($data['cost_price'] * $data['quantity'] * $taxPercent / 100, 2);
+        }
+
         $part = $repair->parts()->create($data);
 
         // Log to status history so it appears in Status & History tab
-        $partName = \App\Models\Part::find($data['part_id'])->name ?? 'Part';
+        $partName = $partModel?->name ?? 'Part';
         RepairStatusHistory::create([
             'repair_id'  => $repair->id,
             'status'     => $repair->status,
@@ -276,6 +286,22 @@ class RepairController extends Controller
 
         $data['vendor_charge'] = $data['vendor_charge'] ?? 0;
 
+        // Auto-populate GST info from ServiceType master.
+        // effectiveTaxPercent cascades: tax_rate_id → sac_code master → system default.
+        if (!empty($data['service_type_id'])) {
+            $serviceType = \App\Models\ServiceType::with('taxRate')->find($data['service_type_id']);
+            if ($serviceType) {
+                $data['sac_code'] = $serviceType->sac_code;
+                $taxPercent = $serviceType->effective_tax_percent;
+                $data['tax_rate'] = $taxPercent;
+                $data['tax_amount'] = round($data['customer_charge'] * $taxPercent / 100, 2);
+            }
+        } else {
+            $taxPercent = (float) (\App\Models\TaxRate::getDefault()?->percentage ?? 0);
+            $data['tax_rate'] = $taxPercent;
+            $data['tax_amount'] = round($data['customer_charge'] * $taxPercent / 100, 2);
+        }
+
         $repair->repairServices()->create($data);
 
         // Log to status history
@@ -292,14 +318,30 @@ class RepairController extends Controller
     public function updateService(Request $request, Repair $repair, $serviceId)
     {
         $data = $request->validate([
-            'vendor_charge' => 'nullable|numeric|min:0',
+            'vendor_charge'   => 'nullable|numeric|min:0',
             'customer_charge' => 'nullable|numeric|min:0',
-            'reference_no' => 'nullable|string|max:100',
-            'description' => 'nullable|string|max:1000',
+            'reference_no'    => 'nullable|string|max:100',
+            'description'     => 'nullable|string|max:1000',
         ]);
 
         if ($repair->is_locked) {
             return response()->json(['success' => false, 'message' => 'This repair is locked.'], 422);
+        }
+
+        // Re-derive tax whenever customer_charge changes
+        if (isset($data['customer_charge'])) {
+            $svc = $repair->repairServices()->where('id', $serviceId)->first();
+            if ($svc) {
+                if ($svc->service_type_id) {
+                    $serviceType = \App\Models\ServiceType::with('taxRate')->find($svc->service_type_id);
+                    $taxPercent  = $serviceType ? $serviceType->effective_tax_percent : 0.0;
+                    $data['sac_code']   = $serviceType?->sac_code;
+                } else {
+                    $taxPercent = (float) (\App\Models\TaxRate::getDefault()?->percentage ?? 0);
+                }
+                $data['tax_rate']   = $taxPercent;
+                $data['tax_amount'] = round($data['customer_charge'] * $taxPercent / 100, 2);
+            }
         }
 
         $repair->repairServices()->where('id', $serviceId)->update($data);
