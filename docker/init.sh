@@ -28,7 +28,13 @@ php artisan package:discover --ansi --no-interaction 2>/dev/null || true
 php artisan config:cache      --no-interaction 2>/dev/null || true
 php artisan route:cache       --no-interaction 2>/dev/null || true
 php artisan view:cache        --no-interaction 2>/dev/null || true
-php artisan storage:link      --no-interaction 2>/dev/null || true
+
+# Ensure storage directories exist (important when a Railway Volume is mounted)
+mkdir -p storage/app/public storage/logs storage/framework/cache storage/framework/sessions storage/framework/views
+chown -R www-data:www-data storage 2>/dev/null || true
+
+# Re-create the public/storage symlink every boot (ephemeral filesystem recreates public/ each deploy)
+php artisan storage:link --no-interaction 2>/dev/null || true
 
 # ── 4. Check if DB is configured ─────────────────────────────────────────────
 # DB_HOST, DB_USERNAME, DB_DATABASE are exported from start.sh.

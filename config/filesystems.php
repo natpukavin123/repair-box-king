@@ -36,6 +36,9 @@ return [
             'throw' => false,
         ],
 
+        // 'public' disk: uses local storage by default.
+        // When S3 env vars are configured, switch FILESYSTEM_DISK=s3
+        // and the app will use S3 for all file storage instead.
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
@@ -44,15 +47,19 @@ return [
             'throw' => false,
         ],
 
+        // S3-compatible storage (AWS S3, Cloudflare R2, MinIO, etc.)
+        // Set FILESYSTEM_DISK=s3 plus the AWS_* env vars to use this.
+        // Cloudflare R2 is free up to 10GB and has no egress fees.
         's3' => [
             'driver' => 's3',
-            'key' => env('AWS_ACCESS_KEY_ID'),
+            'key'    => env('AWS_ACCESS_KEY_ID'),
             'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            'region' => env('AWS_DEFAULT_REGION'),
+            'region' => env('AWS_DEFAULT_REGION', 'auto'),
             'bucket' => env('AWS_BUCKET'),
-            'url' => env('AWS_URL'),
-            'endpoint' => env('AWS_ENDPOINT'),
+            'url'    => env('AWS_URL'),
+            'endpoint'               => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'visibility' => 'public',
             'throw' => false,
         ],
 

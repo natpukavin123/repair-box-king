@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\{Setting, EmailTemplate, Notification, ActivityLog, Backup};
 use App\Models\{ServiceType, RechargeProvider, Vendor};
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class SettingController extends Controller
 {
@@ -30,8 +31,23 @@ class SettingController extends Controller
         // Handle icon upload
         if ($request->hasFile('shop_icon')) {
             $file = $request->file('shop_icon');
-            $path = $file->store('shop', 'public');
-            Setting::setValue('shop_icon', $path);
+            $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
+
+            // Delete old icon if it was stored on the same disk
+            $oldIcon = Setting::getValue('shop_icon');
+            if ($oldIcon && !str_starts_with($oldIcon, 'http')) {
+                Storage::disk($disk)->delete($oldIcon);
+            }
+
+            $path = $file->store('shop', $disk);
+
+            // For S3/cloud disks, store the full public URL so it works across environments.
+            // For local disk, store the relative path (served via /storage symlink).
+            $storedValue = $disk === 's3'
+                ? Storage::disk('s3')->url($path)
+                : $path;
+
+            Setting::setValue('shop_icon', $storedValue);
         }
 
         return response()->json(['success' => true, 'message' => 'Settings updated']);
