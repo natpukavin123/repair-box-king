@@ -44,6 +44,7 @@ RUN apk add --no-cache \
     supervisor \
     curl \
     bash \
+    netcat-openbsd \
     mysql-client \
     # PHP extension build dependencies
     libpng-dev \
@@ -91,7 +92,8 @@ RUN chown -R www-data:www-data /var/www/html \
 
 # ── Startup entrypoint ────────────────────────────────────────────────────────
 COPY docker/start.sh /start.sh
-RUN chmod +x /start.sh
+COPY docker/init.sh  /init.sh
+RUN chmod +x /start.sh /init.sh
 
 # Railway dynamically assigns a port via the PORT env var.
 # Nginx is configured at runtime to listen on $PORT (not hardcoded 80).
