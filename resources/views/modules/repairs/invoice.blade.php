@@ -109,6 +109,12 @@
                 <div class="irow"><span class="lb">Name</span><span class="vl">{{ $repair->customer->name }}</span></div>
                 <div class="irow"><span class="lb">Address</span><span class="vl">{{ $customerAddress }}</span></div>
                 <div class="irow"><span class="lb">Phone</span><span class="vl">{{ $repair->customer->mobile_number ?? '-' }}</span></div>
+                @if($customerGstin !== '-')
+                <div class="irow"><span class="lb">GSTIN</span><span class="vl" style="font-family:monospace;font-size:11px;">{{ $customerGstin }}</span></div>
+                @endif
+                @if($repair->customer->billing_state)
+                <div class="irow"><span class="lb">State</span><span class="vl">{{ $repair->customer->billing_state }}{{ $isIgst ? ' (Inter-State)' : ' (Intra-State)' }}</span></div>
+                @endif
                 @else
                 <div class="irow"><span class="lb">Name</span><span class="vl">Walk-in Customer</span></div>
                 @endif

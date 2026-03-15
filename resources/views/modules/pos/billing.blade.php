@@ -73,7 +73,7 @@
                             <label class="text-xs font-medium text-gray-600">Customer *</label>
                             <input x-model="customerSearch" @input.debounce.300ms="findCustomers()" type="text" class="form-input-custom mt-1 text-sm" placeholder="Search by name/phone">
                         </div>
-                        <button type="button" @click="showAddCustomer = true; newCustomer = {name:'', mobile_number:'', email:'', address:''}" class="btn-primary text-sm px-3 py-2 whitespace-nowrap">+ New</button>
+                        <button type="button" @click="showAddCustomer = true; newCustomer = {name:'', mobile_number:'', email:'', address:'', gstin:'', billing_state:'{{ \App\Models\Setting::getValue('shop_state', '') }}'}" class="btn-primary text-sm px-3 py-2 whitespace-nowrap">+ New</button>
                     </div>
                     <div x-show="customerResults.length > 0" class="border rounded mt-1 max-h-32 overflow-y-auto bg-white shadow-sm">
                         <template x-for="c in customerResults" :key="c.id">
@@ -101,6 +101,16 @@
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Mobile *</label><input x-model="newCustomer.mobile_number" type="text" class="form-input-custom"></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input x-model="newCustomer.email" type="email" class="form-input-custom"></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Address</label><input x-model="newCustomer.address" type="text" class="form-input-custom"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">GSTIN</label><input x-model="newCustomer.gstin" type="text" class="form-input-custom" placeholder="22AAAAA0000A1Z5" maxlength="15"></div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Billing State <span class="text-xs text-gray-400 font-normal ml-1">Determines IGST vs CGST+SGST</span></label>
+                                <select x-model="newCustomer.billing_state" class="form-select-custom">
+                                    <option value="">-- Select State --</option>
+                                    <template x-for="s in indianStates" :key="s.code">
+                                        <option :value="s.code" :selected="s.code === newCustomer.billing_state" x-text="s.code + ' - ' + s.name"></option>
+                                    </template>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -185,7 +195,29 @@ function posBilling() {
     return {
         searchQuery: '', searchResults: [], allServices: [], cart: [], itemType: 'product', saving: false,
         customerSearch: '', customerResults: [], selectedCustomer: null,
-        showAddCustomer: false, newCustomer: {name: '', mobile_number: '', email: '', address: ''},
+        showAddCustomer: false, newCustomer: {name: '', mobile_number: '', email: '', address: '', gstin: '', billing_state: '{{ \App\Models\Setting::getValue('shop_state', '') }}'},
+        indianStates: [
+            { code: '01', name: 'Jammu & Kashmir' }, { code: '02', name: 'Himachal Pradesh' },
+            { code: '03', name: 'Punjab' }, { code: '04', name: 'Chandigarh' },
+            { code: '05', name: 'Uttarakhand' }, { code: '06', name: 'Haryana' },
+            { code: '07', name: 'Delhi' }, { code: '08', name: 'Rajasthan' },
+            { code: '09', name: 'Uttar Pradesh' }, { code: '10', name: 'Bihar' },
+            { code: '11', name: 'Sikkim' }, { code: '12', name: 'Arunachal Pradesh' },
+            { code: '13', name: 'Nagaland' }, { code: '14', name: 'Manipur' },
+            { code: '15', name: 'Mizoram' }, { code: '16', name: 'Tripura' },
+            { code: '17', name: 'Meghalaya' }, { code: '18', name: 'Assam' },
+            { code: '19', name: 'West Bengal' }, { code: '20', name: 'Jharkhand' },
+            { code: '21', name: 'Odisha' }, { code: '22', name: 'Chhattisgarh' },
+            { code: '23', name: 'Madhya Pradesh' }, { code: '24', name: 'Gujarat' },
+            { code: '26', name: 'Dadra & Nagar Haveli and Daman & Diu' },
+            { code: '27', name: 'Maharashtra' }, { code: '28', name: 'Andhra Pradesh (Old)' },
+            { code: '29', name: 'Karnataka' }, { code: '30', name: 'Goa' },
+            { code: '31', name: 'Lakshadweep' }, { code: '32', name: 'Kerala' },
+            { code: '33', name: 'Tamil Nadu' }, { code: '34', name: 'Puducherry' },
+            { code: '35', name: 'Andaman & Nicobar Islands' },
+            { code: '36', name: 'Telangana' }, { code: '37', name: 'Andhra Pradesh (New)' },
+            { code: '38', name: 'Ladakh' },
+        ],
         manualItem: { item_name: '', price: '' },
         form: { customer_id: null, discount: 0, items: [], payments: [{payment_method: 'cash', amount: 0, transaction_reference: ''}] },
 

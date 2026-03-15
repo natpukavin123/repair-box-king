@@ -58,7 +58,22 @@
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label><input x-model="form.name" type="text" class="form-input-custom"></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Mobile *</label><input x-model="form.mobile_number" type="text" class="form-input-custom"></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input x-model="form.email" type="email" class="form-input-custom"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">GST Number</label><input x-model="form.gst_number" type="text" class="form-input-custom"></div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">GSTIN</label>
+                        <input x-model="form.gstin" type="text" class="form-input-custom" placeholder="22AAAAA0000A1Z5" maxlength="15">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Billing State
+                            <span class="text-xs text-gray-400 font-normal ml-1">Determines IGST vs CGST+SGST</span>
+                        </label>
+                        <select x-model="form.billing_state" class="form-select-custom">
+                            <option value="">-- Select State --</option>
+                            <template x-for="s in indianStates" :key="s.code">
+                                <option :value="s.code" :selected="s.code === form.billing_state" x-text="s.code + ' - ' + s.name"></option>
+                            </template>
+                        </select>
+                    </div>
                     <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Address</label><textarea x-model="form.address" class="form-input-custom" rows="2"></textarea></div>
                 </div>
             </div>
@@ -76,6 +91,8 @@
                     <div><span class="text-gray-500">Email:</span><br><span class="font-medium" x-text="detail?.email || '-'"></span></div>
                     <div><span class="text-gray-500">Points:</span><br><span class="font-medium" x-text="detail?.loyalty_points || 0"></span></div>
                     <div><span class="text-gray-500">Total Spent:</span><br><span class="font-bold text-primary-600" x-text="'₹' + Number(detail?.total_spent || 0).toFixed(2)"></span></div>
+                    <div><span class="text-gray-500">GSTIN:</span><br><span class="font-mono text-xs font-medium" x-text="detail?.gstin || '-'"></span></div>
+                    <div><span class="text-gray-500">Billing State:</span><br><span class="font-medium" x-text="detail?.billing_state || '-'"></span></div>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div><h4 class="font-medium text-gray-700 mb-2">Invoices</h4>
@@ -100,7 +117,29 @@
 function customersPage() {
     return {
         items: [], showModal: false, showDetail: false, editing: null, saving: false, search: '', detail: null, loading: true,
-        form: { name: '', mobile_number: '', email: '', address: '', gst_number: '' },
+        form: { name: '', mobile_number: '', email: '', address: '', gstin: '', billing_state: '{{ \App\Models\Setting::getValue('shop_state', '') }}' },
+        indianStates: [
+            { code: '01', name: 'Jammu & Kashmir' }, { code: '02', name: 'Himachal Pradesh' },
+            { code: '03', name: 'Punjab' }, { code: '04', name: 'Chandigarh' },
+            { code: '05', name: 'Uttarakhand' }, { code: '06', name: 'Haryana' },
+            { code: '07', name: 'Delhi' }, { code: '08', name: 'Rajasthan' },
+            { code: '09', name: 'Uttar Pradesh' }, { code: '10', name: 'Bihar' },
+            { code: '11', name: 'Sikkim' }, { code: '12', name: 'Arunachal Pradesh' },
+            { code: '13', name: 'Nagaland' }, { code: '14', name: 'Manipur' },
+            { code: '15', name: 'Mizoram' }, { code: '16', name: 'Tripura' },
+            { code: '17', name: 'Meghalaya' }, { code: '18', name: 'Assam' },
+            { code: '19', name: 'West Bengal' }, { code: '20', name: 'Jharkhand' },
+            { code: '21', name: 'Odisha' }, { code: '22', name: 'Chhattisgarh' },
+            { code: '23', name: 'Madhya Pradesh' }, { code: '24', name: 'Gujarat' },
+            { code: '26', name: 'Dadra & Nagar Haveli and Daman & Diu' },
+            { code: '27', name: 'Maharashtra' }, { code: '28', name: 'Andhra Pradesh (Old)' },
+            { code: '29', name: 'Karnataka' }, { code: '30', name: 'Goa' },
+            { code: '31', name: 'Lakshadweep' }, { code: '32', name: 'Kerala' },
+            { code: '33', name: 'Tamil Nadu' }, { code: '34', name: 'Puducherry' },
+            { code: '35', name: 'Andaman & Nicobar Islands' },
+            { code: '36', name: 'Telangana' }, { code: '37', name: 'Andhra Pradesh (New)' },
+            { code: '38', name: 'Ladakh' },
+        ],
         init() {
             const p = new URLSearchParams(window.location.search);
             if (p.has('search')) this.search = p.get('search');
@@ -119,7 +158,7 @@ function customersPage() {
             this.updateUrl();
             this.loading = false;
         },
-        edit(c) { this.editing = c.id; this.form = { name: c.name, mobile_number: c.mobile_number, email: c.email || '', address: c.address || '', gst_number: c.gst_number || '' }; this.showModal = true; },
+        edit(c) { this.editing = c.id; this.form = { name: c.name, mobile_number: c.mobile_number, email: c.email || '', address: c.address || '', gstin: c.gstin || '', billing_state: c.billing_state || '{{ \App\Models\Setting::getValue('shop_state', '') }}' }; this.showModal = true; },
         async save() {
             this.saving = true;
             const r = await RepairBox.ajax(`/customers/${this.editing}`, 'PUT', this.form);
