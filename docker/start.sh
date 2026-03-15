@@ -11,6 +11,12 @@ APP_PORT="${PORT:-80}"
 echo "→ Port: $APP_PORT"
 sed -i "s/__PORT__/$APP_PORT/g" /etc/nginx/http.d/default.conf
 
+# ── 1b. Resolve APP_URL from Railway env if not explicitly set ─────────────────
+if [[ -z "${APP_URL:-}" && -n "${RAILWAY_PUBLIC_DOMAIN:-}" ]]; then
+    export APP_URL="https://${RAILWAY_PUBLIC_DOMAIN}"
+    echo "→ APP_URL auto-resolved: $APP_URL"
+fi
+
 # ── 2. Resolve DB credentials (Railway uses MYSQLHOST / standard uses DB_HOST) ─
 export DB_HOST="${DB_HOST:-${MYSQLHOST:-127.0.0.1}}"
 export DB_PORT="${DB_PORT:-${MYSQLPORT:-3306}}"
@@ -26,6 +32,7 @@ APP_ENV="${APP_ENV:-production}"
 APP_KEY=${APP_KEY}
 APP_DEBUG=${APP_DEBUG:-false}
 APP_URL=${APP_URL:-http://localhost}
+ASSET_URL=${ASSET_URL:-${APP_URL:-}}
 APP_TIMEZONE=${APP_TIMEZONE:-UTC}
 
 LOG_CHANNEL=stderr
