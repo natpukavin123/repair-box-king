@@ -49,8 +49,8 @@ primary_region = "sin"      # Singapore — closest to asia-southeast
     path          = "/up"
     protocol      = "http"
 
-# ── Machine size (free tier: shared-cpu-1x 256mb = free) ─────────────────────
+# ── Machine size (free tier: shared-cpu-1x 256mb = always free) ──────────────
 [[vm]]
   cpu_kind = "shared"
   cpus     = 1
-  memory   = "512mb"            # 256mb is free; 512mb = ~$1.94/mo if needed
+  memory   = "256mb"
