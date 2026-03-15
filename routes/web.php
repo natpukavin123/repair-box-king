@@ -54,6 +54,7 @@ Route::middleware('auth')->group(function () {
     // Products & Inventory
     Route::resource('products', ProductController::class)->except(['edit']);
     Route::get('products-search', [ProductController::class, 'search']);
+    Route::post('products/{product}/upload-image', [ProductController::class, 'uploadImage']);
     Route::get('inventory', [InventoryController::class, 'index'])->name('inventory.index');
     Route::post('inventory/adjust', [InventoryController::class, 'adjust']);
     Route::get('inventory/adjustments', [InventoryController::class, 'adjustments']);
@@ -168,6 +169,7 @@ Route::middleware('auth')->group(function () {
     Route::get('vendors-search', [SettingController::class, 'searchVendors']);
     Route::post('service-types', [SettingController::class, 'storeServiceType']);
     Route::put('service-types/{serviceType}', [SettingController::class, 'updateServiceType']);
+    Route::post('service-types/{serviceType}/upload-image', [SettingController::class, 'uploadServiceTypeImage']);
     Route::get('recharge-providers', [SettingController::class, 'rechargeProviders']);
     Route::post('recharge-providers', [SettingController::class, 'storeRechargeProvider']);
     Route::get('vendors', [SettingController::class, 'vendors'])->name('vendors.index');

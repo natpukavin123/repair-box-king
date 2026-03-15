@@ -9,7 +9,7 @@ class Product extends Model
     protected $fillable = [
         'category_id', 'subcategory_id', 'brand_id', 'name', 'sku',
         'barcode', 'purchase_price', 'mrp', 'selling_price', 'hsn_code', 'tax_rate_id',
-        'description', 'status',
+        'description', 'status', 'image', 'thumbnail',
     ];
 
     protected $casts = [

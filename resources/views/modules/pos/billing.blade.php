@@ -16,40 +16,81 @@
                 </select>
             </div>
 
-            <!-- Product Grid -->
-            <div x-show="itemType === 'product'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 overflow-y-auto flex-1 max-h-[60vh]">
+            <div x-show="itemType === 'product'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2.5 overflow-y-auto flex-1 max-h-[60vh] pb-1 pr-1 content-start auto-rows-max">
                 <template x-for="p in searchResults" :key="p.id">
-                    <button @click="addProduct(p)" class="card p-3 text-left hover:shadow-lg hover:border-primary-300 border-2 border-transparent transition-all">
-                        <p class="font-medium text-sm text-gray-900 truncate" x-text="p.name"></p>
-                        <p class="text-xs text-gray-500" x-text="p.sku || ''"></p>
-                        <div class="flex justify-between items-center mt-2">
-                            <span class="text-primary-600 font-bold text-sm" x-text="'₹' + Number(p.selling_price).toFixed(2)"></span>
-                            <span class="text-xs px-2 py-0.5 rounded-full" :class="(p.inventory ? p.inventory.current_stock : 0) > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'" x-text="'Stock: ' + (p.inventory ? p.inventory.current_stock : 0)"></span>
+                    <button @click="addProduct(p)"
+                        class="group relative bg-white rounded-lg text-left shadow-sm hover:shadow-lg border border-gray-100 hover:border-primary-300 transition-all duration-200 overflow-hidden flex flex-col cursor-pointer">
+                        {{-- Image top --}}
+                        <div class="relative w-full overflow-hidden bg-gray-50" style="height:80px">
+                            <img x-show="p.thumbnail" :src="p.thumbnail ? '/storage/' + p.thumbnail : ''"
+                                class="absolute inset-0 w-full h-full object-contain p-1 group-hover:scale-110 transition-transform duration-300">
+                            <div x-show="!p.thumbnail" class="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100">
+                                <svg class="w-8 h-8 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            </div>
+                            {{-- Stock pill --}}
+                            <span x-show="(p.inventory ? p.inventory.current_stock : 0) > 0"
+                                class="absolute top-1 left-1 text-[8px] font-bold px-1.5 py-0.5 rounded leading-none bg-emerald-600 text-white"
+                                x-text="'Stock: ' + (p.inventory ? p.inventory.current_stock : 0)"></span>
+                            <span x-show="(p.inventory ? p.inventory.current_stock : 0) <= 0"
+                                class="absolute top-1 left-1 text-[8px] font-bold px-1.5 py-0.5 rounded leading-none bg-red-600 text-white">Out</span>
+                            {{-- Hover overlay --}}
+                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-200 flex items-center justify-center">
+                                <div class="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 transition-all duration-200">
+                                    <svg class="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                </div>
+                            </div>
                         </div>
-                        <div x-show="p.tax_rate" class="mt-1">
-                            <span class="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-medium" x-text="'GST ' + parseFloat(p.tax_rate?.percentage || 0).toFixed(0) + '%'"></span>
+                        {{-- Info --}}
+                        <div class="px-2 py-1.5 flex flex-col gap-0.5 border-t border-gray-50">
+                            <p class="font-semibold text-[11px] text-gray-800 truncate leading-tight" x-text="p.name"></p>
+                            <p class="text-[10px] text-gray-400 truncate leading-none" x-text="p.sku || 'No SKU'"></p>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                                <span class="text-primary-600 font-bold text-[13px] leading-none" x-text="'₹' + Number(p.selling_price).toLocaleString('en-IN', {minimumFractionDigits:2})"></span>
+                                <span x-show="p.tax_rate" class="text-[7px] font-medium text-gray-400 bg-gray-100 px-1 py-px rounded leading-none" x-text="parseFloat(p.tax_rate?.percentage || 0).toFixed(0) + '%'"></span>
+                            </div>
                         </div>
                     </button>
                 </template>
-                <div x-show="searchResults.length === 0" class="col-span-full text-center text-gray-400 py-12">
-                    <p>No products found. Try searching or add manually.</p>
+                <div x-show="searchResults.length === 0" class="col-span-full flex flex-col items-center justify-center text-gray-400 py-20 gap-3">
+                    <svg class="w-14 h-14 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <p class="text-sm font-medium">No products found</p>
+                    <p class="text-xs text-gray-300">Try a different search term</p>
                 </div>
             </div>
 
             <!-- Service Grid -->
-            <div x-show="itemType === 'service'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 overflow-y-auto flex-1 max-h-[60vh]">
+            <div x-show="itemType === 'service'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2.5 overflow-y-auto flex-1 max-h-[60vh] pb-1 pr-1 content-start auto-rows-max">
                 <template x-for="s in filteredServices" :key="s.id">
-                    <button @click="addService(s)" class="card p-3 text-left hover:shadow-lg hover:border-primary-300 border-2 border-transparent transition-all">
-                        <p class="font-medium text-sm text-gray-900 truncate" x-text="s.name"></p>
-                        <p class="text-xs text-gray-500 truncate" x-text="s.description || ''"></p>
-                        <div class="mt-2 flex items-center gap-2">
-                            <span class="text-primary-600 font-bold text-sm" x-text="'₹' + Number(s.default_price || 0).toFixed(2)"></span>
-                            <span x-show="s.tax_rate" class="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded font-medium" x-text="'GST ' + parseFloat(s.tax_rate?.percentage || 0).toFixed(0) + '%'"></span>
+                    <button @click="addService(s)"
+                        class="group relative bg-white rounded-lg text-left shadow-sm hover:shadow-lg border border-gray-100 hover:border-indigo-300 transition-all duration-200 overflow-hidden flex flex-col cursor-pointer">
+                        {{-- Image top --}}
+                        <div class="relative w-full overflow-hidden" style="height:80px">
+                            <img x-show="s.thumbnail" :src="s.thumbnail ? '/storage/' + s.thumbnail : ''"
+                                class="absolute inset-0 w-full h-full object-contain p-1 group-hover:scale-110 transition-transform duration-300">
+                            <div x-show="!s.thumbnail" class="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-indigo-50 to-violet-100">
+                                <svg class="w-8 h-8 text-indigo-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            </div>
+                            {{-- Hover overlay --}}
+                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-200 flex items-center justify-center">
+                                <div class="w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 transition-all duration-200">
+                                    <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                        {{-- Info --}}
+                        <div class="px-2 py-1.5 flex flex-col gap-0.5 border-t border-gray-50">
+                            <p class="font-semibold text-[11px] text-gray-800 truncate leading-tight" x-text="s.name"></p>
+                            <p class="text-[10px] text-gray-400 truncate leading-none" x-text="s.description || ''"></p>
+                            <div class="flex items-center gap-1.5 mt-0.5">
+                                <span class="text-indigo-600 font-bold text-[13px] leading-none" x-text="'₹' + Number(s.default_price || 0).toLocaleString('en-IN', {minimumFractionDigits:2})"></span>
+                                <span x-show="s.tax_rate" class="text-[7px] font-medium text-gray-400 bg-gray-100 px-1 py-px rounded leading-none" x-text="parseFloat(s.tax_rate?.percentage || 0).toFixed(0) + '%'"></span>
+                            </div>
                         </div>
                     </button>
                 </template>
-                <div x-show="filteredServices.length === 0" class="col-span-full text-center text-gray-400 py-12">
-                    <p>No services found.</p>
+                <div x-show="filteredServices.length === 0" class="col-span-full flex flex-col items-center justify-center text-gray-400 py-20 gap-3">
+                    <svg class="w-14 h-14 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    <p class="text-sm font-medium">No services found</p>
                 </div>
             </div>
 

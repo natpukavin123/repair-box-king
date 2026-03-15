@@ -237,4 +237,74 @@ class SettingController extends Controller
         ]);
         return response()->json(['success' => true, 'data' => $backup, 'message' => 'Backup created']);
     }
+
+    public function uploadServiceTypeImage(\Illuminate\Http\Request $request, ServiceType $serviceType)
+    {
+        $request->validate([
+            'image'     => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ]);
+
+        $updates = [];
+
+        if ($request->hasFile('image')) {
+            if ($serviceType->image) \Storage::disk('public')->delete($serviceType->image);
+            if ($serviceType->thumbnail && !$request->hasFile('thumbnail')) \Storage::disk('public')->delete($serviceType->thumbnail);
+
+            $path = $request->file('image')->store('service-types', 'public');
+            $updates['image'] = $path;
+
+            if (!$request->hasFile('thumbnail')) {
+                $thumbPath = $this->makeThumb(
+                    \Storage::disk('public')->path($path),
+                    'service-types/thumbs',
+                    pathinfo($path, PATHINFO_FILENAME) . '_thumb.jpg'
+                );
+                if ($thumbPath) $updates['thumbnail'] = $thumbPath;
+            }
+        }
+
+        if ($request->hasFile('thumbnail')) {
+            if ($serviceType->thumbnail) \Storage::disk('public')->delete($serviceType->thumbnail);
+            $path = $request->file('thumbnail')->store('service-types/thumbs', 'public');
+            $updates['thumbnail'] = $path;
+        }
+
+        if ($updates) $serviceType->update($updates);
+
+        $fresh = $serviceType->fresh();
+        return response()->json([
+            'success'   => true,
+            'image_url' => $fresh->image ? \Storage::disk('public')->url($fresh->image) : null,
+            'thumb_url' => $fresh->thumbnail ? \Storage::disk('public')->url($fresh->thumbnail) : null,
+        ]);
+    }
+
+    private function makeThumb(string $src, string $destFolder, string $filename): ?string
+    {
+        if (!function_exists('imagecreatefromjpeg')) return null;
+        $ext = strtolower(pathinfo($src, PATHINFO_EXTENSION));
+        $image = match($ext) {
+            'jpg', 'jpeg' => @imagecreatefromjpeg($src),
+            'png'         => @imagecreatefrompng($src),
+            'gif'         => @imagecreatefromgif($src),
+            'webp'        => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($src) : null,
+            default       => null,
+        };
+        if (!$image) return null;
+        [$sw, $sh] = getimagesize($src);
+        $ratio = min(200 / $sw, 200 / $sh);
+        $nw = max(1, (int)($sw * $ratio));
+        $nh = max(1, (int)($sh * $ratio));
+        $thumb = imagecreatetruecolor($nw, $nh);
+        imagecopyresampled($thumb, $image, 0, 0, 0, 0, $nw, $nh, $sw, $sh);
+        $dir = \Storage::disk('public')->path($destFolder);
+        if (!is_dir($dir)) mkdir($dir, 0755, true);
+        $destPath = $dir . DIRECTORY_SEPARATOR . $filename;
+        imagejpeg($thumb, $destPath, 85);
+        imagedestroy($image);
+        imagedestroy($thumb);
+        return $destFolder . '/' . $filename;
+    }
 }
+

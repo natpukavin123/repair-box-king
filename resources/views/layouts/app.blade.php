@@ -213,7 +213,21 @@ window.RepairBox = {
         setTimeout(function() { if (toast.parentElement) toast.remove(); }, 5000);
     },
     confirm: function(message) { return Promise.resolve(window.confirm(message)); },
-    formatCurrency: function(amount) { return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount); }
+    formatCurrency: function(amount) { return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount); },
+    upload: async function(url, formData) {
+        try {
+            const response = await axios.post(url, formData, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'multipart/form-data' }
+            });
+            const d = response.data;
+            if (d && 'success' in d) return d;
+            return { data: d, success: true };
+        } catch(error) {
+            const msg = error.response?.data?.message || 'Upload failed';
+            RepairBox.toast(msg, 'error');
+            return { data: null, success: false };
+        }
+    }
 };
 
 // Page Loader

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ServiceType extends Model
 {
-    protected $fillable = ['name', 'default_price', 'sac_code', 'tax_rate_id', 'description', 'status'];
+    protected $fillable = ['name', 'default_price', 'sac_code', 'tax_rate_id', 'description', 'status', 'image', 'thumbnail'];
 
     /**
      * Auto-resolve tax_rate_id from hsn_codes master (type=sac) whenever sac_code

@@ -63,14 +63,24 @@
     <div x-show="tab==='service-types'" class="card">
         <div class="card-header flex items-center justify-between">
             <h3 class="text-lg font-semibold">Service Types</h3>
-            <button @click="stForm={name:'',default_price:'',description:'',sac_code:''}; stEditing=null; selectedSac=null; sacSearch=''; sacResults=[]; sacSearched=false; showStModal=true" class="btn-primary text-sm">Add Type</button>
+            <button @click="stForm={name:'',default_price:'',description:'',sac_code:''}; stEditing=null; selectedSac=null; sacSearch=''; sacResults=[]; sacSearched=false; stImageFile=null; stImagePreview=null; stThumbFile=null; stThumbPreview=null; showStModal=true" class="btn-primary text-sm">Add Type</button>
         </div>
         <div class="card-body p-0">
             <table class="data-table">
-                <thead><tr><th>Name</th><th>Default Price</th><th>SAC Code</th><th>GST%</th><th>Status</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Image</th><th>Name</th><th>Default Price</th><th>SAC Code</th><th>GST%</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody>
                     <template x-for="st in serviceTypes" :key="st.id">
                         <tr>
+                            <td>
+                                <template x-if="st.thumbnail">
+                                    <img :src="'/storage/' + st.thumbnail" class="w-10 h-10 rounded-lg object-cover border border-gray-200 shadow-sm">
+                                </template>
+                                <template x-if="!st.thumbnail">
+                                    <div class="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    </div>
+                                </template>
+                            </td>
                             <td class="font-medium" x-text="st.name"></td>
                             <td x-text="st.default_price ? RepairBox.formatCurrency(st.default_price) : '-'"></td>
                             <td><span class="font-mono text-xs text-gray-700" x-text="st.sac_code || '-'"></span></td>
@@ -79,7 +89,7 @@
                             <td><button @click="openEditSt(st)" class="text-primary-600 hover:text-primary-800"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button></td>
                         </tr>
                     </template>
-                    <tr x-show="serviceTypes.length===0"><td colspan="4" class="text-center text-gray-400 py-6">No service types</td></tr>
+                    <tr x-show="serviceTypes.length===0"><td colspan="7" class="text-center text-gray-400 py-6">No service types</td></tr>
                 </tbody>
             </table>
         </div>
@@ -248,6 +258,53 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
                     <textarea x-model="stForm.description" class="form-input-custom" rows="2"></textarea>
                 </div>
+
+                {{-- Image Upload --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Service Images</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1.5 font-medium">Main Image</p>
+                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-all"
+                                 @click="$refs.stImageInput.click()" @dragover.prevent @drop.prevent="stHandleFileDrop('image', $event)">
+                                <template x-if="stImagePreview">
+                                    <div class="relative">
+                                        <img :src="stImagePreview" class="max-h-28 mx-auto rounded-lg object-contain">
+                                        <button type="button" @click.stop="stImageFile=null; stImagePreview=null; $refs.stImageInput.value=''"
+                                                class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">✕</button>
+                                    </div>
+                                </template>
+                                <template x-if="!stImagePreview">
+                                    <div class="py-3">
+                                        <svg class="w-8 h-8 text-gray-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                        <p class="text-xs text-gray-400">Click to upload</p>
+                                    </div>
+                                </template>
+                                <input x-ref="stImageInput" type="file" accept="image/*" class="hidden" @change="stHandleFilePick('image', $event)">
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 mb-1.5 font-medium">Thumbnail <span class="text-gray-400">(auto if not set)</span></p>
+                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-all"
+                                 @click="$refs.stThumbInput.click()" @dragover.prevent @drop.prevent="stHandleFileDrop('thumb', $event)">
+                                <template x-if="stThumbPreview">
+                                    <div class="relative">
+                                        <img :src="stThumbPreview" class="max-h-28 mx-auto rounded-lg object-contain">
+                                        <button type="button" @click.stop="stThumbFile=null; stThumbPreview=null; $refs.stThumbInput.value=''"
+                                                class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">✕</button>
+                                    </div>
+                                </template>
+                                <template x-if="!stThumbPreview">
+                                    <div class="py-3">
+                                        <svg class="w-8 h-8 text-gray-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                        <p class="text-xs text-gray-400">Click to upload</p>
+                                    </div>
+                                </template>
+                                <input x-ref="stThumbInput" type="file" accept="image/*" class="hidden" @change="stHandleFilePick('thumb', $event)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <template x-if="stEditing">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
@@ -306,6 +363,7 @@ function settingsPage() {
         tab: 'general', saving: false, iconFile: null, previewIcon: '',
         settings: {}, settingKeys: ['shop_name','shop_address','shop_phone','shop_email','shop_gst','currency_symbol','invoice_prefix','repair_prefix','tax_percentage','low_stock_threshold','invoice_paper_size','invoice_design_variant','invoice_header_title','invoice_header_subtitle','invoice_footer_text'],
         serviceTypes: [], showStModal: false, stEditing: null, stForm: {},
+        stImageFile: null, stImagePreview: null, stThumbFile: null, stThumbPreview: null,
         sacSearch: '', sacResults: [], sacLoading: false, sacSearched: false, selectedSac: null,
         rechargeProviders: [], showRpModal: false, rpForm: {},
         emailTemplates: [], showEtModal: false, etEditing: null, etForm: {},
@@ -403,11 +461,25 @@ function settingsPage() {
         async saveServiceType() {
             this.saving = true;
             const r = await RepairBox.ajax(this.stEditing ? `/service-types/${this.stEditing}` : '/service-types', this.stEditing ? 'PUT' : 'POST', this.stForm);
-            this.saving = false; if(r.success !== false) { RepairBox.toast('Saved', 'success'); this.showStModal = false; const st = await RepairBox.ajax('/service-types'); if(st.data) this.serviceTypes = st.data; }
+            if (r.success !== false && r.data) {
+                const id = r.data.id || this.stEditing;
+                if (this.stImageFile || this.stThumbFile) {
+                    const fd = new FormData();
+                    if (this.stImageFile) fd.append('image', this.stImageFile);
+                    if (this.stThumbFile) fd.append('thumbnail', this.stThumbFile);
+                    await RepairBox.upload(`/service-types/${id}/upload-image`, fd);
+                }
+                RepairBox.toast('Saved', 'success'); this.showStModal = false;
+                const st = await RepairBox.ajax('/service-types'); if(st.data) this.serviceTypes = st.data;
+            }
+            this.saving = false;
         },
         openEditSt(st) {
             this.stEditing = st.id;
             this.stForm = { name: st.name, default_price: st.default_price || '', description: st.description || '', status: st.status || 'active', sac_code: st.sac_code || '' };
+            this.stImageFile = null; this.stThumbFile = null;
+            this.stImagePreview = st.image ? '/storage/' + st.image : null;
+            this.stThumbPreview = st.thumbnail ? '/storage/' + st.thumbnail : null;
             this.selectedSac = null; this.sacSearch = ''; this.sacResults = []; this.sacSearched = false;
             if (st.sac_code) {
                 RepairBox.ajax('/tax/hsn-search?type=sac&q=' + encodeURIComponent(st.sac_code)).then(r => {
@@ -417,6 +489,16 @@ function settingsPage() {
                 });
             }
             this.showStModal = true;
+        },
+        stHandleFilePick(type, e) {
+            const file = e.target.files[0]; if (!file) return;
+            if (type === 'image') { this.stImageFile = file; const r = new FileReader(); r.onload = ev => this.stImagePreview = ev.target.result; r.readAsDataURL(file); }
+            else { this.stThumbFile = file; const r = new FileReader(); r.onload = ev => this.stThumbPreview = ev.target.result; r.readAsDataURL(file); }
+        },
+        stHandleFileDrop(type, e) {
+            const file = e.dataTransfer.files[0]; if (!file || !file.type.startsWith('image/')) return;
+            if (type === 'image') { this.stImageFile = file; const r = new FileReader(); r.onload = ev => this.stImagePreview = ev.target.result; r.readAsDataURL(file); }
+            else { this.stThumbFile = file; const r = new FileReader(); r.onload = ev => this.stThumbPreview = ev.target.result; r.readAsDataURL(file); }
         },
         async searchSac() {
             if (this.sacSearch.length < 1) { this.sacResults = []; return; }
