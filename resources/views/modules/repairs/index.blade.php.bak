@@ -1,0 +1,398 @@
+@extends('layouts.app')
+@section('page-title', 'Repairs')
+
+@section('content')
+<div x-data="repairsPage()" x-init="load()">
+    <!-- Filter -->
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+        <div class="flex flex-wrap gap-2">
+            <button @click="filter = ''; load()" class="badge" :class="filter === '' ? 'badge-primary' : 'badge-secondary'">All</button>
+            <template x-for="s in ['received','in_progress','completed','delivered','cancelled']" :key="s">
+                <button @click="filter = s; load()" class="badge cursor-pointer" :class="filter === s ? 'badge-primary' : 'badge-secondary'" x-text="s.replace('_',' ')"></button>
+            </template>
+        </div>
+        <button @click="openCreate()" class="btn-primary"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> New Repair</button>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="overflow-x-auto">
+                <table class="data-table">
+                    <thead><tr><th>Ticket</th><th>Customer</th><th>Device</th><th>Progress</th><th>Status</th><th>Cost</th><th>Date</th><th>Actions</th></tr></thead>
+                    <tbody>
+                        <template x-for="r in filteredItems" :key="r.id">
+                            <tr>
+                                <td class="font-medium text-primary-600" x-text="r.ticket_number"></td>
+                                <td x-text="r.customer ? r.customer.name : '-'"></td>
+                                <td x-text="(r.device_brand || '') + ' ' + (r.device_model || '')"></td>
+                                <td>
+                                    <div class="flex items-center" x-show="r.status !== 'cancelled'">
+                                        <template x-for="(step, idx) in [{key:'received',icon:'inbox',label:'Recv'},{key:'in_progress',icon:'wrench',label:'Work'},{key:'completed',icon:'check-circle',label:'Done'},{key:'delivered',icon:'truck',label:'Sent'}]" :key="step.key">
+                                            <div class="flex items-center">
+                                                <div class="relative group" :title="step.label">
+                                                    <div class="w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200 border-2"
+                                                        :class="statusStepReached(r.status, step.key)
+                                                            ? (r.status === step.key ? 'bg-primary-600 border-primary-600 text-white shadow-md ring-2 ring-primary-200' : 'bg-green-500 border-green-500 text-white')
+                                                            : 'bg-white border-gray-300 text-gray-400'">
+                                                        <!-- Received -->
+                                                        <svg x-show="step.icon==='inbox'" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+                                                        <!-- In Progress -->
+                                                        <svg x-show="step.icon==='wrench'" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                                        <!-- Completed -->
+                                                        <svg x-show="step.icon==='check-circle'" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                        <!-- Delivered -->
+                                                        <svg x-show="step.icon==='truck'" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+                                                    </div>
+                                                </div>
+                                                <div x-show="idx < 3" class="w-5 h-0.5 transition-all duration-200"
+                                                    :class="statusStepReached(r.status, step.key) && statusStepReached(r.status, [{key:'received'},{key:'in_progress'},{key:'completed'},{key:'delivered'}][idx+1].key) ? 'bg-green-500' : 'bg-gray-300'"></div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <span x-show="r.status === 'cancelled'" class="inline-flex items-center gap-1 text-red-500 text-xs font-semibold"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg> Cancelled</span>
+                                </td>
+                                <td><span class="badge" :class="statusClass(r.status)" x-text="r.status.replace('_',' ')"></span></td>
+                                <td x-text="'₹' + Number(r.estimated_cost || 0).toFixed(2)"></td>
+                                <td x-text="new Date(r.created_at).toLocaleDateString()"></td>
+                                <td class="whitespace-nowrap">
+                                    <button @click="view(r)" class="text-primary-600 hover:text-primary-800 mr-1" title="Details"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></button>
+                                    <a :href="'/repairs/' + r.id + '/print'" target="_blank" class="text-green-600 hover:text-green-800 mr-1" title="Print"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg></a>
+                                    <a x-show="r.is_fully_paid" :href="'/repairs/' + r.id + '/invoice'" target="_blank" class="text-purple-600 hover:text-purple-800" title="Download Paid Invoice"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg></a>
+                                </td>
+                            </tr>
+                        </template>
+                        <tr x-show="filteredItems.length === 0"><td colspan="8" class="text-center text-gray-400 py-8">No repairs found</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Modal -->
+    <div x-show="showCreate" class="modal-overlay" x-cloak>
+        <div class="modal-container modal-lg">
+            <div class="modal-header"><h3 class="text-lg font-semibold">New Repair</h3><button @click="showCreate = false" class="text-gray-400 hover:text-gray-600">&times;</button></div>
+            <div class="modal-body">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
+                        <div class="flex gap-2">
+                            <div class="relative flex-1">
+                                <input x-model="custSearch" @input.debounce.300ms="findCustomers()" type="text" class="form-input-custom" placeholder="Search customer...">
+                                <div x-show="custResults.length > 0" class="absolute z-10 w-full bg-white border rounded shadow mt-1 max-h-32 overflow-y-auto">
+                                    <template x-for="c in custResults" :key="c.id"><button @click="selectCustomer(c)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b" x-text="c.name + ' - ' + c.mobile_number"></button></template>
+                                </div>
+                            </div>
+                            <button type="button" @click="showAddCust = true; newCust = {name:'', mobile_number:'', email:'', address:''}" class="btn-primary text-sm px-3 whitespace-nowrap" title="Add Customer">+ New</button>
+                        </div>
+                        <div x-show="custSearch.length >= 2 && custResults.length === 0" class="text-xs text-gray-400 mt-1">No customers found. Click <strong>+ New</strong> to add.</div>
+                        <div x-show="createForm.customer_id" class="mt-1"><span class="badge badge-primary" x-text="selectedCust?.name"></span> <button @click="createForm.customer_id = null; selectedCust = null" class="text-red-400 text-xs">&times;</button></div>
+                    </div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Device Brand</label><input x-model="createForm.device_brand" type="text" class="form-input-custom"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Device Model</label><input x-model="createForm.device_model" type="text" class="form-input-custom"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">IMEI</label><input x-model="createForm.imei" type="text" class="form-input-custom"></div>
+                    <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Problem Description</label><textarea x-model="createForm.problem_description" class="form-input-custom" rows="3"></textarea></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Estimated Cost</label><input x-model="createForm.estimated_cost" type="number" step="0.01" class="form-input-custom"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Expected Delivery</label><input x-model="createForm.expected_delivery_date" type="date" class="form-input-custom"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button @click="showCreate = false" class="btn-secondary">Cancel</button>
+                <button @click="save()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Create Repair</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div x-show="showDetail" class="modal-overlay" x-cloak>
+        <div class="modal-container modal-xl">
+            <div class="modal-header">
+                <h3 class="text-lg font-semibold">Repair: <span x-text="detail?.ticket_number"></span></h3>
+                <button @click="showDetail = false" class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <div class="modal-body" x-show="detail">
+                <!-- Info -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 text-sm">
+                    <div><span class="text-gray-500">Customer:</span><br><span class="font-medium" x-text="detail?.customer?.name || '-'"></span></div>
+                    <div><span class="text-gray-500">Device:</span><br><span class="font-medium" x-text="(detail?.device_brand||'') + ' ' + (detail?.device_model||'')"></span></div>
+                    <div><span class="text-gray-500">Status:</span><br><span class="badge" :class="statusClass(detail?.status || '')" x-text="(detail?.status||'').replace('_',' ')"></span></div>
+                    <div><span class="text-gray-500">Tracking:</span><br><span class="font-medium text-primary-600" x-text="detail?.tracking_id"></span></div>
+                    <div><span class="text-gray-500">Estimated:</span><br><span class="font-medium" x-text="'₹' + Number(detail?.estimated_cost||0).toFixed(2)"></span></div>
+                    <div><span class="text-gray-500">IMEI:</span><br><span x-text="detail?.imei || '-'"></span></div>
+                    <div class="md:col-span-2"><span class="text-gray-500">Problem:</span><br><span x-text="detail?.problem_description || '-'"></span></div>
+                </div>
+
+                <!-- Status Update -->
+                <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                    <h4 class="font-medium text-sm text-gray-700 mb-2">Update Status</h4>
+                    <div class="flex gap-2 flex-wrap">
+                        <select x-model="statusForm.status" class="form-select-custom text-sm w-40">
+                            <option value="received">Received</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                        <input x-model="statusForm.notes" type="text" class="form-input-custom text-sm flex-1" placeholder="Notes...">
+                        <button @click="updateStatus()" class="btn-primary text-sm">Update</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <!-- Parts -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-2">Parts Used</h4>
+                        <table class="data-table mb-2">
+                            <thead><tr><th>Part</th><th>Qty</th><th>Price</th></tr></thead>
+                            <tbody>
+                                <template x-for="p in detail?.parts || []" :key="p.id"><tr><td x-text="p.part ? p.part.name : '-'"></td><td x-text="p.quantity"></td><td x-text="'₹' + Number(p.cost_price).toFixed(2)"></td></tr></template>
+                            </tbody>
+                        </table>
+                        <div class="space-y-2">
+                            <div class="relative">
+                                <input x-model="partSearch" @input.debounce.300ms="searchParts()" type="text" class="form-input-custom text-sm" placeholder="Search part...">
+                                <div x-show="partResults.length > 0" class="absolute z-50 w-full bg-white border rounded shadow-lg mt-1 max-h-40 overflow-y-auto">
+                                    <template x-for="pr in partResults" :key="pr.id">
+                                        <button type="button" @click="selectPart(pr)" class="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm border-b">
+                                            <span x-text="pr.name"></span> — <span class="text-gray-500" x-text="'₹' + Number(pr.cost_price).toFixed(2)"></span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                            <div x-show="partForm.part_id" class="text-xs text-gray-600">Selected: <span class="font-medium" x-text="partForm._name"></span> <button @click="partForm.part_id = null; partForm._name = ''" class="text-red-400">&times;</button></div>
+                            <div class="flex gap-2">
+                                <input x-model="partForm.quantity" type="number" min="1" class="form-input-custom text-sm w-16" placeholder="Qty">
+                                <input x-model="partForm.cost_price" type="number" step="0.01" class="form-input-custom text-sm w-24" placeholder="Cost Price">
+                                <button @click="addPart()" class="btn-primary text-sm">Add</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payments -->
+                    <div>
+                        <h4 class="font-medium text-gray-700 mb-2">Payments</h4>
+                        <table class="data-table mb-2">
+                            <thead><tr><th>Type</th><th>Method</th><th>Amount</th><th>Date</th></tr></thead>
+                            <tbody>
+                                <template x-for="p in detail?.payments || []" :key="p.id"><tr><td class="capitalize" x-text="p.payment_type"></td><td class="capitalize" x-text="p.payment_method"></td><td x-text="'₹' + Number(p.amount).toFixed(2)"></td><td x-text="new Date(p.created_at).toLocaleDateString()"></td></tr></template>
+                            </tbody>
+                        </table>
+                        <div class="flex gap-2">
+                            <select x-model="payForm.payment_type" class="form-select-custom text-sm w-28"><option value="advance">Advance</option><option value="final">Final</option></select>
+                            <select x-model="payForm.payment_method" class="form-select-custom text-sm w-28"><option value="cash">Cash</option><option value="card">Card</option><option value="upi">UPI</option></select>
+                            <input x-model="payForm.amount" type="number" step="0.01" class="form-input-custom text-sm flex-1" placeholder="Amount">
+                            <button @click="addPayment()" class="btn-success text-sm">Pay</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status History -->
+                <div class="mt-4">
+                    <h4 class="font-medium text-gray-700 mb-2">Status History</h4>
+                    <div class="space-y-2">
+                        <template x-for="sh in detail?.status_history || []" :key="sh.id">
+                            <div class="flex items-center gap-3 text-sm bg-gray-50 rounded px-3 py-2">
+                                <span class="badge" :class="statusClass(sh.status)" x-text="sh.status.replace('_',' ')"></span>
+                                <span class="text-gray-500" x-text="sh.notes || ''"></span>
+                                <span class="text-gray-400 ml-auto text-xs" x-text="new Date(sh.created_at).toLocaleString()"></span>
+                                <span class="text-xs text-gray-500" x-text="sh.updater ? sh.updater.name : ''"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Invoice Summary & Final Payment Flow -->
+                <div x-show="['completed','delivered'].includes(detail?.status)" class="mt-4 bg-blue-50 rounded-lg p-4">
+                    <h4 class="font-medium text-gray-700 mb-3">Invoice Summary</h4>
+                    <!-- Service Charge Input -->
+                    <div class="flex items-center gap-3 mb-3 bg-white rounded-lg p-3 border">
+                        <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Service Charge (₹):</label>
+                        <input x-model="serviceChargeInput" type="number" step="0.01" min="0" class="form-input-custom text-sm w-32" placeholder="0.00">
+                        <button @click="saveServiceCharge()" class="btn-primary text-sm whitespace-nowrap">Save</button>
+                        <span x-show="detail?.service_charge > 0" class="text-xs text-green-600">✓ Saved</span>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-3">
+                        <div><span class="text-gray-500">Parts Total:</span><br><span class="font-semibold" x-text="'\u20b9' + partsTotal().toFixed(2)"></span></div>
+                        <div><span class="text-gray-500">Service Charge:</span><br><span class="font-semibold" x-text="'\u20b9' + Number(detail?.service_charge || 0).toFixed(2)"></span></div>
+                        <div><span class="text-gray-500">Grand Total:</span><br><span class="font-bold text-lg text-primary-600" x-text="'\u20b9' + grandTotal().toFixed(2)"></span></div>
+                        <div><span class="text-gray-500">Paid / Balance:</span><br><span class="font-semibold text-green-600" x-text="'\u20b9' + totalPaid().toFixed(2)"></span> / <span class="font-semibold" :class="balanceDue() > 0 ? 'text-red-600' : 'text-green-600'" x-text="'\u20b9' + balanceDue().toFixed(2)"></span></div>
+                    </div>
+
+                    <!-- Balance Due: Collect Final Payment -->
+                    <div x-show="balanceDue() > 0" class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span class="font-semibold text-yellow-800">Balance Due: <span x-text="'\u20b9' + balanceDue().toFixed(2)"></span></span>
+                        </div>
+                        <p class="text-sm text-yellow-700 mb-2">Collect final payment to generate paid invoice.</p>
+                        <div class="flex gap-2 items-end">
+                            <select x-model="payForm.payment_method" class="form-select-custom text-sm w-28"><option value="cash">Cash</option><option value="card">Card</option><option value="upi">UPI</option></select>
+                            <input x-model="payForm.amount" type="number" step="0.01" class="form-input-custom text-sm w-28" placeholder="Amount">
+                            <button @click="collectFinalPayment()" class="btn-success text-sm whitespace-nowrap">Collect Payment</button>
+                        </div>
+                    </div>
+
+                    <!-- Fully Paid: Download Invoice -->
+                    <div x-show="balanceDue() <= 0">
+                        <div class="flex items-center gap-2 mb-3">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span class="font-bold text-green-700 text-lg">PAID IN FULL</span>
+                        </div>
+                        <a :href="'/repairs/' + detail?.id + '/invoice'" target="_blank" class="btn-primary inline-flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                            Download Paid Invoice
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Customer Modal -->
+    <div x-show="showAddCust" class="modal-overlay" x-cloak>
+        <div class="modal-container max-w-md">
+            <div class="modal-header"><h3 class="text-lg font-semibold">Add Customer</h3><button @click="showAddCust = false" class="text-gray-400 hover:text-gray-600">&times;</button></div>
+            <div class="modal-body">
+                <div class="space-y-3">
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label><input x-model="newCust.name" type="text" class="form-input-custom"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Mobile *</label><input x-model="newCust.mobile_number" type="text" class="form-input-custom"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input x-model="newCust.email" type="email" class="form-input-custom"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Address</label><input x-model="newCust.address" type="text" class="form-input-custom"></div>
+                </div>
+            </div>
+            <div class="modal-footer"><button type="button" @click="showAddCust = false" class="btn-secondary">Cancel</button><button type="button" @click.prevent="saveNewCust()" class="btn-primary">Save & Select</button></div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@push('scripts')
+<script>
+function repairsPage() {
+    return {
+        items: [], filter: '', showCreate: false, showDetail: false, detail: null, saving: false,
+        custSearch: '', custResults: [], selectedCust: null,
+        showAddCust: false, newCust: {name: '', mobile_number: '', email: '', address: ''},
+        createForm: { customer_id: null, device_brand: '', device_model: '', imei: '', problem_description: '', estimated_cost: '', expected_delivery_date: '' },
+        statusForm: { status: '', notes: '' },
+        partForm: { part_id: null, _name: '', quantity: 1, cost_price: '' },
+        partSearch: '', partResults: [],
+        payForm: { payment_type: 'advance', payment_method: 'cash', amount: '' },
+        serviceChargeInput: '',
+
+        get filteredItems() { return this.filter ? this.items.filter(i => i.status === this.filter) : this.items; },
+
+        statusClass(s) {
+            const m = { received: 'badge-info', in_progress: 'badge-warning', completed: 'badge-success', delivered: 'badge-success', cancelled: 'badge-danger' };
+            return m[s] || 'badge-secondary';
+        },
+
+        statusStepReached(current, step) {
+            const order = ['received', 'in_progress', 'completed', 'delivered'];
+            return order.indexOf(current) >= order.indexOf(step);
+        },
+
+        async load() { const r = await RepairBox.ajax('/repairs'); if(r.data) this.items = r.data; },
+
+        openCreate() {
+            this.createForm = { customer_id: null, device_brand: '', device_model: '', imei: '', problem_description: '', estimated_cost: '', expected_delivery_date: '' };
+            this.selectedCust = null; this.showCreate = true;
+        },
+
+        async findCustomers() {
+            if (this.custSearch.length < 2) { this.custResults = []; return; }
+            const r = await RepairBox.ajax('/customers-search?q=' + encodeURIComponent(this.custSearch));
+            if(r.data) this.custResults = r.data;
+        },
+
+        selectCustomer(c) { this.selectedCust = c; this.createForm.customer_id = c.id; this.custResults = []; this.custSearch = ''; },
+
+        async saveNewCust() {
+            if (!this.newCust.name || !this.newCust.mobile_number) { RepairBox.toast('Name and mobile are required', 'error'); return; }
+            const r = await RepairBox.ajax('/customers', 'POST', this.newCust);
+            if (r.success !== false && r.data) { this.selectCustomer(r.data); this.showAddCust = false; RepairBox.toast('Customer added', 'success'); }
+        },
+
+        async save() {
+            this.saving = true;
+            const r = await RepairBox.ajax('/repairs', 'POST', this.createForm);
+            this.saving = false;
+            if (r.success !== false) { RepairBox.toast('Repair created: ' + r.data.ticket_number, 'success'); this.showCreate = false; this.load(); }
+        },
+
+        async view(rep) {
+            const r = await RepairBox.ajax(`/repairs/${rep.id}`);
+            if(r.data) {
+                this.detail = r.data;
+                this.statusForm.status = r.data.status;
+                this.showDetail = true;
+                // Load service charge input from saved value
+                this.serviceChargeInput = r.data.service_charge || '';
+                // Auto-fill final payment if repair is completed with balance
+                this.$nextTick(() => {
+                    if (['completed','delivered'].includes(r.data.status) && this.balanceDue() > 0) {
+                        this.payForm.payment_type = 'final';
+                        this.payForm.amount = this.balanceDue().toFixed(2);
+                    }
+                });
+            }
+        },
+
+        async updateStatus() {
+            const r = await RepairBox.ajax(`/repairs/${this.detail.id}/status`, 'PUT', this.statusForm);
+            if (r.success !== false) {
+                RepairBox.toast('Status updated', 'success');
+                await this.view(this.detail);
+                this.load();
+                // Auto-fill final payment when status is completed
+                if (this.detail.status === 'completed' && this.balanceDue() > 0) {
+                    this.payForm.payment_type = 'final';
+                    this.payForm.amount = this.balanceDue().toFixed(2);
+                }
+            }
+        },
+
+        async searchParts() {
+            if (this.partSearch.length < 2) { this.partResults = []; return; }
+            const r = await RepairBox.ajax('/parts-search?q=' + encodeURIComponent(this.partSearch));
+            if(r.data) this.partResults = r.data;
+        },
+
+        selectPart(pr) {
+            this.partForm.part_id = pr.id;
+            this.partForm._name = pr.name;
+            this.partForm.cost_price = pr.cost_price || '';
+            this.partResults = []; this.partSearch = '';
+        },
+
+        async addPart() {
+            if (!this.partForm.part_id) { RepairBox.toast('Please search & select a part', 'error'); return; }
+            const r = await RepairBox.ajax(`/repairs/${this.detail.id}/parts`, 'POST', { part_id: this.partForm.part_id, quantity: this.partForm.quantity, cost_price: this.partForm.cost_price });
+            if (r.success !== false) { RepairBox.toast('Part added', 'success'); this.partForm = { part_id: null, _name: '', quantity: 1, cost_price: '' }; await this.view(this.detail); }
+        },
+
+        async addPayment() {
+            const r = await RepairBox.ajax(`/repairs/${this.detail.id}/payment`, 'POST', this.payForm);
+            if (r.success !== false) { RepairBox.toast('Payment recorded', 'success'); this.payForm = { payment_type: 'advance', payment_method: 'cash', amount: '' }; await this.view(this.detail); }
+        },
+
+        async saveServiceCharge() {
+            if (this.serviceChargeInput === '' || Number(this.serviceChargeInput) < 0) { RepairBox.toast('Enter valid service charge', 'error'); return; }
+            const r = await RepairBox.ajax(`/repairs/${this.detail.id}/service-charge`, 'PUT', { service_charge: this.serviceChargeInput });
+            if (r.success !== false) { RepairBox.toast('Service charge saved', 'success'); await this.view(this.detail); }
+        },
+
+        async collectFinalPayment() {
+            if (!this.payForm.amount || Number(this.payForm.amount) <= 0) { RepairBox.toast('Enter payment amount', 'error'); return; }
+            const r = await RepairBox.ajax(`/repairs/${this.detail.id}/payment`, 'POST', { payment_type: 'final', payment_method: this.payForm.payment_method, amount: this.payForm.amount });
+            if (r.success !== false) { RepairBox.toast('Final payment recorded', 'success'); this.payForm = { payment_type: 'final', payment_method: 'cash', amount: '' }; await this.view(this.detail); }
+        },
+
+        partsTotal() { return (this.detail?.parts || []).reduce((s, p) => s + Number(p.cost_price) * p.quantity, 0); },
+        grandTotal() { return this.partsTotal() + Number(this.detail?.service_charge || 0); },
+        totalPaid() { return (this.detail?.payments || []).reduce((s, p) => s + Number(p.amount), 0); },
+        balanceDue() { return Math.max(0, this.grandTotal() - this.totalPaid()); }
+    };
+}
+</script>
+@endpush

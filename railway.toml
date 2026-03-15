@@ -1,0 +1,24 @@
+# Railway.app — project configuration
+# Docs: https://docs.railway.app/reference/config-as-code
+
+[build]
+# Tell Railway to build using the Dockerfile in the project root
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# Railway auto-detects the port via EXPOSE 80 in the Dockerfile
+# and also injects a PORT env var — Nginx listens on 80
+startCommand = "/start.sh"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+# Health check on the / route
+[[deploy.healthchecks]]
+type = "HTTP"
+path = "/up"
+port = 80
+initialDelaySeconds = 15
+periodSeconds = 30
+timeoutSeconds = 10
+failureThreshold = 3

@@ -1,0 +1,52 @@
+# docker-compose.yml — LOCAL DEVELOPMENT ONLY
+# Use this to test your Docker setup locally before deploying to Railway.
+# Railway provides its own MySQL, so this file is NOT used in production.
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "8080:80"
+    environment:
+      APP_NAME: "RepairBox"
+      APP_ENV: production
+      APP_KEY: "base64:REPLACE_WITH_YOUR_KEY"
+      APP_DEBUG: "false"
+      APP_URL: "http://localhost:8080"
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_DATABASE: repair_box
+      DB_USERNAME: root
+      DB_PASSWORD: secret
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - app_storage:/var/www/html/storage/app
+    restart: unless-stopped
+
+  db:
+    image: mysql:8.0
+    ports:
+      - "3307:3306"          # Use 3307 on host to avoid conflict with your local MySQL
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: repair_box
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-usecret", "-psecret"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  app_storage:

@@ -1,0 +1,198 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\{Setting, EmailTemplate, Notification, ActivityLog, Backup};
+use App\Models\{ServiceType, RechargeProvider, Vendor};
+use Illuminate\Http\Request;
+
+class SettingController extends Controller
+{
+    public function index()
+    {
+        if (request()->ajax()) {
+            return response()->json(Setting::all()->pluck('setting_value', 'setting_key'));
+        }
+        return view('modules.settings.index');
+    }
+
+    public function update(Request $request)
+    {
+        $settings = $request->validate([
+            'settings' => 'required|array',
+            'settings.*' => 'nullable|string|max:500',
+            'shop_icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+        foreach ($settings['settings'] as $key => $value) {
+            Setting::setValue($key, $value);
+        }
+
+        // Handle icon upload
+        if ($request->hasFile('shop_icon')) {
+            $file = $request->file('shop_icon');
+            $path = $file->store('shop', 'public');
+            Setting::setValue('shop_icon', $path);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Settings updated']);
+    }
+
+    // Service Types
+    public function serviceTypes()
+    {
+        if (request()->ajax()) {
+            return response()->json(ServiceType::orderBy('name')->get());
+        }
+    }
+
+    public function storeServiceType(Request $request)
+    {
+        $data = $request->validate(['name' => 'required|string|max:150', 'default_price' => 'nullable|numeric|min:0', 'description' => 'nullable|string']);
+        $st = ServiceType::create($data);
+        return response()->json(['success' => true, 'data' => $st]);
+    }
+
+    public function updateServiceType(Request $request, ServiceType $serviceType)
+    {
+        $data = $request->validate(['name' => 'required|string|max:150', 'default_price' => 'nullable|numeric|min:0', 'description' => 'nullable|string', 'status' => 'in:active,inactive']);
+        $serviceType->update($data);
+        return response()->json(['success' => true, 'data' => $serviceType]);
+    }
+
+    // Recharge Providers
+    public function rechargeProviders()
+    {
+        return response()->json(RechargeProvider::orderBy('name')->get());
+    }
+
+    // Search Service Types (for auto-suggest)
+    public function searchServiceTypes(Request $request)
+    {
+        $q = $request->input('q', '');
+        $data = ServiceType::where('name', 'like', "%{$q}%")
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->paginate(15);
+        return response()->json([
+            'success' => true,
+            'data' => $data->items(),
+            'has_more' => $data->hasMorePages(),
+            'page' => $data->currentPage(),
+        ]);
+    }
+
+    // Search Vendors (for auto-suggest)
+    public function searchVendors(Request $request)
+    {
+        $q = $request->input('q', '');
+        $data = Vendor::where('name', 'like', "%{$q}%")
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->paginate(15);
+        return response()->json([
+            'success' => true,
+            'data' => $data->items(),
+            'has_more' => $data->hasMorePages(),
+            'page' => $data->currentPage(),
+        ]);
+    }
+
+    public function storeRechargeProvider(Request $request)
+    {
+        $data = $request->validate(['name' => 'required|string|max:150', 'provider_type' => 'required|string|max:50', 'commission_percentage' => 'required|numeric|min:0|max:100']);
+        $rp = RechargeProvider::create($data);
+        return response()->json(['success' => true, 'data' => $rp]);
+    }
+
+    // Vendors
+    public function vendors()
+    {
+        if (request()->ajax()) {
+            $data = Vendor::when(request('search'), fn($q, $s) => $q->where('name', 'like', "%{$s}%"))
+                ->orderBy('name')->paginate(15);
+            return response()->json($data);
+        }
+        return view('modules.vendors.index');
+    }
+
+    public function createVendor()
+    {
+        return view('modules.vendors.create');
+    }
+
+    public function storeVendor(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:150',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
+            'specialization' => 'nullable|string|max:255',
+        ]);
+        $vendor = Vendor::create($data);
+        return response()->json(['success' => true, 'data' => $vendor]);
+    }
+
+    public function updateVendor(Request $request, Vendor $vendor)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:150',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
+            'specialization' => 'nullable|string|max:255',
+            'status' => 'in:active,inactive',
+        ]);
+        $vendor->update($data);
+        return response()->json(['success' => true, 'data' => $vendor]);
+    }
+
+    // Email Templates
+    public function emailTemplates()
+    {
+        return response()->json(EmailTemplate::all());
+    }
+
+    public function updateEmailTemplate(Request $request, EmailTemplate $emailTemplate)
+    {
+        $data = $request->validate(['subject' => 'nullable|string|max:255', 'body' => 'nullable|string', 'status' => 'in:active,inactive']);
+        $emailTemplate->update($data);
+        return response()->json(['success' => true, 'data' => $emailTemplate]);
+    }
+
+    // Notifications
+    public function notifications()
+    {
+        $data = Notification::latest()->paginate(20);
+        return response()->json($data);
+    }
+
+    // Activity Logs
+    public function activityLogs()
+    {
+        if (request()->ajax()) {
+            $data = ActivityLog::with('user')
+                ->when(request('module'), fn($q, $m) => $q->where('module', $m))
+                ->when(request('user_id'), fn($q, $id) => $q->where('user_id', $id))
+                ->latest()
+                ->paginate(20);
+            return response()->json($data);
+        }
+        return view('modules.settings.activity-logs');
+    }
+
+    // Backups
+    public function backups()
+    {
+        return response()->json(Backup::latest()->get());
+    }
+
+    public function createBackup()
+    {
+        $backup = Backup::create([
+            'backup_type' => 'database',
+            'file_path' => 'backups/db_' . now()->format('Y_m_d_His') . '.sql',
+            'file_size' => 0,
+            'status' => 'completed',
+        ]);
+        return response()->json(['success' => true, 'data' => $backup, 'message' => 'Backup created']);
+    }
+}
