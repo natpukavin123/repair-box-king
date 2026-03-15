@@ -1,15 +1,16 @@
 #!/bin/bash
-set -e
+# NOTE: No 'set -e' — we MUST reach supervisord even if earlier commands fail.
+# Each risky command has || true to prevent script termination.
 
 echo "🚀 RepairBox — Boot"
 echo "==================="
 
-cd /var/www/html
+cd /var/www/html || { echo "ERROR: /var/www/html missing"; exit 1; }
 
 # ── 1. Resolve PORT ───────────────────────────────────────────────────────────
 APP_PORT="${PORT:-80}"
 echo "→ Port: $APP_PORT"
-sed -i "s/__PORT__/$APP_PORT/g" /etc/nginx/http.d/default.conf
+sed -i "s/__PORT__/$APP_PORT/g" /etc/nginx/http.d/default.conf || true
 
 # ── 1b. Resolve APP_URL from Railway env if not explicitly set ─────────────────
 if [ -z "${APP_URL:-}" ] && [ -n "${RAILWAY_PUBLIC_DOMAIN:-}" ]; then
@@ -17,8 +18,8 @@ if [ -z "${APP_URL:-}" ] && [ -n "${RAILWAY_PUBLIC_DOMAIN:-}" ]; then
     echo "→ APP_URL auto-resolved: $APP_URL"
 fi
 
-# ── Test nginx config (warn only, do not exit — supervisor will handle failures)
-nginx -t 2>&1 && echo "→ Nginx config OK ✔" || echo "⚠ Nginx config warning (supervisor will attempt to start anyway)"
+# ── Test nginx config (info only) ────────────────────────────────────────────
+nginx -t 2>&1 || true
 
 # ── 2. Resolve DB credentials (Railway uses MYSQLHOST / standard uses DB_HOST) ─
 export DB_HOST="${DB_HOST:-${MYSQLHOST:-127.0.0.1}}"
@@ -80,12 +81,12 @@ ENVEOF
 echo ".env written ✔"
 
 # ── 4. Fix permissions so www-data can write ──────────────────────────────────
-chown -R www-data:www-data storage bootstrap/cache
-chmod -R 775 storage bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
+chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
 echo "==================="
 echo "→ Starting services (Nginx + PHP-FPM + Init)..."
 
-# ── 5. Hand off to supervisor — Nginx + PHP-FPM start immediately ─────────────
+# ── 5. Hand off to supervisor — we MUST reach this line ───────────────────────
 # The 'init' program inside supervisord runs migrations after FPM is ready.
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
