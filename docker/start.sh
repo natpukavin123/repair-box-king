@@ -3,26 +3,13 @@
 
 echo "🚀 RepairBox — Boot"
 echo "==================="
-echo "DEBUG: pwd=$(pwd)"
-echo "DEBUG: PORT=$PORT"
-echo "DEBUG: APP_URL=$APP_URL"
 
 cd /var/www/html || { echo "ERROR: /var/www/html missing"; exit 1; }
 
 # ── 1. Resolve PORT ───────────────────────────────────────────────────────────
 APP_PORT="${PORT:-80}"
 echo "→ Port: $APP_PORT"
-
-# Replace port in nginx config
 sed -i "s/__PORT__/$APP_PORT/g" /etc/nginx/http.d/default.conf 2>/dev/null || true
-
-# Debug: show nginx config after sed
-echo "DEBUG: Nginx config after port replacement:"
-head -5 /etc/nginx/http.d/default.conf 2>/dev/null || echo "(file not found)"
-
-# Verify nginx can parse config
-echo "DEBUG: Testing nginx config..."
-nginx -t 2>&1
 
 # ── 1b. Resolve APP_URL from Railway env if not explicitly set ─────────────────
 if [ -z "${APP_URL:-}" ] && [ -n "${RAILWAY_PUBLIC_DOMAIN:-}" ]; then
@@ -95,11 +82,6 @@ chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
 echo "==================="
 echo "→ Starting services (Nginx + PHP-FPM + Init)..."
-echo "DEBUG: Checking supervisord..."
-which supervisord || echo "supervisord NOT FOUND!"
-ls -la /etc/supervisor/conf.d/ || echo "supervisor dir not found"
 
-# ── 5. Hand off to supervisor — we MUST reach this line ───────────────────────
-# The 'init' program inside supervisord runs migrations after FPM is ready.
-echo "DEBUG: Launching supervisord NOW..."
+# ── 5. Hand off to supervisor ───────────────────────────────────────────────────
 exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
