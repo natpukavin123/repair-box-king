@@ -36,13 +36,19 @@
                         </template>
                         <tr x-show="items.length === 0 && !loading"><td colspan="3" class="text-center text-gray-500 py-8">No subcategories found in this category.</td></tr>
                         <template x-if="loading">
-                            <tr><td colspan="3" class="p-0"><template x-for="i in 5" :key="'sk'+i"><div class="skeleton-row"><div class="skeleton h-3 w-8"></div><div class="skeleton h-3 w-48"></div><div class="skeleton h-3 w-16"></div></div></template></td></tr>
+                            <template x-for="i in 5" :key="'sk'+i">
+                                <tr>
+                                    <td><div class="skeleton h-3 w-8"></div></td>
+                                    <td><div class="skeleton h-3 w-48"></div></td>
+                                    <td><div class="skeleton h-3 w-16"></div></td>
+                                </tr>
+                            </template>
                         </template>
                     </tbody>
                 </table>
             </div>
         </div>
-        
+
         <!-- Pagination -->
         <div x-show="total > perPage" class="border-t border-gray-100 flex items-center justify-between px-4 py-3 bg-gray-50 rounded-b-xl">
             <span class="text-sm text-gray-500" x-text="`Showing ${items.length ? (page-1)*perPage+1 : 0} to ${Math.min(page*perPage, total)} of ${total}`"></span>
@@ -119,7 +125,7 @@ function categorySubcategoriesPage() {
             let method = this.editing ? 'PUT' : 'POST';
             const r = await RepairBox.ajax(url, method, this.form);
             this.saving = false;
-            
+
             if (r.success !== false) {
                 RepairBox.toast(this.editing ? 'Updated successfully' : 'Created successfully', 'success');
                 this.showModal = false;

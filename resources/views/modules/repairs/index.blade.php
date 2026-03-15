@@ -183,20 +183,18 @@
                     </tr>
                     <!-- Skeleton Loader -->
                     <template x-if="loading">
-                        <tr><td colspan="8" class="p-0">
-                            <template x-for="i in 10" :key="'sk'+i">
-                                <div class="skeleton-row">
-                                    <div class="skeleton h-3 w-20"></div>
-                                    <div class="skeleton h-3 w-32"></div>
-                                    <div class="skeleton h-3 w-28"></div>
-                                    <div class="flex gap-1"><div class="skeleton h-4 w-4 rounded-full"></div><div class="skeleton h-4 w-4 rounded-full"></div><div class="skeleton h-4 w-4 rounded-full"></div><div class="skeleton h-4 w-4 rounded-full"></div><div class="skeleton h-4 w-4 rounded-full"></div></div>
-                                    <div class="skeleton h-3 w-16 rounded-full"></div>
-                                    <div class="skeleton h-3 w-20"></div>
-                                    <div class="skeleton h-3 w-20"></div>
-                                    <div class="skeleton h-3 w-16"></div>
-                                </div>
-                            </template>
-                        </td></tr>
+                        <template x-for="i in 10" :key="'sk'+i">
+                            <tr>
+                                <td><div class="skeleton h-3 w-24"></div></td>
+                                <td><div class="skeleton h-3 w-32"></div></td>
+                                <td><div class="skeleton h-3 w-28"></div></td>
+                                <td><div class="flex gap-1"><div class="skeleton h-4 w-4 rounded-full"></div><div class="skeleton h-4 w-4 rounded-full"></div><div class="skeleton h-4 w-4 rounded-full"></div><div class="skeleton h-4 w-4 rounded-full"></div><div class="skeleton h-4 w-4 rounded-full"></div></div></td>
+                                <td><div class="skeleton h-3 w-24 rounded-full"></div></td>
+                                <td><div class="skeleton h-3 w-24"></div></td>
+                                <td><div class="skeleton h-3 w-20"></div></td>
+                                <td><div class="skeleton h-3 w-16"></div></td>
+                            </tr>
+                        </template>
                     </template>
                 </tbody>
             </table>

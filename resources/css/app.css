@@ -170,19 +170,21 @@
     overflow: auto;
 }
 
-/* Skeleton loader */
+/* Skeleton loader — used on card-style menus page */
 .skeleton-row {
     display: flex;
     align-items: center;
     gap: 1rem;
     padding: 0.875rem 1.5rem;
     border-bottom: 1px solid #f3f4f6;
-    white-space: normal;
 }
 .skeleton-row:last-child {
     border-bottom: none;
 }
+
+/* Skeleton bars — used inside table <td> cells for per-column loaders */
 .skeleton {
+    display: block;
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
@@ -190,17 +192,29 @@
     height: 0.75rem;
     flex-shrink: 0;
 }
+.skeleton.w-8  { width: 2rem; }
+.skeleton.w-16 { width: 4rem; }
 .skeleton.w-20 { width: 5rem; }
+.skeleton.w-24 { width: 6rem; }
 .skeleton.w-28 { width: 7rem; }
 .skeleton.w-32 { width: 8rem; }
+.skeleton.w-36 { width: 9rem; }
 .skeleton.w-40 { width: 10rem; }
-.skeleton.w-16 { width: 4rem; }
-.skeleton.w-24 { width: 6rem; }
-.skeleton.h-4 { height: 1rem; }
-.skeleton.h-3 { height: 0.75rem; }
+.skeleton.w-48 { width: 12rem; }
+.skeleton.h-3  { height: 0.75rem; }
+.skeleton.h-4  { height: 1rem; }
+.skeleton.h-8  { height: 2rem; }
 .skeleton.rounded-full { border-radius: 9999px; }
+.skeleton.rounded     { border-radius: 0.25rem; }
+
+/* Table rows containing skeletons pulse gently */
+.data-table tbody tr.skeleton-tr td {
+    padding-top: 0.875rem;
+    padding-bottom: 0.875rem;
+}
+
 @keyframes shimmer {
-    0% { background-position: 200% 0; }
+    0%   { background-position: 200% 0; }
     100% { background-position: -200% 0; }
 }
 
