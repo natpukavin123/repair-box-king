@@ -1,7 +1,6 @@
 #!/bin/bash
 # init.sh — runs via supervisord AFTER nginx + php-fpm are up.
-# Handles: package discovery, config caching, DB wait, migrations, first-install seed.
-# Runs ONCE (autorestart=false in supervisor). Failures are logged, not fatal to app.
+# Uses exported env vars from start.sh directly (no grep from .env).
 
 set -e
 
@@ -9,16 +8,8 @@ echo "[init] ── Starting initialisation ────────────
 
 cd /var/www/html
 
-# ── 1. Wait for PHP-FPM to accept connections (up to 30s) ────────────────────
-echo "[init] Waiting for PHP-FPM..."
-for i in $(seq 1 30); do
-    if php-fpm -t 2>/dev/null; then
-        break
-    fi
-    sleep 1
-done
-
-# Actually wait for FPM to be listening on 9000
+# ── 1. Wait for PHP-FPM on port 9000 ─────────────────────────────────────────
+echo "[init] Waiting for PHP-FPM on port 9000..."
 for i in $(seq 1 30); do
     if nc -z 127.0.0.1 9000 2>/dev/null; then
         echo "[init] PHP-FPM ready ✔"
@@ -27,36 +18,37 @@ for i in $(seq 1 30); do
     sleep 1
 done
 
-# ── 2. Generate APP_KEY if not set ───────────────────────────────────────────
-if grep -q "^APP_KEY=$" .env 2>/dev/null || ! grep -q "^APP_KEY=base64:" .env 2>/dev/null; then
+# ── 2. Generate APP_KEY if missing ────────────────────────────────────────────
+if [ -z "$APP_KEY" ]; then
     echo "[init] Generating APP_KEY..."
     php artisan key:generate --force --no-interaction 2>/dev/null || true
 fi
 
-# ── 3. Discover packages + cache for production ───────────────────────────────
+# ── 3. Cache config / routes / views ─────────────────────────────────────────
 echo "[init] Caching config/routes/views..."
-php artisan package:discover --ansi --no-interaction 2>/dev/null || true
-php artisan config:cache  --no-interaction 2>/dev/null || true
-php artisan route:cache   --no-interaction 2>/dev/null || true
-php artisan view:cache    --no-interaction 2>/dev/null || true
-php artisan storage:link  --no-interaction 2>/dev/null || true
+php artisan package:discover --ansi  --no-interaction 2>/dev/null || true
+php artisan config:cache             --no-interaction 2>/dev/null || true
+php artisan route:cache              --no-interaction 2>/dev/null || true
+php artisan view:cache               --no-interaction 2>/dev/null || true
+php artisan storage:link             --no-interaction 2>/dev/null || true
 
-# ── 4. Wait for MySQL ─────────────────────────────────────────────────────────
-DB_HOST_V=$(grep "^DB_HOST=" .env | cut -d= -f2)
-DB_PORT_V=$(grep "^DB_PORT=" .env | cut -d= -f2)
-DB_USER_V=$(grep "^DB_USERNAME=" .env | cut -d= -f2)
-DB_PASS_V=$(grep "^DB_PASSWORD=" .env | cut -d= -f2)
+# ── 4. Wait for MySQL using env vars directly (not grep from .env) ────────────
+# start.sh exports: DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD
+echo "[init] Waiting for MySQL at ${DB_HOST}:${DB_PORT}..."
 
-echo "[init] Waiting for MySQL at $DB_HOST_V:$DB_PORT_V..."
 MAX=40
 for i in $(seq 1 $MAX); do
-    if mysqladmin ping -h"$DB_HOST_V" -P"$DB_PORT_V" \
-        -u"$DB_USER_V" -p"$DB_PASS_V" --silent 2>/dev/null; then
+    # Use MYSQL_PWD env var to avoid password-on-cmdline warning
+    if MYSQL_PWD="$DB_PASSWORD" mysqladmin ping \
+        -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" \
+        --connect-timeout=5 --silent 2>/dev/null; then
         echo "[init] MySQL ready ✔"
         break
     fi
     if [ "$i" -ge "$MAX" ]; then
-        echo "[init] ✗ MySQL not reachable after $MAX attempts. Check DB_HOST/DB_PASSWORD vars."
+        echo "[init] ✗ MySQL not reachable after $MAX attempts."
+        echo "[init]   DB_HOST=$DB_HOST  DB_PORT=$DB_PORT  DB_USERNAME=$DB_USERNAME"
+        echo "[init]   Check your Railway MySQL variables (DB_HOST / MYSQLHOST)."
         exit 1
     fi
     echo "[init]   ... attempt $i/$MAX"
@@ -68,11 +60,12 @@ echo "[init] Running migrations..."
 php artisan migrate --force --no-interaction
 echo "[init] Migrations done ✔"
 
-# ── 6. First-install check (DB-based, not filesystem — survives Railway redeploys) ─
-echo "[init] Checking first-install status..."
-SUPER_COUNT=$(mysql -h"$DB_HOST_V" -P"$DB_PORT_V" -u"$DB_USER_V" -p"$DB_PASS_V" \
-    --skip-column-names --silent -e \
-    "SELECT COUNT(*) FROM \`${DB_DATABASE:-repair_box}\`.\`users\` WHERE is_super_admin=1;" \
+# ── 6. First-install check (DB-based — survives ephemeral Railway filesystem) ─
+echo "[init] Checking first-install..."
+SUPER_COUNT=$(MYSQL_PWD="$DB_PASSWORD" mysql \
+    -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" \
+    --skip-column-names --silent \
+    -e "SELECT COUNT(*) FROM \`${DB_DATABASE}\`.\`users\` WHERE is_super_admin=1;" \
     2>/dev/null || echo "0")
 SUPER_COUNT=$(echo "$SUPER_COUNT" | tr -d '[:space:]')
 
@@ -82,26 +75,29 @@ if [ "$SUPER_COUNT" = "0" ] || [ -z "$SUPER_COUNT" ]; then
     echo "[init] Initial data seeded ✔"
 
     # Auto-create admin from env vars if provided
-    ADMIN_EMAIL_V=$(grep "^ADMIN_EMAIL=" .env | cut -d= -f2)
-    ADMIN_PASS_V=$(grep "^ADMIN_PASSWORD=" .env | cut -d= -f2)
-    ADMIN_NAME_V=$(grep "^ADMIN_NAME=" .env | cut -d= -f2-)
-
-    if [ -n "$ADMIN_EMAIL_V" ] && [ -n "$ADMIN_PASS_V" ]; then
-        echo "[init] Creating admin: $ADMIN_EMAIL_V"
-        php artisan tinker --execute="
-\$role = \App\Models\Role::where('name','Admin')->first();
-if (\$role) {
-    \App\Models\User::updateOrCreate(
-        ['email' => '$ADMIN_EMAIL_V'],
-        ['name'=>'$ADMIN_NAME_V','password'=>Hash::make('$ADMIN_PASS_V'),
-         'role_id'=>\$role->id,'status'=>'active','is_super_admin'=>true]
-    );
-    echo 'Admin created';
-}
-" --no-interaction 2>/dev/null || true
+    if [ -n "$ADMIN_EMAIL" ] && [ -n "$ADMIN_PASSWORD" ]; then
+        echo "[init] Creating admin: $ADMIN_EMAIL"
+        MYSQL_PWD="$DB_PASSWORD" mysql \
+            -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" "$DB_DATABASE" \
+            -e "
+INSERT INTO users (name, email, password, role_id, status, is_super_admin, created_at, updated_at)
+SELECT
+    '${ADMIN_NAME:-Administrator}',
+    '${ADMIN_EMAIL}',
+    '$(php -r \"echo password_hash('${ADMIN_PASSWORD}', PASSWORD_BCRYPT, ['cost'=>12]);\")',
+    (SELECT id FROM roles WHERE name='Admin' LIMIT 1),
+    'active',
+    1,
+    NOW(), NOW()
+ON DUPLICATE KEY UPDATE
+    name   = VALUES(name),
+    password = VALUES(password),
+    is_super_admin = 1,
+    status = 'active';
+" 2>/dev/null || true
         echo "[init] Admin created ✔"
     else
-        echo "[init] ⚠ No ADMIN_EMAIL/ADMIN_PASSWORD set — use /setup wizard on first visit."
+        echo "[init] ⚠ No ADMIN_EMAIL/ADMIN_PASSWORD — use /setup wizard on first visit."
     fi
 else
     echo "[init] Already installed ($SUPER_COUNT super admin found) ✔"
