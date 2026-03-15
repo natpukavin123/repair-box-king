@@ -1,0 +1,56 @@
+# fly.toml — Fly.io deployment config for RepairBox
+# Docs: https://fly.io/docs/reference/configuration/
+
+app = "repair-box"          # Change this to your unique app name
+primary_region = "sin"      # Singapore — closest to asia-southeast
+
+[build]
+  dockerfile = "Dockerfile"
+
+# ── Non-secret environment variables ─────────────────────────────────────────
+# Secrets (APP_KEY, DB_PASSWORD, etc.) must be set via:
+#   fly secrets set APP_KEY="base64:..." DB_PASSWORD="..."
+[env]
+  APP_ENV        = "production"
+  APP_DEBUG      = "false"
+  APP_TIMEZONE   = "UTC"
+  APP_LOCALE     = "en"
+  LOG_CHANNEL    = "stderr"
+  LOG_LEVEL      = "error"
+  SESSION_DRIVER = "database"
+  CACHE_STORE    = "database"
+  QUEUE_CONNECTION = "database"
+  FILESYSTEM_DISK  = "local"
+  MAIL_MAILER      = "log"
+
+# ── HTTP service ──────────────────────────────────────────────────────────────
+[[services]]
+  internal_port = 8080          # Fly.io sets PORT=8080 by default
+  protocol      = "tcp"
+  auto_stop_machines  = true    # Free-tier: stop when idle
+  auto_start_machines = true    # Wake on first request
+  min_machines_running = 0      # Allow scale-to-zero
+
+  [[services.ports]]
+    handlers = ["http"]
+    port     = 80
+    force_https = true           # Redirect HTTP → HTTPS automatically
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port     = 443
+
+  # Health check — same path Railway uses
+  [[services.http_checks]]
+    interval      = "15s"
+    timeout       = "10s"
+    grace_period  = "60s"       # Give init.sh time to run migrations
+    method        = "GET"
+    path          = "/up"
+    protocol      = "http"
+
+# ── Machine size (free tier: shared-cpu-1x 256mb = free) ─────────────────────
+[[vm]]
+  cpu_kind = "shared"
+  cpus     = 1
+  memory   = "512mb"            # 256mb is free; 512mb = ~$1.94/mo if needed

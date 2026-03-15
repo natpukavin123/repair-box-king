@@ -11,10 +11,15 @@ APP_PORT="${PORT:-80}"
 echo "→ Port: $APP_PORT"
 sed -i "s/__PORT__/$APP_PORT/g" /etc/nginx/http.d/default.conf 2>/dev/null || true
 
-# ── 1b. Resolve APP_URL from Railway env if not explicitly set ─────────────────
-if [ -z "${APP_URL:-}" ] && [ -n "${RAILWAY_PUBLIC_DOMAIN:-}" ]; then
-    export APP_URL="https://${RAILWAY_PUBLIC_DOMAIN}"
-    echo "→ APP_URL auto-resolved: $APP_URL"
+# ── 1b. Resolve APP_URL from platform env if not explicitly set ───────────────
+if [ -z "${APP_URL:-}" ]; then
+    if [ -n "${RAILWAY_PUBLIC_DOMAIN:-}" ]; then
+        export APP_URL="https://${RAILWAY_PUBLIC_DOMAIN}"
+        echo "→ APP_URL auto-resolved (Railway): $APP_URL"
+    elif [ -n "${FLY_APP_NAME:-}" ]; then
+        export APP_URL="https://${FLY_APP_NAME}.fly.dev"
+        echo "→ APP_URL auto-resolved (Fly.io): $APP_URL"
+    fi
 fi
 
 # ── 2. Resolve DB credentials (Railway uses MYSQLHOST / standard uses DB_HOST) ─

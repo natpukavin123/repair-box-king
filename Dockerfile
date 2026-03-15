@@ -96,8 +96,9 @@ COPY docker/start.sh /start.sh
 COPY docker/init.sh  /init.sh
 RUN chmod +x /start.sh /init.sh
 
-# Railway dynamically assigns a port via the PORT env var.
-# Nginx is configured at runtime to listen on $PORT (not hardcoded 80).
-EXPOSE 80
+# Both Railway and Fly.io inject $PORT at runtime (Railway: varies, Fly.io: 8080).
+# start.sh reads $PORT and configures Nginx to listen on it.
+# EXPOSE is documentation only — the actual port comes from $PORT.
+EXPOSE 8080
 
 ENTRYPOINT ["/start.sh"]
