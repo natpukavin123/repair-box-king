@@ -81,26 +81,7 @@ if [ "$SUPER_COUNT" = "0" ] || [ -z "$SUPER_COUNT" ]; then
     echo "[init] First install — seeding initial data..."
     php artisan db:seed --class=InitialDataSeeder --force --no-interaction
     echo "[init] Initial data seeded ✔"
-
-    # Auto-create admin from env vars if ADMIN_EMAIL + ADMIN_PASSWORD are set
-    if [ -n "$ADMIN_EMAIL" ] && [ -n "$ADMIN_PASSWORD" ]; then
-        echo "[init] Creating admin: $ADMIN_EMAIL"
-        HASHED=$(php -r "echo password_hash('${ADMIN_PASSWORD}', PASSWORD_BCRYPT, ['cost'=>12]);")
-        MYSQL_PWD="$DB_PASSWORD" mysql \
-            -h"$DB_HOST" -P"${DB_PORT:-3306}" -u"$DB_USERNAME" "$DB_DATABASE" \
-            -e "
-INSERT INTO users (name, email, password, role_id, status, is_super_admin, created_at, updated_at)
-SELECT '${ADMIN_NAME:-Administrator}', '${ADMIN_EMAIL}', '$HASHED',
-       (SELECT id FROM roles WHERE name='Admin' LIMIT 1),
-       'active', 1, NOW(), NOW()
-ON DUPLICATE KEY UPDATE
-    name='${ADMIN_NAME:-Administrator}', password='$HASHED',
-    is_super_admin=1, status='active';
-" 2>/dev/null || true
-        echo "[init] Admin created ✔"
-    else
-        echo "[init] ⚠ No ADMIN_EMAIL/ADMIN_PASSWORD — use the /setup wizard."
-    fi
+    echo "[init] 🔑 Default login: admin@repairbox.com / password"
 else
     echo "[init] Already installed ($SUPER_COUNT super admin found) ✔"
 fi
