@@ -7,9 +7,12 @@ use Illuminate\Support\Facades\DB;
 
 class RepairService
 {
+    public function __construct(
+        protected NotificationService $notifications = new NotificationService(),
+    ) {}
     public function create(array $data): Repair
     {
-        return DB::transaction(function () use ($data) {
+        $repair = DB::transaction(function () use ($data) {
             $repair = Repair::create([
                 'ticket_number' => Repair::generateTicketNumber(),
                 'tracking_id' => Repair::generateTrackingId(),
@@ -46,11 +49,20 @@ class RepairService
 
             return $repair->load('customer', 'technician', 'payments');
         });
+
+        // Fire received notification outside the transaction so a mail failure won't rollback
+        try {
+            $this->notifications->sendRepairReceived($repair);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('[RepairService] Received notification failed: ' . $e->getMessage());
+        }
+
+        return $repair;
     }
 
     public function updateStatus(Repair $repair, string $status, ?string $notes = null, ?string $cancelReason = null): Repair
     {
-        return DB::transaction(function () use ($repair, $status, $notes, $cancelReason) {
+        $updated = DB::transaction(function () use ($repair, $status, $notes, $cancelReason) {
             if ($repair->is_locked) {
                 throw new \Exception('This repair is locked and cannot be modified.');
             }
@@ -91,6 +103,17 @@ class RepairService
 
             return $repair->fresh('customer', 'technician', 'statusHistory.updater', 'parts.part', 'payments');
         });
+
+        // Fire completed notification outside the transaction so a mail failure won't rollback
+        if ($status === 'completed') {
+            try {
+                $this->notifications->sendRepairCompleted($updated);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('[RepairService] Completed notification failed: ' . $e->getMessage());
+            }
+        }
+
+        return $updated;
     }
 
     public function addPayment(Repair $repair, array $data): void

@@ -9,6 +9,7 @@
         <button @click="tab='service-types'; updateUrl()" :class="tab==='service-types' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Service Types</button>
         <button @click="tab='recharge-providers'; updateUrl()" :class="tab==='recharge-providers' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Recharge Providers</button>
         <button @click="tab='email-templates'; updateUrl()" :class="tab==='email-templates' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Email Templates</button>
+        <button @click="tab='notifications'; updateUrl(); loadNotifications()" :class="tab==='notifications' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Notifications</button>
         <button @click="tab='invoice-layout'; updateUrl()" :class="tab==='invoice-layout' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Invoice Layout</button>
         <button @click="tab='backups'; updateUrl()" :class="tab==='backups' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Backups</button>
     </div>
@@ -121,7 +122,7 @@
                 <tbody>
                     <template x-for="et in emailTemplates" :key="et.id">
                         <tr>
-                            <td class="font-medium" x-text="et.name"></td>
+                            <td class="font-medium" x-text="et.template_name"></td>
                             <td x-text="et.subject"></td>
                             <td><span class="badge" :class="et.status==='active' ? 'badge-success' : 'badge-danger'" x-text="et.status"></span></td>
                             <td><button @click="etEditing=et; etForm={subject:et.subject,body:et.body||'',status:et.status}; showEtModal=true" class="text-primary-600 hover:text-primary-800"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button></td>
@@ -132,6 +133,172 @@
             </table>
         </div>
     </div>
+
+    {{-- ══════════════════════════════════════════════════════════
+         Notifications
+    ══════════════════════════════════════════════════════════ --}}
+    <div x-show="tab==='notifications'" x-cloak>
+
+        {{-- ─── Email Notifications ─────────────────────── --}}
+        <div class="card mb-6">
+            <div class="card-header flex items-center gap-3">
+                <div class="w-9 h-9 flex items-center justify-center rounded-lg bg-indigo-100">
+                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold">Email Notifications</h3>
+            </div>
+            <div class="card-body space-y-5">
+                <p class="text-sm text-gray-500">Automatically send emails to customers when their repair status changes. Configure SMTP settings in <code class="bg-gray-100 px-1 rounded">.env</code> or under your hosting mail settings.</p>
+
+                {{-- Toggles --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <label class="flex items-start gap-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition" :class="settings.notify_email_received === '1' ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200'">
+                        <input type="checkbox" :checked="settings.notify_email_received === '1'" @change="settings.notify_email_received = $event.target.checked ? '1' : '0'" class="mt-0.5 h-4 w-4 accent-indigo-600">
+                        <div>
+                            <p class="font-medium text-gray-800 text-sm">Order Received</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Send email when a repair ticket is created.</p>
+                        </div>
+                    </label>
+                    <label class="flex items-start gap-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition" :class="settings.notify_email_completed === '1' ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200'">
+                        <input type="checkbox" :checked="settings.notify_email_completed === '1'" @change="settings.notify_email_completed = $event.target.checked ? '1' : '0'" class="mt-0.5 h-4 w-4 accent-indigo-600">
+                        <div>
+                            <p class="font-medium text-gray-800 text-sm">Repair Completed</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Send email when a repair is marked as completed.</p>
+                        </div>
+                    </label>
+                </div>
+
+                {{-- Variable Reference --}}
+                <details class="text-sm">
+                    <summary class="cursor-pointer text-indigo-600 font-medium select-none">Available template variables</summary>
+                    <div class="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 font-mono text-xs text-gray-600">
+                            <span>{customer_name}</span><span>{ticket_number}</span><span>{tracking_id}</span>
+                            <span>{tracking_url}</span><span>{device_brand}</span><span>{device_model}</span>
+                            <span>{estimated_cost}</span><span>{service_charge}</span><span>{grand_total}</span>
+                            <span>{expected_delivery_date}</span><span>{technician_name}</span><span>{status}</span>
+                            <span>{shop_name}</span><span>{shop_phone}</span>
+                        </div>
+                    </div>
+                </details>
+
+                {{-- Email Templates quick-edit --}}
+                <div>
+                    <h4 class="font-semibold text-gray-700 mb-3">Email Templates</h4>
+                    <div class="space-y-4">
+                        <template x-for="et in emailTemplates.filter(t => ['repair_received','repair_completed'].includes(t.template_name))" :key="et.id">
+                            <div class="border border-gray-200 rounded-xl overflow-hidden">
+                                <div class="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full" :class="et.template_name === 'repair_received' ? 'bg-blue-500' : 'bg-emerald-500'"></span>
+                                        <span class="font-medium text-sm" x-text="et.template_name === 'repair_received' ? '📥 Order Received' : '✅ Repair Completed'"></span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="badge" :class="et.status==='active' ? 'badge-success' : 'badge-danger'" x-text="et.status"></span>
+                                        <button @click="etEditing=et; etForm={subject:et.subject,body:et.body||'',status:et.status}; showEtModal=true" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">Edit</button>
+                                    </div>
+                                </div>
+                                <div class="px-4 py-3">
+                                    <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">Subject</p>
+                                    <p class="text-sm text-gray-700 font-mono" x-text="et.subject || '(no subject)'"></p>
+                                </div>
+                            </div>
+                        </template>
+                        <p x-show="emailTemplates.filter(t => ['repair_received','repair_completed'].includes(t.template_name)).length === 0"
+                           class="text-sm text-gray-400">No repair email templates found. Run migrations to seed default templates.</p>
+                    </div>
+                </div>
+
+                <div><button @click="saveNotificationSettings()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save Email Settings</button></div>
+            </div>
+        </div>
+
+        {{-- ─── WhatsApp Notifications ─────────────────────── --}}
+        <div class="card">
+            <div class="card-header flex items-center gap-3">
+                <div class="w-9 h-9 flex items-center justify-center rounded-lg bg-green-100">
+                    <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold">WhatsApp Notifications</h3>
+            </div>
+            <div class="card-body space-y-5">
+                <div class="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                    <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>Works with any HTTP WhatsApp gateway like <strong>Ultramsg</strong>, <strong>2chat</strong>, or <strong>WA-Gateway</strong>. Enter the API URL, token, and your sender number below.</span>
+                </div>
+
+                {{-- Toggles --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <label class="flex items-start gap-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition" :class="settings.notify_whatsapp_received === '1' ? 'border-green-300 bg-green-50' : 'border-gray-200'">
+                        <input type="checkbox" :checked="settings.notify_whatsapp_received === '1'" @change="settings.notify_whatsapp_received = $event.target.checked ? '1' : '0'" class="mt-0.5 h-4 w-4 accent-green-600">
+                        <div>
+                            <p class="font-medium text-gray-800 text-sm">Order Received</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Send WhatsApp when a repair ticket is created.</p>
+                        </div>
+                    </label>
+                    <label class="flex items-start gap-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition" :class="settings.notify_whatsapp_completed === '1' ? 'border-green-300 bg-green-50' : 'border-gray-200'">
+                        <input type="checkbox" :checked="settings.notify_whatsapp_completed === '1'" @change="settings.notify_whatsapp_completed = $event.target.checked ? '1' : '0'" class="mt-0.5 h-4 w-4 accent-green-600">
+                        <div>
+                            <p class="font-medium text-gray-800 text-sm">Repair Completed</p>
+                            <p class="text-xs text-gray-500 mt-0.5">Send WhatsApp when a repair is marked as completed.</p>
+                        </div>
+                    </label>
+                </div>
+
+                {{-- API Config --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">API Endpoint URL</label>
+                        <input x-model="settings.whatsapp_api_url" type="url" class="form-input-custom" placeholder="https://api.ultramsg.com/instanceXXXX">
+                        <p class="text-xs text-gray-400 mt-1">Base URL – the system appends <code class="bg-gray-100 px-1 rounded">/sendMessage</code> automatically.</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">API Token / Secret</label>
+                        <input x-model="settings.whatsapp_api_token" type="password" class="form-input-custom" placeholder="••••••••••">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">From Number / Instance ID <span class="text-gray-400 font-normal">(optional)</span></label>
+                        <input x-model="settings.whatsapp_from_number" type="text" class="form-input-custom" placeholder="919876543210">
+                        <p class="text-xs text-gray-400 mt-1">Some providers need the sender number or instance ID.</p>
+                    </div>
+                </div>
+
+                {{-- WhatsApp Templates --}}
+                <div class="space-y-4">
+                    <h4 class="font-semibold text-gray-700">Message Templates</h4>
+
+                    <div class="border border-gray-200 rounded-xl overflow-hidden">
+                        <div class="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-200">
+                            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                            <span class="font-medium text-sm">📥 Order Received Message</span>
+                        </div>
+                        <div class="p-4">
+                            <textarea x-model="settings.whatsapp_template_received" class="form-input-custom font-mono text-sm" rows="7"
+                                      placeholder="Hello {customer_name}! Your device has been received..."></textarea>
+                            <p class="text-xs text-gray-400 mt-1">Use the same <code class="bg-gray-100 px-1 rounded">{variable}</code> placeholders as email templates.</p>
+                        </div>
+                    </div>
+
+                    <div class="border border-gray-200 rounded-xl overflow-hidden">
+                        <div class="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-200">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span class="font-medium text-sm">✅ Repair Completed Message</span>
+                        </div>
+                        <div class="p-4">
+                            <textarea x-model="settings.whatsapp_template_completed" class="form-input-custom font-mono text-sm" rows="7"
+                                      placeholder="Hello {customer_name}! Your device is ready for pickup..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button @click="saveNotificationSettings()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save WhatsApp Settings</button>
+                    <button @click="showTestNotifyModal=true" class="btn-secondary text-sm">🧪 Send Test Message</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{-- /Notifications --}}
 
     {{-- Invoice Layout --}}
     <div x-show="tab==='invoice-layout'" class="card">
@@ -324,6 +491,45 @@
         </div>
     </div>
 
+    {{-- Test Notification Modal --}}
+    <div x-show="showTestNotifyModal" class="modal-overlay" x-cloak @click.self="showTestNotifyModal=false">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 class="text-lg font-semibold">🧪 Send Test Notification</h3>
+                <button @click="showTestNotifyModal=false" class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <div class="modal-body space-y-4">
+                <p class="text-sm text-gray-600">Enter a repair ticket number to fire a test notification right now (bypasses the enabled/disabled toggles).</p>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ticket Number</label>
+                    <input x-model="testTicket" type="text" class="form-input-custom" placeholder="e.g. REP-0001">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Notification Type</label>
+                    <select x-model="testType" class="form-select-custom">
+                        <option value="received">📥 Order Received</option>
+                        <option value="completed">✅ Repair Completed</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Channel</label>
+                    <select x-model="testChannel" class="form-select-custom">
+                        <option value="email">📧 Email only</option>
+                        <option value="whatsapp">💬 WhatsApp only</option>
+                        <option value="both">📧+💬 Both</option>
+                    </select>
+                </div>
+                <div x-show="testResult" class="p-3 rounded-lg text-sm" :class="testResult?.success ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'" x-text="testResult?.message"></div>
+            </div>
+            <div class="modal-footer">
+                <button @click="showTestNotifyModal=false" class="btn-secondary">Close</button>
+                <button @click="sendTestNotification()" class="btn-primary" :disabled="saving">
+                    <span x-show="saving" class="spinner mr-1"></span> Send Test
+                </button>
+            </div>
+        </div>
+    </div>
+
     {{-- Recharge Provider Modal --}}
     <div x-show="showRpModal" class="modal-overlay" x-cloak @click.self="showRpModal=false">
         <div class="modal-container">
@@ -362,12 +568,14 @@ function settingsPage() {
     return {
         tab: 'general', saving: false, iconFile: null, previewIcon: '',
         settings: {}, settingKeys: ['shop_name','shop_address','shop_phone','shop_email','shop_gst','currency_symbol','invoice_prefix','repair_prefix','tax_percentage','low_stock_threshold','invoice_paper_size','invoice_design_variant','invoice_header_title','invoice_header_subtitle','invoice_footer_text'],
+        notificationSettingKeys: ['notify_email_received','notify_email_completed','notify_whatsapp_received','notify_whatsapp_completed','whatsapp_api_url','whatsapp_api_token','whatsapp_from_number','whatsapp_template_received','whatsapp_template_completed'],
         serviceTypes: [], showStModal: false, stEditing: null, stForm: {},
         stImageFile: null, stImagePreview: null, stThumbFile: null, stThumbPreview: null,
         sacSearch: '', sacResults: [], sacLoading: false, sacSearched: false, selectedSac: null,
         rechargeProviders: [], showRpModal: false, rpForm: {},
         emailTemplates: [], showEtModal: false, etEditing: null, etForm: {},
         backups: [],
+        showTestNotifyModal: false, testTicket: '', testType: 'received', testChannel: 'email', testResult: null,
         init() {
             const p = new URLSearchParams(window.location.search);
             if (p.has('tab')) this.tab = p.get('tab');
@@ -388,6 +596,41 @@ function settingsPage() {
             if(s.data) this.settings = s.data; if(st.data) this.serviceTypes = st.data;
             if(rp.data) this.rechargeProviders = rp.data; if(et.data) this.emailTemplates = et.data;
             if(b.data) this.backups = b.data;
+        },
+        loadNotifications() {
+            // already loaded in load() — just ensure email templates are present
+            if (this.emailTemplates.length === 0) {
+                RepairBox.ajax('/email-templates').then(r => { if(r.data) this.emailTemplates = r.data; });
+            }
+        },
+        async saveNotificationSettings() {
+            this.saving = true;
+            try {
+                const payload = {};
+                this.notificationSettingKeys.forEach(k => { if (this.settings[k] !== undefined) payload['settings['+k+']'] = this.settings[k]; });
+                const formData = new FormData();
+                formData.append('_method', 'PUT');
+                this.notificationSettingKeys.forEach(k => {
+                    if (this.settings[k] !== undefined && this.settings[k] !== null)
+                        formData.append('settings['+k+']', this.settings[k]);
+                });
+                const r = await fetch('/settings', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
+                    body: formData
+                });
+                const data = await r.json();
+                if (data.success !== false) RepairBox.toast('Notification settings saved', 'success');
+                else RepairBox.toast(data.message || 'Error', 'error');
+            } catch(e) { RepairBox.toast('Error: '+e.message, 'error'); }
+            this.saving = false;
+        },
+        async sendTestNotification() {
+            if (!this.testTicket.trim()) { RepairBox.toast('Enter a ticket number', 'warning'); return; }
+            this.saving = true; this.testResult = null;
+            const r = await RepairBox.ajax('/notifications/test', 'POST', { ticket: this.testTicket, type: this.testType, channel: this.testChannel });
+            this.saving = false;
+            this.testResult = { success: r.success !== false, message: r.message || (r.success !== false ? 'Sent successfully!' : 'Failed to send.') };
         },
         formatLabel(key) { return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); },
         getIconUrl() {

@@ -178,6 +178,7 @@ Route::middleware('auth')->group(function () {
     Route::put('vendors/{vendor}', [SettingController::class, 'updateVendor']);
     Route::get('email-templates', [SettingController::class, 'emailTemplates']);
     Route::put('email-templates/{emailTemplate}', [SettingController::class, 'updateEmailTemplate']);
+    Route::post('notifications/test', [SettingController::class, 'testNotification']);
     Route::get('notifications', [SettingController::class, 'notifications'])->name('notifications.index');
     Route::get('activity-logs', [SettingController::class, 'activityLogs'])->name('activity-logs.index');
     Route::get('backups', [SettingController::class, 'backups']);

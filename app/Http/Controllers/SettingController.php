@@ -306,5 +306,50 @@ class SettingController extends Controller
         imagedestroy($thumb);
         return $destFolder . '/' . $filename;
     }
+
+    // ── Test Notification ───────────────────────────────────────────────────────
+    public function testNotification(Request $request)
+    {
+        $data = $request->validate([
+            'ticket'  => 'required|string',
+            'type'    => 'required|in:received,completed',
+            'channel' => 'required|in:email,whatsapp,both',
+        ]);
+
+        $repair = \App\Models\Repair::with('customer', 'technician')
+            ->where('ticket_number', $data['ticket'])
+            ->first();
+
+        if (! $repair) {
+            return response()->json(['success' => false, 'message' => "Repair ticket '{$data['ticket']}' not found."], 404);
+        }
+
+        $svc  = new \App\Services\NotificationService();
+        $sent = [];
+
+        // Temporarily override toggles using a mini closure
+        $sendEmail = fn() => $svc->{'sendRepair' . ucfirst($data['type'])}($repair);
+
+        try {
+            if ($data['channel'] === 'email' || $data['channel'] === 'both') {
+                // Force email on for the test by temporarily patching settings in memory
+                \App\Models\Setting::setValue('notify_email_'.$data['type'], '1');
+                \App\Models\Setting::setValue('notify_whatsapp_'.$data['type'], '0');
+                $svc->{'sendRepair' . ucfirst($data['type'])}($repair);
+                $sent[] = 'email';
+            }
+
+            if ($data['channel'] === 'whatsapp' || $data['channel'] === 'both') {
+                \App\Models\Setting::setValue('notify_email_'.$data['type'], '0');
+                \App\Models\Setting::setValue('notify_whatsapp_'.$data['type'], '1');
+                $svc->{'sendRepair' . ucfirst($data['type'])}($repair);
+                $sent[] = 'WhatsApp';
+            }
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 422);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Test notification sent via: ' . implode(' & ', $sent) . '. Check logs if recipients didn\'t receive it.']);
+    }
 }
 
