@@ -43,7 +43,7 @@ class PartController extends Controller
 
     public function search()
     {
-        $parts = Part::with('taxRate')->where('status', 'active')
+        $parts = Part::where('status', 'active')
             ->when(request('q'), fn($q, $s) => $q->where(function($w) use ($s) {
                 $w->where('name', 'like', "%{$s}%")->orWhere('sku', 'like', "%{$s}%");
             }))

@@ -8,8 +8,7 @@ use App\Models\{
     Purchase, PurchaseItem, Invoice, InvoiceItem, InvoicePayment,
     Repair, RepairStatusHistory, RepairPart, RepairPayment, RepairServiceItem,
     Recharge, Service, ExpenseCategory, Expense, Setting,
-    EmailTemplate, LedgerTransaction, ActivityLog, Part,
-    TaxRate, HsnCode
+    EmailTemplate, LedgerTransaction, ActivityLog, Part
 };
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -107,39 +106,13 @@ class DatabaseSeeder extends Seeder
         $brandRealme = Brand::create(['name' => 'Realme']);
         $brandNokia = Brand::create(['name' => 'Nokia']);
 
-        // === TAX RATES (GST Slabs) — clear migration-seeded defaults first ===
-        TaxRate::query()->delete();
-        $gst0  = TaxRate::create(['name' => 'GST 0%',  'percentage' => 0,  'is_default' => false, 'is_active' => true]);
-        $gst5  = TaxRate::create(['name' => 'GST 5%',  'percentage' => 5,  'is_default' => false, 'is_active' => true]);
-        $gst12 = TaxRate::create(['name' => 'GST 12%', 'percentage' => 12, 'is_default' => false, 'is_active' => true]);
-        $gst18 = TaxRate::create(['name' => 'GST 18%', 'percentage' => 18, 'is_default' => true,  'is_active' => true]);
-        $gst28 = TaxRate::create(['name' => 'GST 28%', 'percentage' => 28, 'is_default' => false, 'is_active' => true]);
-
-        // === HSN CODES (Goods) ===
-        HsnCode::create(['code' => '8517', 'type' => 'hsn', 'description' => 'Telephone sets / Smartphones', 'tax_rate_id' => $gst18->id]);
-        HsnCode::create(['code' => '8506', 'type' => 'hsn', 'description' => 'Primary cells and batteries', 'tax_rate_id' => $gst28->id]);
-        HsnCode::create(['code' => '8507', 'type' => 'hsn', 'description' => 'Electric accumulators (rechargeable batteries)', 'tax_rate_id' => $gst18->id]);
-        HsnCode::create(['code' => '8544', 'type' => 'hsn', 'description' => 'Insulated wire, cable, connectors', 'tax_rate_id' => $gst18->id]);
-        HsnCode::create(['code' => '3926', 'type' => 'hsn', 'description' => 'Plastic articles (cases, covers)', 'tax_rate_id' => $gst18->id]);
-        HsnCode::create(['code' => '8518', 'type' => 'hsn', 'description' => 'Microphones, loudspeakers, headphones', 'tax_rate_id' => $gst18->id]);
-        HsnCode::create(['code' => '9001', 'type' => 'hsn', 'description' => 'Optical screens / display glass', 'tax_rate_id' => $gst18->id]);
-        HsnCode::create(['code' => '8504', 'type' => 'hsn', 'description' => 'Electrical transformers, chargers', 'tax_rate_id' => $gst18->id]);
-        HsnCode::create(['code' => '8523', 'type' => 'hsn', 'description' => 'SIM cards, memory cards', 'tax_rate_id' => $gst18->id]);
-
-        // === SAC CODES (Services) ===
-        HsnCode::create(['code' => '998314', 'type' => 'sac', 'description' => 'Maintenance & repair of telecom equipment', 'tax_rate_id' => $gst18->id]);
-        HsnCode::create(['code' => '998316', 'type' => 'sac', 'description' => 'Maintenance & repair of electronic equipment', 'tax_rate_id' => $gst18->id]);
-        HsnCode::create(['code' => '998319', 'type' => 'sac', 'description' => 'Other repair & maintenance services', 'tax_rate_id' => $gst18->id]);
-        HsnCode::create(['code' => '998313', 'type' => 'sac', 'description' => 'Maintenance & repair of computers', 'tax_rate_id' => $gst18->id]);
-        HsnCode::create(['code' => '998392', 'type' => 'sac', 'description' => 'Data recovery services', 'tax_rate_id' => $gst18->id]);
-
-        // === SERVICE TYPES (with SAC codes & GST) ===
-        ServiceType::create(['name' => 'Screen Replacement', 'default_price' => 1500, 'description' => 'LCD/AMOLED screen replacement', 'sac_code' => '998314', 'tax_rate_id' => $gst18->id]);
-        ServiceType::create(['name' => 'Battery Replacement', 'default_price' => 800, 'description' => 'Battery swap', 'sac_code' => '998314', 'tax_rate_id' => $gst18->id]);
-        ServiceType::create(['name' => 'Software Update', 'default_price' => 300, 'description' => 'OS update/flash', 'sac_code' => '998316', 'tax_rate_id' => $gst18->id]);
-        ServiceType::create(['name' => 'Data Recovery', 'default_price' => 1000, 'description' => 'Recover data from device', 'sac_code' => '998392', 'tax_rate_id' => $gst18->id]);
-        ServiceType::create(['name' => 'Water Damage Repair', 'default_price' => 2000, 'description' => 'Water damage diagnosis and repair', 'sac_code' => '998319', 'tax_rate_id' => $gst18->id]);
-        ServiceType::create(['name' => 'Charging Port Repair', 'default_price' => 600, 'description' => 'Fix charging port issues', 'sac_code' => '998314', 'tax_rate_id' => $gst18->id]);
+        // === SERVICE TYPES ===
+        ServiceType::create(['name' => 'Screen Replacement', 'default_price' => 1500, 'description' => 'LCD/AMOLED screen replacement']);
+        ServiceType::create(['name' => 'Battery Replacement', 'default_price' => 800, 'description' => 'Battery swap']);
+        ServiceType::create(['name' => 'Software Update', 'default_price' => 300, 'description' => 'OS update/flash']);
+        ServiceType::create(['name' => 'Data Recovery', 'default_price' => 1000, 'description' => 'Recover data from device']);
+        ServiceType::create(['name' => 'Water Damage Repair', 'default_price' => 2000, 'description' => 'Water damage diagnosis and repair']);
+        ServiceType::create(['name' => 'Charging Port Repair', 'default_price' => 600, 'description' => 'Fix charging port issues']);
 
         // === RECHARGE PROVIDERS ===
         RechargeProvider::create(['name' => 'Jio', 'provider_type' => 'mobile']);
@@ -149,29 +122,29 @@ class DatabaseSeeder extends Seeder
         RechargeProvider::create(['name' => 'Tata Play', 'provider_type' => 'dth']);
         RechargeProvider::create(['name' => 'Airtel DTH', 'provider_type' => 'dth']);
 
-        // === VENDORS (with GSTIN) ===
-        $vendor1 = Vendor::create(['name' => 'QuickFix Repairs', 'phone' => '9876543210', 'address' => 'Shop 5, Tech Market, Delhi', 'specialization' => 'Motherboard repair', 'gstin' => '07AABCQ1234R1Z5']);
-        $vendor2 = Vendor::create(['name' => 'Screen Pro', 'phone' => '9876543211', 'address' => 'Shop 12, Mobile Lane, Mumbai', 'specialization' => 'Screen replacement', 'gstin' => '27AADCS5678P1Z8']);
+        // === VENDORS ===
+        $vendor1 = Vendor::create(['name' => 'QuickFix Repairs', 'phone' => '9876543210', 'address' => 'Shop 5, Tech Market, Delhi', 'specialization' => 'Motherboard repair']);
+        $vendor2 = Vendor::create(['name' => 'Screen Pro', 'phone' => '9876543211', 'address' => 'Shop 12, Mobile Lane, Mumbai', 'specialization' => 'Screen replacement']);
 
-        // === CUSTOMERS (with GST info) ===
-        $cust1 = Customer::create(['name' => 'Amit Sharma', 'mobile_number' => '9876500001', 'email' => 'amit@email.com', 'address' => '123, MG Road, Delhi', 'loyalty_points' => 150, 'total_spent' => 12500, 'gstin' => '07AAAPA1234R1Z5', 'billing_state' => '07']);
-        $cust2 = Customer::create(['name' => 'Priya Patel', 'mobile_number' => '9876500002', 'email' => 'priya@email.com', 'address' => '456, Park Street, Mumbai', 'loyalty_points' => 80, 'total_spent' => 8500, 'billing_state' => '27']);
-        $cust3 = Customer::create(['name' => 'Rahul Singh', 'mobile_number' => '9876500003', 'address' => '789, Gandhi Nagar, Bangalore', 'loyalty_points' => 200, 'total_spent' => 25000, 'gstin' => '29AADCR9876M1Z3', 'billing_state' => '29']);
-        $cust4 = Customer::create(['name' => 'Sneha Gupta', 'mobile_number' => '9876500004', 'email' => 'sneha@email.com', 'address' => '321, Lake Road, Kolkata', 'billing_state' => '19']);
-        $cust5 = Customer::create(['name' => 'Vikram Joshi', 'mobile_number' => '9876500005', 'address' => '654, Civil Lines, Jaipur', 'billing_state' => '08']);
+        // === CUSTOMERS ===
+        $cust1 = Customer::create(['name' => 'Amit Sharma', 'mobile_number' => '9876500001', 'email' => 'amit@email.com', 'address' => '123, MG Road, Delhi', 'loyalty_points' => 150, 'total_spent' => 12500]);
+        $cust2 = Customer::create(['name' => 'Priya Patel', 'mobile_number' => '9876500002', 'email' => 'priya@email.com', 'address' => '456, Park Street, Mumbai', 'loyalty_points' => 80, 'total_spent' => 8500]);
+        $cust3 = Customer::create(['name' => 'Rahul Singh', 'mobile_number' => '9876500003', 'address' => '789, Gandhi Nagar, Bangalore', 'loyalty_points' => 200, 'total_spent' => 25000]);
+        $cust4 = Customer::create(['name' => 'Sneha Gupta', 'mobile_number' => '9876500004', 'email' => 'sneha@email.com', 'address' => '321, Lake Road, Kolkata']);
+        $cust5 = Customer::create(['name' => 'Vikram Joshi', 'mobile_number' => '9876500005', 'address' => '654, Civil Lines, Jaipur']);
 
-        // === PRODUCTS (with HSN codes & GST) ===
+        // === PRODUCTS ===
         $products = [
-            ['category_id' => $catMobile->id, 'subcategory_id' => $subSmartphone->id, 'brand_id' => $brandSamsung->id, 'name' => 'Samsung Galaxy A14', 'sku' => 'SAM-A14-001', 'barcode' => '8901234560001', 'purchase_price' => 8500, 'mrp' => 12999, 'selling_price' => 11999, 'hsn_code' => '8517', 'tax_rate_id' => $gst18->id],
-            ['category_id' => $catMobile->id, 'subcategory_id' => $subSmartphone->id, 'brand_id' => $brandApple->id, 'name' => 'iPhone 13', 'sku' => 'APL-I13-001', 'barcode' => '8901234560002', 'purchase_price' => 45000, 'mrp' => 59999, 'selling_price' => 56999, 'hsn_code' => '8517', 'tax_rate_id' => $gst18->id],
-            ['category_id' => $catMobile->id, 'subcategory_id' => $subSmartphone->id, 'brand_id' => $brandXiaomi->id, 'name' => 'Redmi Note 12', 'sku' => 'XIA-RN12-001', 'barcode' => '8901234560003', 'purchase_price' => 10000, 'mrp' => 15999, 'selling_price' => 14499, 'hsn_code' => '8517', 'tax_rate_id' => $gst18->id],
-            ['category_id' => $catAccessory->id, 'subcategory_id' => $subCases->id, 'brand_id' => $brandSamsung->id, 'name' => 'Samsung Clear Case A14', 'sku' => 'ACC-SC-001', 'barcode' => '8901234560004', 'purchase_price' => 100, 'mrp' => 499, 'selling_price' => 399, 'hsn_code' => '3926', 'tax_rate_id' => $gst18->id],
-            ['category_id' => $catAccessory->id, 'subcategory_id' => $subChargers->id, 'brand_id' => $brandApple->id, 'name' => 'Apple 20W Charger', 'sku' => 'ACC-AC-001', 'barcode' => '8901234560005', 'purchase_price' => 800, 'mrp' => 1999, 'selling_price' => 1799, 'hsn_code' => '8504', 'tax_rate_id' => $gst18->id],
-            ['category_id' => $catParts->id, 'subcategory_id' => $subScreens->id, 'brand_id' => $brandSamsung->id, 'name' => 'Samsung A14 Screen', 'sku' => 'PRT-SS-001', 'barcode' => '8901234560006', 'purchase_price' => 1200, 'mrp' => 2500, 'selling_price' => 2200, 'hsn_code' => '9001', 'tax_rate_id' => $gst18->id],
-            ['category_id' => $catParts->id, 'subcategory_id' => $subBatteries->id, 'brand_id' => $brandApple->id, 'name' => 'iPhone 13 Battery', 'sku' => 'PRT-IB-001', 'barcode' => '8901234560007', 'purchase_price' => 500, 'mrp' => 1200, 'selling_price' => 999, 'hsn_code' => '8507', 'tax_rate_id' => $gst18->id],
-            ['category_id' => $catAccessory->id, 'subcategory_id' => $subEarphones->id, 'brand_id' => $brandOnePlus->id, 'name' => 'OnePlus Buds Z2', 'sku' => 'ACC-OB-001', 'barcode' => '8901234560008', 'purchase_price' => 1200, 'mrp' => 2999, 'selling_price' => 2499, 'hsn_code' => '8518', 'tax_rate_id' => $gst18->id],
-            ['category_id' => $catMobile->id, 'subcategory_id' => $subFeature->id, 'brand_id' => $brandNokia->id, 'name' => 'Nokia 105', 'sku' => 'NOK-105-001', 'barcode' => '8901234560009', 'purchase_price' => 900, 'mrp' => 1499, 'selling_price' => 1299, 'hsn_code' => '8517', 'tax_rate_id' => $gst12->id],
-            ['category_id' => $catMobile->id, 'subcategory_id' => $subSmartphone->id, 'brand_id' => $brandVivo->id, 'name' => 'Vivo Y16', 'sku' => 'VIV-Y16-001', 'barcode' => '8901234560010', 'purchase_price' => 7000, 'mrp' => 10999, 'selling_price' => 9999, 'hsn_code' => '8517', 'tax_rate_id' => $gst18->id],
+            ['category_id' => $catMobile->id, 'subcategory_id' => $subSmartphone->id, 'brand_id' => $brandSamsung->id, 'name' => 'Samsung Galaxy A14', 'sku' => 'SAM-A14-001', 'barcode' => '8901234560001', 'purchase_price' => 8500, 'mrp' => 12999, 'selling_price' => 11999],
+            ['category_id' => $catMobile->id, 'subcategory_id' => $subSmartphone->id, 'brand_id' => $brandApple->id, 'name' => 'iPhone 13', 'sku' => 'APL-I13-001', 'barcode' => '8901234560002', 'purchase_price' => 45000, 'mrp' => 59999, 'selling_price' => 56999],
+            ['category_id' => $catMobile->id, 'subcategory_id' => $subSmartphone->id, 'brand_id' => $brandXiaomi->id, 'name' => 'Redmi Note 12', 'sku' => 'XIA-RN12-001', 'barcode' => '8901234560003', 'purchase_price' => 10000, 'mrp' => 15999, 'selling_price' => 14499],
+            ['category_id' => $catAccessory->id, 'subcategory_id' => $subCases->id, 'brand_id' => $brandSamsung->id, 'name' => 'Samsung Clear Case A14', 'sku' => 'ACC-SC-001', 'barcode' => '8901234560004', 'purchase_price' => 100, 'mrp' => 499, 'selling_price' => 399],
+            ['category_id' => $catAccessory->id, 'subcategory_id' => $subChargers->id, 'brand_id' => $brandApple->id, 'name' => 'Apple 20W Charger', 'sku' => 'ACC-AC-001', 'barcode' => '8901234560005', 'purchase_price' => 800, 'mrp' => 1999, 'selling_price' => 1799],
+            ['category_id' => $catParts->id, 'subcategory_id' => $subScreens->id, 'brand_id' => $brandSamsung->id, 'name' => 'Samsung A14 Screen', 'sku' => 'PRT-SS-001', 'barcode' => '8901234560006', 'purchase_price' => 1200, 'mrp' => 2500, 'selling_price' => 2200],
+            ['category_id' => $catParts->id, 'subcategory_id' => $subBatteries->id, 'brand_id' => $brandApple->id, 'name' => 'iPhone 13 Battery', 'sku' => 'PRT-IB-001', 'barcode' => '8901234560007', 'purchase_price' => 500, 'mrp' => 1200, 'selling_price' => 999],
+            ['category_id' => $catAccessory->id, 'subcategory_id' => $subEarphones->id, 'brand_id' => $brandOnePlus->id, 'name' => 'OnePlus Buds Z2', 'sku' => 'ACC-OB-001', 'barcode' => '8901234560008', 'purchase_price' => 1200, 'mrp' => 2999, 'selling_price' => 2499],
+            ['category_id' => $catMobile->id, 'subcategory_id' => $subFeature->id, 'brand_id' => $brandNokia->id, 'name' => 'Nokia 105', 'sku' => 'NOK-105-001', 'barcode' => '8901234560009', 'purchase_price' => 900, 'mrp' => 1499, 'selling_price' => 1299],
+            ['category_id' => $catMobile->id, 'subcategory_id' => $subSmartphone->id, 'brand_id' => $brandVivo->id, 'name' => 'Vivo Y16', 'sku' => 'VIV-Y16-001', 'barcode' => '8901234560010', 'purchase_price' => 7000, 'mrp' => 10999, 'selling_price' => 9999],
         ];
 
         $createdProducts = [];
@@ -182,8 +155,8 @@ class DatabaseSeeder extends Seeder
         }
 
         // === SUPPLIERS ===
-        $sup1 = Supplier::create(['name' => 'MobileTech Distributors', 'contact_person' => 'Suresh Mehta', 'phone' => '9888000001', 'email' => 'suresh@mobiletech.com', 'address' => 'Nehru Place, Delhi', 'gst_number' => '07AAACM1234R1Z5']);
-        $sup2 = Supplier::create(['name' => 'SpareHub India', 'contact_person' => 'Ravi Kapoor', 'phone' => '9888000002', 'email' => 'ravi@sparehub.com', 'address' => 'Lamington Road, Mumbai', 'gst_number' => '27AADCS5678P1Z8']);
+        $sup1 = Supplier::create(['name' => 'MobileTech Distributors', 'contact_person' => 'Suresh Mehta', 'phone' => '9888000001', 'email' => 'suresh@mobiletech.com', 'address' => 'Nehru Place, Delhi']);
+        $sup2 = Supplier::create(['name' => 'SpareHub India', 'contact_person' => 'Ravi Kapoor', 'phone' => '9888000002', 'email' => 'ravi@sparehub.com', 'address' => 'Lamington Road, Mumbai']);
 
         // === PURCHASES ===
         $pur1 = Purchase::create(['supplier_id' => $sup1->id, 'purchase_date' => now()->subDays(30), 'invoice_number' => 'SUP-INV-001', 'total_amount' => 85000]);
@@ -191,58 +164,46 @@ class DatabaseSeeder extends Seeder
         $pur2 = Purchase::create(['supplier_id' => $sup2->id, 'purchase_date' => now()->subDays(15), 'invoice_number' => 'SUP-INV-002', 'total_amount' => 24000]);
         PurchaseItem::create(['purchase_id' => $pur2->id, 'product_id' => $createdProducts[5]->id, 'quantity' => 20, 'purchase_price' => 1200, 'remaining_quantity' => 15]);
 
-        // === INVOICES (with GST) ===
-        // Invoice 1: Cust1 (Delhi 07) → Shop (Delhi 07) = Intra-state → CGST+SGST
+        // === INVOICES ===
         $inv1 = Invoice::create([
             'invoice_number' => 'INV-000001',
             'customer_id' => $cust1->id,
-            'total_amount' => 14198,
+            'total_amount' => 14898,
             'discount' => 200,
-            'final_amount' => 13998,
-            'tax_amount' => 2272.54,
-            'cgst_amount' => 1136.27,
-            'sgst_amount' => 1136.27,
-            'igst_amount' => 0,
-            'is_igst' => false,
+            'final_amount' => 14698,
             'payment_status' => 'paid',
             'created_by' => 1,
         ]);
-        InvoiceItem::create(['invoice_id' => $inv1->id, 'item_type' => 'product', 'product_id' => $createdProducts[2]->id, 'item_name' => 'Redmi Note 12', 'quantity' => 1, 'price' => 14499, 'total' => 14499, 'hsn_code' => '8517', 'tax_rate' => 18, 'tax_amount' => 2211.68, 'cgst_amount' => 1105.84, 'sgst_amount' => 1105.84, 'igst_amount' => 0]);
-        InvoiceItem::create(['invoice_id' => $inv1->id, 'item_type' => 'product', 'product_id' => $createdProducts[3]->id, 'item_name' => 'Samsung Clear Case A14', 'quantity' => 1, 'price' => 399, 'total' => 399, 'hsn_code' => '3926', 'tax_rate' => 18, 'tax_amount' => 60.86, 'cgst_amount' => 30.43, 'sgst_amount' => 30.43, 'igst_amount' => 0]);
+        InvoiceItem::create(['invoice_id' => $inv1->id, 'item_type' => 'product', 'product_id' => $createdProducts[2]->id, 'item_name' => 'Redmi Note 12', 'quantity' => 1, 'price' => 14499, 'total' => 14499]);
+        InvoiceItem::create(['invoice_id' => $inv1->id, 'item_type' => 'product', 'product_id' => $createdProducts[3]->id, 'item_name' => 'Samsung Clear Case A14', 'quantity' => 1, 'price' => 399, 'total' => 399]);
         InvoicePayment::create(['invoice_id' => $inv1->id, 'payment_method' => 'cash', 'amount' => 10000]);
-        InvoicePayment::create(['invoice_id' => $inv1->id, 'payment_method' => 'upi', 'amount' => 3998, 'transaction_reference' => 'UPI123456']);
+        InvoicePayment::create(['invoice_id' => $inv1->id, 'payment_method' => 'upi', 'amount' => 4698, 'transaction_reference' => 'UPI123456']);
 
-        // Invoice 2: Cust2 (Mumbai 27) → Shop (Delhi 07) = Inter-state → IGST
         $inv2 = Invoice::create([
             'invoice_number' => 'INV-000002',
             'customer_id' => $cust2->id,
             'total_amount' => 1799,
             'discount' => 0,
             'final_amount' => 1799,
-            'tax_amount' => 274.42,
-            'cgst_amount' => 0,
-            'sgst_amount' => 0,
-            'igst_amount' => 274.42,
-            'is_igst' => true,
             'payment_status' => 'paid',
             'created_by' => 1,
         ]);
-        InvoiceItem::create(['invoice_id' => $inv2->id, 'item_type' => 'product', 'product_id' => $createdProducts[4]->id, 'item_name' => 'Apple 20W Charger', 'quantity' => 1, 'price' => 1799, 'total' => 1799, 'hsn_code' => '8504', 'tax_rate' => 18, 'tax_amount' => 274.42, 'cgst_amount' => 0, 'sgst_amount' => 0, 'igst_amount' => 274.42]);
+        InvoiceItem::create(['invoice_id' => $inv2->id, 'item_type' => 'product', 'product_id' => $createdProducts[4]->id, 'item_name' => 'Apple 20W Charger', 'quantity' => 1, 'price' => 1799, 'total' => 1799]);
         InvoicePayment::create(['invoice_id' => $inv2->id, 'payment_method' => 'card', 'amount' => 1799]);
 
-        // === PARTS (Spare parts with HSN codes & GST) ===
-        $partScreen = Part::create(['name' => 'Samsung Galaxy S21 Screen', 'sku' => 'PRT-SS21-SCR', 'cost_price' => 1200, 'selling_price' => 1800, 'hsn_code' => '9001', 'tax_rate_id' => $gst18->id]);
-        $partBattery = Part::create(['name' => 'Samsung Galaxy S21 Battery', 'sku' => 'PRT-SS21-BAT', 'cost_price' => 450, 'selling_price' => 700, 'hsn_code' => '8507', 'tax_rate_id' => $gst18->id]);
-        Part::create(['name' => 'iPhone 12 Screen', 'sku' => 'PRT-IP12-SCR', 'cost_price' => 2500, 'selling_price' => 3500, 'hsn_code' => '9001', 'tax_rate_id' => $gst18->id]);
-        $partIpBat = Part::create(['name' => 'iPhone 12 Battery', 'sku' => 'PRT-IP12-BAT', 'cost_price' => 800, 'selling_price' => 1200, 'hsn_code' => '8507', 'tax_rate_id' => $gst18->id]);
-        Part::create(['name' => 'Samsung A54 Screen', 'sku' => 'PRT-SA54-SCR', 'cost_price' => 900, 'selling_price' => 1400, 'hsn_code' => '9001', 'tax_rate_id' => $gst18->id]);
-        Part::create(['name' => 'OnePlus Nord Charging Port', 'sku' => 'PRT-OPN-CHP', 'cost_price' => 200, 'selling_price' => 400, 'hsn_code' => '8544', 'tax_rate_id' => $gst18->id]);
-        Part::create(['name' => 'Universal SIM Tray', 'sku' => 'PRT-UNI-SIM', 'cost_price' => 30, 'selling_price' => 80, 'hsn_code' => '8517', 'tax_rate_id' => $gst5->id]);
-        Part::create(['name' => 'iPhone 13 Back Glass', 'sku' => 'PRT-IP13-BGL', 'cost_price' => 600, 'selling_price' => 1000, 'hsn_code' => '9001', 'tax_rate_id' => $gst18->id]);
-        Part::create(['name' => 'Samsung S21 Charging Flex', 'sku' => 'PRT-SS21-CFX', 'cost_price' => 350, 'selling_price' => 600, 'hsn_code' => '8544', 'tax_rate_id' => $gst18->id]);
-        Part::create(['name' => 'Xiaomi Redmi Note 11 Screen', 'sku' => 'PRT-XRN11-SCR', 'cost_price' => 700, 'selling_price' => 1100, 'hsn_code' => '9001', 'tax_rate_id' => $gst18->id]);
-        Part::create(['name' => 'Universal Earpiece Speaker', 'sku' => 'PRT-UNI-EAR', 'cost_price' => 80, 'selling_price' => 200, 'hsn_code' => '8518', 'tax_rate_id' => $gst18->id]);
-        Part::create(['name' => 'iPhone 12 Charging Port', 'sku' => 'PRT-IP12-CHP', 'cost_price' => 500, 'selling_price' => 900, 'hsn_code' => '8544', 'tax_rate_id' => $gst18->id]);
+        // === PARTS ===
+        $partScreen = Part::create(['name' => 'Samsung Galaxy S21 Screen', 'sku' => 'PRT-SS21-SCR', 'cost_price' => 1200, 'selling_price' => 1800]);
+        $partBattery = Part::create(['name' => 'Samsung Galaxy S21 Battery', 'sku' => 'PRT-SS21-BAT', 'cost_price' => 450, 'selling_price' => 700]);
+        Part::create(['name' => 'iPhone 12 Screen', 'sku' => 'PRT-IP12-SCR', 'cost_price' => 2500, 'selling_price' => 3500]);
+        $partIpBat = Part::create(['name' => 'iPhone 12 Battery', 'sku' => 'PRT-IP12-BAT', 'cost_price' => 800, 'selling_price' => 1200]);
+        Part::create(['name' => 'Samsung A54 Screen', 'sku' => 'PRT-SA54-SCR', 'cost_price' => 900, 'selling_price' => 1400]);
+        Part::create(['name' => 'OnePlus Nord Charging Port', 'sku' => 'PRT-OPN-CHP', 'cost_price' => 200, 'selling_price' => 400]);
+        Part::create(['name' => 'Universal SIM Tray', 'sku' => 'PRT-UNI-SIM', 'cost_price' => 30, 'selling_price' => 80]);
+        Part::create(['name' => 'iPhone 13 Back Glass', 'sku' => 'PRT-IP13-BGL', 'cost_price' => 600, 'selling_price' => 1000]);
+        Part::create(['name' => 'Samsung S21 Charging Flex', 'sku' => 'PRT-SS21-CFX', 'cost_price' => 350, 'selling_price' => 600]);
+        Part::create(['name' => 'Xiaomi Redmi Note 11 Screen', 'sku' => 'PRT-XRN11-SCR', 'cost_price' => 700, 'selling_price' => 1100]);
+        Part::create(['name' => 'Universal Earpiece Speaker', 'sku' => 'PRT-UNI-EAR', 'cost_price' => 80, 'selling_price' => 200]);
+        Part::create(['name' => 'iPhone 12 Charging Port', 'sku' => 'PRT-IP12-CHP', 'cost_price' => 500, 'selling_price' => 900]);
 
         // === REPAIRS ===
         // Repair 1: In Progress (with advance payment)
@@ -262,7 +223,7 @@ class DatabaseSeeder extends Seeder
         ]);
         RepairStatusHistory::create(['repair_id' => $rep1->id, 'status' => 'received', 'notes' => 'Device received', 'updated_by' => 1]);
         RepairStatusHistory::create(['repair_id' => $rep1->id, 'status' => 'in_progress', 'notes' => 'Screen replacement started', 'updated_by' => $techUser->id]);
-        RepairPart::create(['repair_id' => $rep1->id, 'part_id' => $partScreen->id, 'quantity' => 1, 'cost_price' => 1200, 'hsn_code' => '9001', 'tax_rate' => 18, 'tax_amount' => 274.58]);
+        RepairPart::create(['repair_id' => $rep1->id, 'part_id' => $partScreen->id, 'quantity' => 1, 'cost_price' => 1200]);
         RepairPayment::create(['repair_id' => $rep1->id, 'payment_type' => 'advance', 'amount' => 1500, 'payment_method' => 'cash', 'direction' => 'IN']);
 
         // Repair 2: Completed (ready for service charge & payment)
@@ -285,9 +246,9 @@ class DatabaseSeeder extends Seeder
         RepairStatusHistory::create(['repair_id' => $rep2->id, 'status' => 'received', 'notes' => 'Device received', 'updated_by' => 1]);
         RepairStatusHistory::create(['repair_id' => $rep2->id, 'status' => 'in_progress', 'notes' => 'Battery diagnosis started', 'updated_by' => $techUser->id]);
         RepairStatusHistory::create(['repair_id' => $rep2->id, 'status' => 'completed', 'notes' => 'Battery replaced successfully', 'updated_by' => $techUser->id]);
-        RepairPart::create(['repair_id' => $rep2->id, 'part_id' => $partIpBat->id, 'quantity' => 1, 'cost_price' => 800, 'hsn_code' => '8507', 'tax_rate' => 18, 'tax_amount' => 183.05]);
+        RepairPart::create(['repair_id' => $rep2->id, 'part_id' => $partIpBat->id, 'quantity' => 1, 'cost_price' => 800]);
         RepairPayment::create(['repair_id' => $rep2->id, 'payment_type' => 'advance', 'amount' => 500, 'payment_method' => 'upi', 'direction' => 'IN']);
-        RepairServiceItem::create(['repair_id' => $rep2->id, 'service_type_id' => 2, 'service_type_name' => 'Battery Replacement', 'customer_charge' => 500, 'vendor_charge' => 0, 'sac_code' => '998314', 'tax_rate' => 18, 'tax_amount' => 76.27]);
+        RepairServiceItem::create(['repair_id' => $rep2->id, 'service_type_id' => 2, 'service_type_name' => 'Battery Replacement', 'customer_charge' => 500, 'vendor_charge' => 0]);
 
         // Repair 3: Received (just created, with advance)
         $rep3 = Repair::create([
@@ -326,9 +287,9 @@ class DatabaseSeeder extends Seeder
         RepairStatusHistory::create(['repair_id' => $rep4->id, 'status' => 'in_progress', 'notes' => 'Screen replacement', 'updated_by' => $techUser->id]);
         RepairStatusHistory::create(['repair_id' => $rep4->id, 'status' => 'completed', 'notes' => 'Screen replaced', 'updated_by' => $techUser->id]);
         RepairStatusHistory::create(['repair_id' => $rep4->id, 'status' => 'payment', 'notes' => 'Ready for payment collection', 'updated_by' => 1]);
-        RepairPart::create(['repair_id' => $rep4->id, 'part_id' => Part::where('sku', 'PRT-XRN11-SCR')->first()->id, 'quantity' => 1, 'cost_price' => 700, 'hsn_code' => '9001', 'tax_rate' => 18, 'tax_amount' => 168.81]);
+        RepairPart::create(['repair_id' => $rep4->id, 'part_id' => Part::where('sku', 'PRT-XRN11-SCR')->first()->id, 'quantity' => 1, 'cost_price' => 700]);
         RepairPayment::create(['repair_id' => $rep4->id, 'payment_type' => 'advance', 'amount' => 500, 'payment_method' => 'cash', 'direction' => 'IN']);
-        RepairServiceItem::create(['repair_id' => $rep4->id, 'service_type_id' => 1, 'service_type_name' => 'Screen Replacement', 'customer_charge' => 300, 'vendor_charge' => 0, 'sac_code' => '998314', 'tax_rate' => 18, 'tax_amount' => 45.76]);
+        RepairServiceItem::create(['repair_id' => $rep4->id, 'service_type_id' => 1, 'service_type_name' => 'Screen Replacement', 'customer_charge' => 300, 'vendor_charge' => 0]);
 
         // Repair 5: Closed (fully paid, invoice ready)
         $rep5 = Repair::create([
@@ -352,10 +313,10 @@ class DatabaseSeeder extends Seeder
         RepairStatusHistory::create(['repair_id' => $rep5->id, 'status' => 'completed', 'notes' => 'Done', 'updated_by' => $techUser->id]);
         RepairStatusHistory::create(['repair_id' => $rep5->id, 'status' => 'payment', 'notes' => 'Payment collected', 'updated_by' => 1]);
         RepairStatusHistory::create(['repair_id' => $rep5->id, 'status' => 'closed', 'notes' => 'Delivered to customer', 'updated_by' => 1]);
-        RepairPart::create(['repair_id' => $rep5->id, 'part_id' => $partBattery->id, 'quantity' => 1, 'cost_price' => 450, 'hsn_code' => '8507', 'tax_rate' => 18, 'tax_amount' => 106.78]);
+        RepairPart::create(['repair_id' => $rep5->id, 'part_id' => $partBattery->id, 'quantity' => 1, 'cost_price' => 450]);
         RepairPayment::create(['repair_id' => $rep5->id, 'payment_type' => 'advance', 'amount' => 500, 'payment_method' => 'cash', 'direction' => 'IN']);
         RepairPayment::create(['repair_id' => $rep5->id, 'payment_type' => 'final', 'amount' => 150, 'payment_method' => 'upi', 'direction' => 'IN']);
-        RepairServiceItem::create(['repair_id' => $rep5->id, 'service_type_id' => 2, 'service_type_name' => 'Battery Replacement', 'customer_charge' => 200, 'vendor_charge' => 0, 'sac_code' => '998314', 'tax_rate' => 18, 'tax_amount' => 30.51]);
+        RepairServiceItem::create(['repair_id' => $rep5->id, 'service_type_id' => 2, 'service_type_name' => 'Battery Replacement', 'customer_charge' => 200, 'vendor_charge' => 0]);
 
         // Repair 6: Cancelled (with refund)
         $rep6 = Repair::create([
@@ -408,12 +369,9 @@ class DatabaseSeeder extends Seeder
         Setting::setValue('shop_address', '123, Tech Market, MG Road, Delhi - 110001');
         Setting::setValue('currency', 'INR');
         Setting::setValue('currency_symbol', '₹');
-        Setting::setValue('tax_rate', '18');
         Setting::setValue('invoice_prefix', 'INV-');
         Setting::setValue('repair_prefix', 'RPR-');
         Setting::setValue('tracking_prefix', 'TRK-');
-        Setting::setValue('shop_gstin', '07AAAAA0000A1Z5');
-        Setting::setValue('shop_state', '07');
 
         // === EMAIL TEMPLATES ===
         EmailTemplate::create(['template_name' => 'Invoice Created', 'subject' => 'Your Invoice #{invoice_number}', 'body' => 'Dear {customer_name}, your invoice #{invoice_number} of {amount} has been generated. Thank you for your purchase!']);

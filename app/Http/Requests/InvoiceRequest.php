@@ -12,7 +12,6 @@ class InvoiceRequest extends FormRequest
     {
         return [
             'customer_id' => 'nullable|exists:customers,id',
-            'customer_billing_state' => 'nullable|string|max:100',
             'discount' => 'nullable|numeric|min:0',
             'items' => 'required|array|min:1',
             'items.*.item_type' => 'required|in:product,service,recharge,manual',
@@ -21,9 +20,6 @@ class InvoiceRequest extends FormRequest
             'items.*.item_name' => 'required|string|max:255',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric|min:0',
-            // GST overrides — if provided, skip auto-resolution
-            'items.*.hsn_code' => 'nullable|string|max:10',
-            'items.*.tax_rate_override' => 'nullable|numeric|min:0|max:100',
             'payments' => 'required|array|min:1',
             'payments.*.payment_method' => 'required|string|max:50',
             'payments.*.amount' => 'required|numeric|min:0',

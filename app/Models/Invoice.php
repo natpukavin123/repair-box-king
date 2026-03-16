@@ -8,20 +8,14 @@ class Invoice extends Model
 {
     protected $fillable = [
         'invoice_number', 'customer_id', 'total_amount', 'discount',
-        'tax_amount', 'cgst_amount', 'sgst_amount', 'igst_amount', 'is_igst',
         'final_amount', 'payment_status', 'is_locked', 'created_by',
     ];
 
     protected $casts = [
         'total_amount' => 'decimal:2',
         'discount' => 'decimal:2',
-        'tax_amount' => 'decimal:2',
-        'cgst_amount' => 'decimal:2',
-        'sgst_amount' => 'decimal:2',
-        'igst_amount' => 'decimal:2',
         'final_amount' => 'decimal:2',
         'is_locked' => 'boolean',
-        'is_igst' => 'boolean',
     ];
 
     public function customer()

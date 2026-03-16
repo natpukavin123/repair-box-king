@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\{Invoice, InvoiceItem, InvoicePayment, Product, Service, ServiceType, Inventory, PurchaseItem, StockMovement, LedgerTransaction, ActivityLog, TaxRate, Setting};
+use App\Models\{Invoice, InvoiceItem, InvoicePayment, Product, Service, ServiceType, Inventory, PurchaseItem, StockMovement, LedgerTransaction, ActivityLog};
 use Illuminate\Support\Facades\DB;
 
 class InvoiceService
@@ -11,90 +11,22 @@ class InvoiceService
     {
         return DB::transaction(function () use ($data) {
             $totalAmount = 0;
-            $totalTax = 0;
-            $totalCgst = 0;
-            $totalSgst = 0;
-            $totalIgst = 0;
             $items = $data['items'];
-
-            // Determine if IGST applies (inter-state)
-            $shopState = Setting::getValue('shop_state', '');
-            $customerState = $data['customer_billing_state'] ?? '';
-            $isIgst = $shopState && $customerState && $shopState !== $customerState;
-
-            // Resolve tax rate for each item
-            $defaultTaxRate = TaxRate::getDefault();
 
             foreach ($items as &$item) {
                 $item['total'] = $item['quantity'] * $item['price'];
                 $totalAmount += $item['total'];
-
-                // Get tax rate + code: item-override > product/service master > default
-                // Priority chain: tax_rate_override → product/service taxRate → HSN/SAC master → system default
-                $taxRatePercent = 0;
-                $hsnCode = $item['hsn_code'] ?? null;
-
-                if (!empty($item['tax_rate_override'])) {
-                    // Explicit override from the POS UI
-                    $taxRatePercent = (float) $item['tax_rate_override'];
-                } elseif ($item['item_type'] === 'product' && !empty($item['product_id'])) {
-                    // Product item: use effectiveTaxPercent (tax_rate_id → HSN master → default)
-                    $product = Product::with('taxRate')->find($item['product_id']);
-                    if ($product) {
-                        $hsnCode = $hsnCode ?: $product->hsn_code;
-                        $taxRatePercent = $product->effective_tax_percent;
-                    }
-                } elseif ($item['item_type'] === 'service' && !empty($item['service_id'])) {
-                    // Service item: resolve through Service → ServiceType → sac_code → TaxRate
-                    $service = Service::with('serviceType.taxRate')->find($item['service_id']);
-                    if ($service?->serviceType) {
-                        $hsnCode = $hsnCode ?: $service->serviceType->sac_code; // store SAC in hsn_code column
-                        $taxRatePercent = $service->serviceType->effective_tax_percent;
-                    } elseif ($defaultTaxRate) {
-                        $taxRatePercent = (float) $defaultTaxRate->percentage;
-                    }
-                } elseif ($defaultTaxRate) {
-                    $taxRatePercent = (float) $defaultTaxRate->percentage;
-                }
-
-                // Calculate tax
-                $taxableValue = $item['total'];
-                $itemTax = round($taxableValue * $taxRatePercent / 100, 2);
-
-                if ($isIgst) {
-                    $item['igst_amount'] = $itemTax;
-                    $item['cgst_amount'] = 0;
-                    $item['sgst_amount'] = 0;
-                    $totalIgst += $itemTax;
-                } else {
-                    $half = round($itemTax / 2, 2);
-                    $item['cgst_amount'] = $half;
-                    $item['sgst_amount'] = $itemTax - $half; // avoid rounding issues
-                    $item['igst_amount'] = 0;
-                    $totalCgst += $item['cgst_amount'];
-                    $totalSgst += $item['sgst_amount'];
-                }
-
-                $item['tax_rate'] = $taxRatePercent;
-                $item['tax_amount'] = $itemTax;
-                $item['hsn_code'] = $hsnCode;
-                $totalTax += $itemTax;
             }
             unset($item);
 
             $discount = $data['discount'] ?? 0;
-            $finalAmount = $totalAmount + $totalTax - $discount;
+            $finalAmount = $totalAmount - $discount;
 
             $invoice = Invoice::create([
                 'invoice_number' => Invoice::generateInvoiceNumber(),
                 'customer_id' => $data['customer_id'] ?? null,
                 'total_amount' => $totalAmount,
                 'discount' => $discount,
-                'tax_amount' => $totalTax,
-                'cgst_amount' => $totalCgst,
-                'sgst_amount' => $totalSgst,
-                'igst_amount' => $totalIgst,
-                'is_igst' => $isIgst,
                 'final_amount' => $finalAmount,
                 'payment_status' => 'unpaid',
                 'created_by' => auth()->id(),
@@ -110,12 +42,6 @@ class InvoiceService
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
                     'total' => $item['total'],
-                    'hsn_code' => $item['hsn_code'] ?? null,
-                    'tax_rate' => $item['tax_rate'] ?? 0,
-                    'tax_amount' => $item['tax_amount'] ?? 0,
-                    'cgst_amount' => $item['cgst_amount'] ?? 0,
-                    'sgst_amount' => $item['sgst_amount'] ?? 0,
-                    'igst_amount' => $item['igst_amount'] ?? 0,
                 ]);
 
                 // Deduct stock for product items using FIFO

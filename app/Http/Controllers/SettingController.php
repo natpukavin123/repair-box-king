@@ -6,7 +6,6 @@ use App\Models\{Setting, EmailTemplate, Notification, ActivityLog, Backup};
 use App\Models\{ServiceType, RechargeProvider, Vendor};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 
 class SettingController extends Controller
 {
@@ -58,7 +57,7 @@ class SettingController extends Controller
     public function serviceTypes()
     {
         if (request()->ajax()) {
-            return response()->json(ServiceType::with('taxRate')->orderBy('name')->get());
+            return response()->json(ServiceType::orderBy('name')->get());
         }
     }
 
@@ -67,18 +66,10 @@ class SettingController extends Controller
         $data = $request->validate([
             'name'          => 'required|string|max:150',
             'default_price' => 'nullable|numeric|min:0',
-            // Must exist in the SAC master (type=sac). tax_rate_id auto-resolves
-            // from the master record via the model booted() hook — not a form field.
-            'sac_code' => [
-                'nullable',
-                Rule::exists('hsn_codes', 'code')
-                    ->where('type', 'sac')
-                    ->where('is_active', true),
-            ],
             'description' => 'nullable|string',
         ]);
         $st = ServiceType::create($data);
-        return response()->json(['success' => true, 'data' => $st->load('taxRate')]);
+        return response()->json(['success' => true, 'data' => $st]);
     }
 
     public function updateServiceType(Request $request, ServiceType $serviceType)
@@ -86,17 +77,11 @@ class SettingController extends Controller
         $data = $request->validate([
             'name'          => 'required|string|max:150',
             'default_price' => 'nullable|numeric|min:0',
-            'sac_code' => [
-                'nullable',
-                Rule::exists('hsn_codes', 'code')
-                    ->where('type', 'sac')
-                    ->where('is_active', true),
-            ],
             'description' => 'nullable|string',
             'status'      => 'in:active,inactive',
         ]);
         $serviceType->update($data);
-        return response()->json(['success' => true, 'data' => $serviceType->load('taxRate')]);
+        return response()->json(['success' => true, 'data' => $serviceType]);
     }
 
     // Recharge Providers
@@ -109,7 +94,7 @@ class SettingController extends Controller
     public function searchServiceTypes(Request $request)
     {
         $q = $request->input('q', '');
-        $data = ServiceType::with('taxRate')->where('name', 'like', "%{$q}%")
+        $data = ServiceType::where('name', 'like', "%{$q}%")
             ->where('status', 'active')
             ->orderBy('name')
             ->paginate(15);
@@ -166,7 +151,6 @@ class SettingController extends Controller
             'name' => 'required|string|max:150',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
-            'gstin' => 'nullable|string|max:15',
             'specialization' => 'nullable|string|max:255',
         ]);
         $vendor = Vendor::create($data);
@@ -179,7 +163,6 @@ class SettingController extends Controller
             'name' => 'required|string|max:150',
             'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
-            'gstin' => 'nullable|string|max:15',
             'specialization' => 'nullable|string|max:255',
             'status' => 'in:active,inactive',
         ]);

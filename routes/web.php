@@ -8,7 +8,7 @@ use App\Http\Controllers\{
     RechargeController, ServiceController, ExpenseController, LedgerController,
     ReturnController, UserController, SettingController, ReportController,
     PartController, RepairReturnController, RoleController, MenuController,
-    CreditNoteController, SetupController, DevToolsController, TaxController
+    CreditNoteController, SetupController, DevToolsController
 };
 
 // ─── Setup Wizard (public — no auth needed) ────────────────────────────────
@@ -148,18 +148,6 @@ Route::middleware('auth')->group(function () {
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/sales', [ReportController::class, 'sales']);
     Route::get('reports/profit', [ReportController::class, 'profit']);
-
-    // GST & Tax Management
-    Route::get('tax', [TaxController::class, 'index'])->name('tax.index');
-    Route::post('tax/rates', [TaxController::class, 'storeRate']);
-    Route::put('tax/rates/{taxRate}', [TaxController::class, 'updateRate']);
-    Route::delete('tax/rates/{taxRate}', [TaxController::class, 'deleteRate']);
-    Route::post('tax/hsn', [TaxController::class, 'storeHsn']);
-    Route::put('tax/hsn/{hsnCode}', [TaxController::class, 'updateHsn']);
-    Route::delete('tax/hsn/{hsnCode}', [TaxController::class, 'deleteHsn']);
-    Route::get('tax/hsn-search', [TaxController::class, 'searchHsn']);
-    Route::get('tax/rates-list', [TaxController::class, 'taxRatesList']);
-    Route::put('tax/settings', [TaxController::class, 'updateSettings']);
 
     // Settings
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');

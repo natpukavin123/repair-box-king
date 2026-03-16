@@ -46,7 +46,6 @@
                             <p class="text-[10px] text-gray-400 truncate leading-none" x-text="p.sku || 'No SKU'"></p>
                             <div class="flex items-center gap-1.5 mt-0.5">
                                 <span class="text-primary-600 font-bold text-[13px] leading-none" x-text="'₹' + Number(p.selling_price).toLocaleString('en-IN', {minimumFractionDigits:2})"></span>
-                                <span x-show="p.tax_rate" class="text-[7px] font-medium text-gray-400 bg-gray-100 px-1 py-px rounded leading-none" x-text="parseFloat(p.tax_rate?.percentage || 0).toFixed(0) + '%'"></span>
                             </div>
                         </div>
                     </button>
@@ -83,7 +82,6 @@
                             <p class="text-[10px] text-gray-400 truncate leading-none" x-text="s.description || ''"></p>
                             <div class="flex items-center gap-1.5 mt-0.5">
                                 <span class="text-indigo-600 font-bold text-[13px] leading-none" x-text="'₹' + Number(s.default_price || 0).toLocaleString('en-IN', {minimumFractionDigits:2})"></span>
-                                <span x-show="s.tax_rate" class="text-[7px] font-medium text-gray-400 bg-gray-100 px-1 py-px rounded leading-none" x-text="parseFloat(s.tax_rate?.percentage || 0).toFixed(0) + '%'"></span>
                             </div>
                         </div>
                     </button>
@@ -114,7 +112,7 @@
                             <label class="text-xs font-medium text-gray-600">Customer *</label>
                             <input x-model="customerSearch" @input.debounce.300ms="findCustomers()" type="text" class="form-input-custom mt-1 text-sm" placeholder="Search by name/phone">
                         </div>
-                        <button type="button" @click="showAddCustomer = true; newCustomer = {name:'', mobile_number:'', email:'', address:'', gstin:'', billing_state:'{{ \App\Models\Setting::getValue('shop_state', '') }}'}" class="btn-primary text-sm px-3 py-2 whitespace-nowrap">+ New</button>
+                        <button type="button" @click="showAddCustomer = true; newCustomer = {name:'', mobile_number:'', email:'', address:''}" class="btn-primary text-sm px-3 py-2 whitespace-nowrap">+ New</button>
                     </div>
                     <div x-show="customerResults.length > 0" class="border rounded mt-1 max-h-32 overflow-y-auto bg-white shadow-sm">
                         <template x-for="c in customerResults" :key="c.id">
@@ -142,16 +140,6 @@
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Mobile *</label><input x-model="newCustomer.mobile_number" type="text" class="form-input-custom"></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input x-model="newCustomer.email" type="email" class="form-input-custom"></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Address</label><input x-model="newCustomer.address" type="text" class="form-input-custom"></div>
-                            <div><label class="block text-sm font-medium text-gray-700 mb-1">GSTIN</label><input x-model="newCustomer.gstin" type="text" class="form-input-custom" placeholder="22AAAAA0000A1Z5" maxlength="15"></div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Billing State <span class="text-xs text-gray-400 font-normal ml-1">Determines IGST vs CGST+SGST</span></label>
-                                <select x-model="newCustomer.billing_state" class="form-select-custom">
-                                    <option value="">-- Select State --</option>
-                                    <template x-for="s in indianStates" :key="s.code">
-                                        <option :value="s.code" :selected="s.code === newCustomer.billing_state" x-text="s.code + ' - ' + s.name"></option>
-                                    </template>
-                                </select>
-                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -170,7 +158,6 @@
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-900 truncate" x-text="item.item_name"></p>
                                 <p class="text-xs text-gray-500" x-text="'₹' + Number(item.price).toFixed(2) + ' × ' + item.quantity"></p>
-                                <p class="text-xs text-orange-500" x-show="item.tax_rate_percent > 0" x-text="'GST ' + item.tax_rate_percent + '% = ₹' + (item.price * item.quantity * item.tax_rate_percent / 100).toFixed(2)"></p>
                             </div>
                             <div class="flex items-center gap-1">
                                 <button @click="item.quantity > 1 ? item.quantity-- : null" class="w-6 h-6 rounded bg-gray-200 text-gray-700 flex items-center justify-center hover:bg-gray-300">−</button>
@@ -186,13 +173,6 @@
 
                 <div class="border-t px-4 py-3 space-y-1 text-sm">
                     <div class="flex justify-between"><span class="text-gray-500">Subtotal</span><span x-text="'₹' + subtotal().toFixed(2)"></span></div>
-                    <div x-show="taxTotal() > 0" class="flex justify-between text-orange-600 font-medium">
-                        <span class="flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
-                            GST (est.)
-                        </span>
-                        <span x-text="'₹' + taxTotal().toFixed(2)"></span>
-                    </div>
                     <div class="flex justify-between items-center">
                         <span class="text-gray-500">Discount</span>
                         <div class="flex items-center gap-1"><span>₹</span><input x-model.number="form.discount" type="number" step="0.01" min="0" class="w-20 text-right text-sm border border-gray-300 rounded px-2 py-1"></div>
@@ -236,29 +216,7 @@ function posBilling() {
     return {
         searchQuery: '', searchResults: [], allServices: [], cart: [], itemType: 'product', saving: false,
         customerSearch: '', customerResults: [], selectedCustomer: null,
-        showAddCustomer: false, newCustomer: {name: '', mobile_number: '', email: '', address: '', gstin: '', billing_state: '{{ \App\Models\Setting::getValue('shop_state', '') }}'},
-        indianStates: [
-            { code: '01', name: 'Jammu & Kashmir' }, { code: '02', name: 'Himachal Pradesh' },
-            { code: '03', name: 'Punjab' }, { code: '04', name: 'Chandigarh' },
-            { code: '05', name: 'Uttarakhand' }, { code: '06', name: 'Haryana' },
-            { code: '07', name: 'Delhi' }, { code: '08', name: 'Rajasthan' },
-            { code: '09', name: 'Uttar Pradesh' }, { code: '10', name: 'Bihar' },
-            { code: '11', name: 'Sikkim' }, { code: '12', name: 'Arunachal Pradesh' },
-            { code: '13', name: 'Nagaland' }, { code: '14', name: 'Manipur' },
-            { code: '15', name: 'Mizoram' }, { code: '16', name: 'Tripura' },
-            { code: '17', name: 'Meghalaya' }, { code: '18', name: 'Assam' },
-            { code: '19', name: 'West Bengal' }, { code: '20', name: 'Jharkhand' },
-            { code: '21', name: 'Odisha' }, { code: '22', name: 'Chhattisgarh' },
-            { code: '23', name: 'Madhya Pradesh' }, { code: '24', name: 'Gujarat' },
-            { code: '26', name: 'Dadra & Nagar Haveli and Daman & Diu' },
-            { code: '27', name: 'Maharashtra' }, { code: '28', name: 'Andhra Pradesh (Old)' },
-            { code: '29', name: 'Karnataka' }, { code: '30', name: 'Goa' },
-            { code: '31', name: 'Lakshadweep' }, { code: '32', name: 'Kerala' },
-            { code: '33', name: 'Tamil Nadu' }, { code: '34', name: 'Puducherry' },
-            { code: '35', name: 'Andaman & Nicobar Islands' },
-            { code: '36', name: 'Telangana' }, { code: '37', name: 'Andhra Pradesh (New)' },
-            { code: '38', name: 'Ladakh' },
-        ],
+        showAddCustomer: false, newCustomer: {name: '', mobile_number: '', email: '', address: ''},
         manualItem: { item_name: '', price: '' },
         form: { customer_id: null, discount: 0, items: [], payments: [{payment_method: 'cash', amount: 0, transaction_reference: ''}] },
 
@@ -283,13 +241,13 @@ function posBilling() {
         addProduct(p) {
             const existing = this.cart.find(c => c.product_id === p.id && c.item_type === 'product');
             if (existing) { existing.quantity++; return; }
-            this.cart.push({ item_type: 'product', product_id: p.id, item_name: p.name, quantity: 1, price: Number(p.selling_price), tax_rate_percent: p.tax_rate ? parseFloat(p.tax_rate.percentage) : 0, hsn_code: p.hsn_code || '' });
+            this.cart.push({ item_type: 'product', product_id: p.id, item_name: p.name, quantity: 1, price: Number(p.selling_price) });
         },
 
         addService(s) {
             const existing = this.cart.find(c => c.service_id === s.id && c.item_type === 'service');
             if (existing) { existing.quantity++; return; }
-            this.cart.push({ item_type: 'service', product_id: null, service_id: s.id, item_name: s.name, quantity: 1, price: Number(s.default_price || 0), tax_rate_percent: s.tax_rate ? parseFloat(s.tax_rate.percentage) : 0, sac_code: s.sac_code || '' });
+            this.cart.push({ item_type: 'service', product_id: null, service_id: s.id, item_name: s.name, quantity: 1, price: Number(s.default_price || 0) });
         },
 
         addManualItem() {
@@ -319,14 +277,12 @@ function posBilling() {
         },
 
         subtotal() { return this.cart.reduce((s, i) => s + i.price * i.quantity, 0); },
-        taxTotal() { return this.cart.reduce((s, i) => s + (i.price * i.quantity * (i.tax_rate_percent || 0) / 100), 0); },
-        grandTotal() { return Math.max(0, this.subtotal() + this.taxTotal() - (Number(this.form.discount) || 0)); },
+        grandTotal() { return Math.max(0, this.subtotal() - (Number(this.form.discount) || 0)); },
 
         async submitInvoice() {
             if (this.cart.length === 0) return;
             if (!this.form.customer_id) { RepairBox.toast('Please select a customer', 'error'); return; }
             this.form.items = this.cart;
-            this.form.customer_billing_state = this.selectedCustomer?.billing_state || '';
             if (this.form.payments.length === 1) this.form.payments[0].amount = this.grandTotal();
             this.saving = true;
             const r = await RepairBox.ajax('/invoices', 'POST', this.form);

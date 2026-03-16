@@ -4,7 +4,6 @@
     $shopPhone       = \App\Models\Setting::getValue('shop_phone',       'your-phone');
     $shopEmail       = \App\Models\Setting::getValue('shop_email',       'your-email');
     $shopIcon        = \App\Models\Setting::getValue('shop_icon',        '');
-    $shopGstin       = \App\Models\Setting::getValue('shop_gstin',       '');
     $shopSlogan      = \App\Models\Setting::getValue('shop_slogan',      'Your Trusted Mobile Partner');
     $shopUpiId       = \App\Models\Setting::getValue('upi_id',           '');
     $invoiceHeaderBanner = \App\Models\Setting::getValue('invoice_header_banner', 'Get All Your Desired Smart Phones From Apple To Vivo On Huge Discounts And Easy EMI');
@@ -135,12 +134,6 @@
             display: flex; align-items: stretch;
             border-top: 2px solid #111; border-bottom: 2px solid #111;
         }
-        .gstin-blk {
-            padding: 9px 16px; font-size: 11px; font-weight: 700; color: #111;
-            border-right: 1.5px solid #111;
-            display: flex; align-items: center; gap: 5px; background: #f5f5f5;
-        }
-        .gstin-blk .gv { font-weight: 400; color: #555; font-size: 10.5px; }
         .title-mid {
             flex: 1; display: flex; align-items: center;
             justify-content: center; padding: 6px; background: #fff;
@@ -253,21 +246,21 @@
         .qr-meta .qr-upi  { font-weight: 700; font-size: 10.5px; color: #111; }
         .qr-meta .qr-scan { font-size: 8.5px; color: #666; margin-top: 3px; }
 
-        /* Tax summary table */
-        .tax-tbl { width: 100%; border-collapse: collapse; font-size: 10.5px; }
-        .tax-tbl td { padding: 5px 13px; border-bottom: 1px solid #eee; }
-        .tax-tbl td:last-child { text-align: right; font-weight: 600; font-feature-settings: "tnum"; }
-        .tax-tbl .sep td { border-top: 1.5px solid #bbb; }
-        .tax-tbl .grand td {
+        /* Summary table */
+        .summary-tbl { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+        .summary-tbl td { padding: 5px 13px; border-bottom: 1px solid #eee; }
+        .summary-tbl td:last-child { text-align: right; font-weight: 600; font-feature-settings: "tnum"; }
+        .summary-tbl .sep td { border-top: 1.5px solid #bbb; }
+        .summary-tbl .grand td {
             background: #111; color: #fff;
             font-family: 'Playfair Display', serif;
             font-size: 13px; font-weight: 700;
             padding: 10px 13px; border: none;
         }
-        .tax-tbl .note  td { font-size: 8px; color: #aaa; border: none; padding-top: 1px; }
-        .tax-tbl .bal   td { color: #c0392b; font-weight: 700; font-size: 12px; }
-        .tax-tbl .green td { color: #1a6e3a; font-weight: 700; }
-        .tax-tbl .full  td { color: #1a6e3a; font-weight: 700; text-align: center; font-size: 11px; }
+        .summary-tbl .note  td { font-size: 8px; color: #aaa; border: none; padding-top: 1px; }
+        .summary-tbl .bal   td { color: #c0392b; font-weight: 700; font-size: 12px; }
+        .summary-tbl .green td { color: #1a6e3a; font-weight: 700; }
+        .summary-tbl .full  td { color: #1a6e3a; font-weight: 700; text-align: center; font-size: 11px; }
 
         /* Sign box */
         .sign-box { padding: 10px 13px; text-align: center; }
@@ -348,10 +341,7 @@
 
     {{-- ══ TITLE ROW ══ --}}
     <div class="title-row">
-        <div class="gstin-blk">
-            GSTIN&nbsp;:&nbsp;<span class="gv">{{ $shopGstin ?: 'N/A' }}</span>
-        </div>
-        <div class="title-mid"><h2>@yield('invoice-title', 'Tax Invoice')</h2></div>
+        <div class="title-mid"><h2>@yield('invoice-title', 'Invoice')</h2></div>
         <div class="orig-blk">ORIGINAL<br>FOR RECIPIENT</div>
     </div>
 

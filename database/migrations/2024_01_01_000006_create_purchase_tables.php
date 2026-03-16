@@ -15,7 +15,6 @@ return new class extends Migration
             $table->string('phone', 20)->nullable();
             $table->string('email', 150)->nullable();
             $table->text('address')->nullable();
-            $table->string('gst_number', 50)->nullable();
             $table->text('notes')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();

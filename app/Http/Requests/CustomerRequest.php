@@ -16,8 +16,6 @@ class CustomerRequest extends FormRequest
             'mobile_number' => "required|string|max:20|unique:customers,mobile_number,{$id}",
             'email' => 'nullable|email|max:150',
             'address' => 'nullable|string',
-            'gstin' => 'nullable|string|max:15',
-            'billing_state' => 'nullable|string|max:100',
             'notes' => 'nullable|string',
         ];
     }

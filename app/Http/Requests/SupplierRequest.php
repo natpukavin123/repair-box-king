@@ -16,7 +16,6 @@ class SupplierRequest extends FormRequest
             'phone' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:150',
             'address' => 'nullable|string',
-            'gst_number' => 'nullable|string|max:50',
             'notes' => 'nullable|string',
             'status' => 'in:active,inactive',
         ];

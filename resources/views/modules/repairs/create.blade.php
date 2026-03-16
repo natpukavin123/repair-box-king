@@ -364,19 +364,6 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
                     <input x-model="newCust.address" type="text" class="form-input-custom" placeholder="Optional">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">GSTIN</label>
-                    <input x-model="newCust.gstin" type="text" class="form-input-custom" placeholder="22AAAAA0000A1Z5" maxlength="15">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Billing State <span class="text-xs text-gray-400 font-normal ml-1">Determines IGST vs CGST+SGST</span></label>
-                    <select x-model="newCust.billing_state" class="form-select-custom">
-                        <option value="">-- Select State --</option>
-                        <template x-for="s in indianStates" :key="s.code">
-                            <option :value="s.code" :selected="s.code === newCust.billing_state" x-text="s.code + ' - ' + s.name"></option>
-                        </template>
-                    </select>
-                </div>
             </div>
             <div class="modal-footer">
                 <button @click="showAddCust = false" class="btn-secondary">Cancel</button>
@@ -409,29 +396,7 @@ function createRepairPage() {
         custLoading: false,
         selectedCust: null,
 
-        newCust: { name: '', mobile_number: '', email: '', address: '', gstin: '', billing_state: '{{ \App\Models\Setting::getValue('shop_state', '') }}' },
-        indianStates: [
-            { code: '01', name: 'Jammu & Kashmir' }, { code: '02', name: 'Himachal Pradesh' },
-            { code: '03', name: 'Punjab' }, { code: '04', name: 'Chandigarh' },
-            { code: '05', name: 'Uttarakhand' }, { code: '06', name: 'Haryana' },
-            { code: '07', name: 'Delhi' }, { code: '08', name: 'Rajasthan' },
-            { code: '09', name: 'Uttar Pradesh' }, { code: '10', name: 'Bihar' },
-            { code: '11', name: 'Sikkim' }, { code: '12', name: 'Arunachal Pradesh' },
-            { code: '13', name: 'Nagaland' }, { code: '14', name: 'Manipur' },
-            { code: '15', name: 'Mizoram' }, { code: '16', name: 'Tripura' },
-            { code: '17', name: 'Meghalaya' }, { code: '18', name: 'Assam' },
-            { code: '19', name: 'West Bengal' }, { code: '20', name: 'Jharkhand' },
-            { code: '21', name: 'Odisha' }, { code: '22', name: 'Chhattisgarh' },
-            { code: '23', name: 'Madhya Pradesh' }, { code: '24', name: 'Gujarat' },
-            { code: '26', name: 'Dadra & Nagar Haveli and Daman & Diu' },
-            { code: '27', name: 'Maharashtra' }, { code: '28', name: 'Andhra Pradesh (Old)' },
-            { code: '29', name: 'Karnataka' }, { code: '30', name: 'Goa' },
-            { code: '31', name: 'Lakshadweep' }, { code: '32', name: 'Kerala' },
-            { code: '33', name: 'Tamil Nadu' }, { code: '34', name: 'Puducherry' },
-            { code: '35', name: 'Andaman & Nicobar Islands' },
-            { code: '36', name: 'Telangana' }, { code: '37', name: 'Andhra Pradesh (New)' },
-            { code: '38', name: 'Ladakh' },
-        ],
+        newCust: { name: '', mobile_number: '', email: '', address: '' },
         brandList: @json($brands),
 
         form: {

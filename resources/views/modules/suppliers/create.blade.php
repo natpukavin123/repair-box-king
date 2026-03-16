@@ -21,7 +21,6 @@
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Company</label><input x-model="form.company_name" type="text" class="form-input-custom"></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Phone</label><input x-model="form.phone" type="text" class="form-input-custom"></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input x-model="form.email" type="email" class="form-input-custom"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">GST Number</label><input x-model="form.gst_number" type="text" class="form-input-custom"></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Address</label><textarea x-model="form.address" class="form-input-custom" rows="2"></textarea></div>
             </div>
         </div>
@@ -41,7 +40,7 @@
 function createSupplierPage() {
     return {
         saving: false,
-        form: { name: '', company_name: '', email: '', phone: '', address: '', gst_number: '' },
+        form: { name: '', company_name: '', email: '', phone: '', address: '' },
         async save() {
             this.saving = true;
             const r = await RepairBox.ajax('/suppliers', 'POST', this.form);

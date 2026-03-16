@@ -75,9 +75,6 @@ class InitialDataSeeder extends Seeder
             'shop_address'    => '',
             'currency'        => 'INR',
             'currency_symbol' => '₹',
-            'tax_rate'        => '0',
-            'shop_gstin'      => '',
-            'shop_state'      => '',
             'invoice_prefix'  => 'INV-',
             'repair_prefix'   => 'RPR-',
             'tracking_prefix' => 'TRK-',
@@ -91,12 +88,12 @@ class InitialDataSeeder extends Seeder
     private function seedServiceTypes(): void
     {
         $types = [
-            ['name' => 'Screen Replacement',   'default_price' => 0, 'description' => 'LCD/AMOLED screen replacement', 'sac_code' => '998314'],
-            ['name' => 'Battery Replacement',  'default_price' => 0, 'description' => 'Battery swap', 'sac_code' => '998314'],
-            ['name' => 'Software Update',      'default_price' => 0, 'description' => 'OS update/flash', 'sac_code' => '998316'],
-            ['name' => 'Data Recovery',        'default_price' => 0, 'description' => 'Recover data from device', 'sac_code' => '998392'],
-            ['name' => 'Water Damage Repair',  'default_price' => 0, 'description' => 'Water damage diagnosis and repair', 'sac_code' => '998319'],
-            ['name' => 'Charging Port Repair', 'default_price' => 0, 'description' => 'Fix charging port issues', 'sac_code' => '998314'],
+            ['name' => 'Screen Replacement',   'default_price' => 0, 'description' => 'LCD/AMOLED screen replacement'],
+            ['name' => 'Battery Replacement',  'default_price' => 0, 'description' => 'Battery swap'],
+            ['name' => 'Software Update',      'default_price' => 0, 'description' => 'OS update/flash'],
+            ['name' => 'Data Recovery',        'default_price' => 0, 'description' => 'Recover data from device'],
+            ['name' => 'Water Damage Repair',  'default_price' => 0, 'description' => 'Water damage diagnosis and repair'],
+            ['name' => 'Charging Port Repair', 'default_price' => 0, 'description' => 'Fix charging port issues'],
         ];
 
         foreach ($types as $type) {

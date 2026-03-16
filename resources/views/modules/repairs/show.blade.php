@@ -263,8 +263,6 @@
                                                 <th class="text-left pb-3 font-semibold text-gray-700">Part Name</th>
                                                 <th class="text-center pb-3 font-semibold text-gray-700">Qty</th>
                                                 <th class="text-right pb-3 font-semibold text-gray-700">Unit Price</th>
-                                                <th class="text-center pb-3 font-semibold text-gray-700">HSN</th>
-                                                <th class="text-right pb-3 font-semibold text-gray-700">GST</th>
                                                 <th class="text-right pb-3 font-semibold text-gray-700">Total</th>
                                                 <th class="pb-3"></th>
                                             </tr>
@@ -275,17 +273,7 @@
                                                     <td class="py-3 font-medium text-gray-800" x-text="p.part ? p.part.name : '-'"></td>
                                                     <td class="py-3 text-center text-gray-600" x-text="p.quantity"></td>
                                                     <td class="py-3 text-right text-gray-600" x-text="'₹' + Number(p.cost_price).toFixed(2)"></td>
-                                                    <td class="py-3 text-center text-xs text-gray-500 font-mono" x-text="p.hsn_code || '—'"></td>
-                                                    <td class="py-3 text-right text-xs">
-                                                        <template x-if="Number(p.tax_amount) > 0">
-                                                            <span class="text-orange-600 font-medium">
-                                                                <span x-text="Number(p.tax_rate || 0).toFixed(0) + '%'"></span>
-                                                                <span class="text-gray-400 block" x-text="'₹' + Number(p.tax_amount || 0).toFixed(2)"></span>
-                                                            </span>
-                                                        </template>
-                                                        <template x-if="!Number(p.tax_amount)"><span class="text-gray-300">—</span></template>
-                                                    </td>
-                                                    <td class="py-3 text-right font-bold text-indigo-600" x-text="'₹' + (Number(p.cost_price) * p.quantity + Number(p.tax_amount || 0)).toFixed(2)"></td>
+                                                    <td class="py-3 text-right font-bold text-indigo-600" x-text="'₹' + (Number(p.cost_price) * p.quantity).toFixed(2)"></td>
                                                     <td class="py-3 text-right">
                                                         <button @click="removePart(p.id)" class="text-red-400 hover:text-red-600 transition p-1 hover:bg-red-50 rounded" title="Remove">
                                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -296,8 +284,8 @@
                                         </tbody>
                                         <tfoot>
                                             <tr class="bg-indigo-50 border-t-2 border-indigo-200">
-                                                <td colspan="5" class="py-3 text-right font-bold text-gray-800">Parts Total (incl. GST):</td>
-                                                <td class="py-3 text-right font-bold text-indigo-600 text-lg" x-text="'₹' + partsGrossTotal().toFixed(2)"></td>
+                                                <td colspan="3" class="py-3 text-right font-bold text-gray-800">Parts Total:</td>
+                                                <td class="py-3 text-right font-bold text-indigo-600 text-lg" x-text="'₹' + partsTotal().toFixed(2)"></td>
                                                 <td></td>
                                             </tr>
                                         </tfoot>
@@ -316,7 +304,6 @@
                                                 <span class="font-medium text-gray-800" x-text="pr.name"></span>
                                                 <span class="text-gray-400 text-xs ml-2" x-text="'₹' + Number(pr.cost_price).toFixed(2)"></span>
                                                 <span class="text-gray-300 text-xs ml-1" x-text="'Stock: ' + (pr.stock_quantity || 0)"></span>
-                                                <span x-show="pr.tax_rate" class="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded ml-1 font-medium" x-text="'GST ' + parseFloat(pr.tax_rate?.percentage || 0).toFixed(0) + '%'"></span>
                                             </button>
                                         </template>
                                         <div x-show="partLoading" class="px-3 py-2 text-xs text-gray-400 text-center">Loading...</div>
@@ -325,8 +312,7 @@
                                 <div x-show="partForm.part_id" class="text-xs text-green-600 mb-2 flex items-center gap-1 px-2 py-1 bg-green-50 rounded-lg w-fit">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                     Selected: <span class="font-semibold" x-text="partForm._name"></span>
-                                    <span x-show="partForm._gst_rate > 0" class="ml-1 px-1.5 py-0.5 bg-orange-100 text-orange-600 rounded font-medium" x-text="'GST ' + partForm._gst_rate + '%'"></span>
-                                    <button @click="partForm.part_id = null; partForm._name = ''; partForm._gst_rate = 0" class="text-red-400 ml-1.5 hover:text-red-600">&times;</button>
+                                    <button @click="partForm.part_id = null; partForm._name = ''" class="text-red-400 ml-1.5 hover:text-red-600">&times;</button>
                                 </div>
                                 <div class="grid grid-cols-3 gap-2">
                                     <input x-model="partForm.quantity" type="number" min="1" class="form-input-custom text-sm" placeholder="Qty">
@@ -349,8 +335,6 @@
                                         <tr class="border-b-2">
                                             <th class="text-left pb-3 font-semibold text-gray-700">Service</th>
                                             <th class="text-left pb-3 font-semibold text-gray-700">Vendor</th>
-                                            <th class="text-center pb-3 font-semibold text-gray-700">SAC</th>
-                                            <th class="text-right pb-3 font-semibold text-gray-700">GST</th>
                                             <th class="text-right pb-3 font-semibold text-gray-700">Charge</th>
                                             <th class="pb-3"></th>
                                         </tr>
@@ -363,17 +347,7 @@
                                                     <div class="text-xs text-gray-400 mt-0.5" x-show="svc.description" x-text="svc.description"></div>
                                                 </td>
                                                 <td class="py-3 text-sm text-gray-600" x-text="svc.vendor ? svc.vendor.name : '-'"></td>
-                                                <td class="py-3 text-center text-xs text-gray-500 font-mono" x-text="svc.sac_code || '—'"></td>
-                                                <td class="py-3 text-right text-xs">
-                                                    <template x-if="Number(svc.tax_amount) > 0">
-                                                        <span class="text-orange-600 font-medium">
-                                                            <span x-text="Number(svc.tax_rate || 0).toFixed(0) + '%'"></span>
-                                                            <span class="text-gray-400 block" x-text="'₹' + Number(svc.tax_amount || 0).toFixed(2)"></span>
-                                                        </span>
-                                                    </template>
-                                                    <template x-if="!Number(svc.tax_amount)"><span class="text-gray-300">—</span></template>
-                                                </td>
-                                                <td class="py-3 text-right font-bold text-indigo-600" x-text="'₹' + (Number(svc.customer_charge) + Number(svc.tax_amount || 0)).toFixed(2)"></td>
+                                                <td class="py-3 text-right font-bold text-indigo-600" x-text="'₹' + Number(svc.customer_charge).toFixed(2)"></td>
                                                 <td class="py-3 text-right">
                                                     <button @click="removeService(svc.id)" class="text-red-400 hover:text-red-600 transition p-1 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100" title="Remove">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -384,8 +358,8 @@
                                     </tbody>
                                     <tfoot>
                                         <tr class="bg-indigo-50 border-t-2 border-indigo-200">
-                                            <td colspan="4" class="py-3 text-right font-bold text-gray-800">Services Total (incl. GST):</td>
-                                            <td class="py-3 text-right font-bold text-indigo-600 text-lg" x-text="'₹' + servicesGrossTotal().toFixed(2)"></td>
+                                            <td colspan="2" class="py-3 text-right font-bold text-gray-800">Services Total:</td>
+                                            <td class="py-3 text-right font-bold text-indigo-600 text-lg" x-text="'₹' + servicesTotal().toFixed(2)"></td>
                                             <td></td>
                                         </tr>
                                     </tfoot>
@@ -404,8 +378,6 @@
                                                 <button @click="selectServiceType(st)" class="w-full text-left px-3 py-2.5 hover:bg-indigo-50 text-sm border-b last:border-0 transition">
                                                     <span class="font-medium text-gray-800" x-text="st.name"></span>
                                                     <span class="text-gray-400 text-xs ml-2" x-show="st.default_price" x-text="'₹' + Number(st.default_price).toFixed(2)"></span>
-                                                    <span x-show="st.sac_code" class="text-gray-400 text-xs ml-1 font-mono" x-text="'SAC:' + st.sac_code"></span>
-                                                    <span x-show="st.tax_rate" class="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded ml-1 font-medium" x-text="'GST ' + parseFloat(st.tax_rate?.percentage || 0).toFixed(0) + '%'"></span>
                                                 </button>
                                             </template>
                                             <div x-show="svcTypeLoading" class="px-3 py-2 text-xs text-gray-400 text-center">Loading...</div>
@@ -488,8 +460,6 @@
                                     <th class="text-left pb-3 font-semibold text-gray-700">Part Name</th>
                                     <th class="text-center pb-3 font-semibold text-gray-700">Qty</th>
                                     <th class="text-right pb-3 font-semibold text-gray-700">Unit Price</th>
-                                    <th class="text-center pb-3 font-semibold text-gray-700">HSN</th>
-                                    <th class="text-right pb-3 font-semibold text-gray-700">GST</th>
                                     <th class="text-right pb-3 font-semibold text-gray-700">Total</th>
                                 </tr>
                             </thead>
@@ -499,24 +469,14 @@
                                         <td class="py-3 font-medium text-gray-800" x-text="p.part ? p.part.name : '-'"></td>
                                         <td class="py-3 text-center text-gray-600" x-text="p.quantity"></td>
                                         <td class="py-3 text-right text-gray-600" x-text="'₹' + Number(p.cost_price).toFixed(2)"></td>
-                                        <td class="py-3 text-center text-xs text-gray-500 font-mono" x-text="p.hsn_code || '—'"></td>
-                                        <td class="py-3 text-right text-xs">
-                                            <template x-if="Number(p.tax_amount) > 0">
-                                                <span class="text-orange-600 font-medium">
-                                                    <span x-text="Number(p.tax_rate || 0).toFixed(0) + '%'"></span>
-                                                    <span class="text-gray-400 block" x-text="'₹' + Number(p.tax_amount || 0).toFixed(2)"></span>
-                                                </span>
-                                            </template>
-                                            <template x-if="!Number(p.tax_amount)"><span class="text-gray-300">—</span></template>
-                                        </td>
-                                        <td class="py-3 text-right font-bold text-indigo-600" x-text="'₹' + (Number(p.cost_price) * p.quantity + Number(p.tax_amount || 0)).toFixed(2)"></td>
+                                        <td class="py-3 text-right font-bold text-indigo-600" x-text="'₹' + (Number(p.cost_price) * p.quantity).toFixed(2)"></td>
                                     </tr>
                                 </template>
                             </tbody>
                             <tfoot>
                                 <tr class="bg-indigo-50 border-t-2 border-indigo-200">
-                                    <td colspan="5" class="py-3 text-right font-bold text-gray-800">Total (incl. GST):</td>
-                                    <td class="py-3 text-right font-bold text-indigo-600 text-lg" x-text="'₹' + partsGrossTotal().toFixed(2)"></td>
+                                    <td colspan="3" class="py-3 text-right font-bold text-gray-800">Total:</td>
+                                    <td class="py-3 text-right font-bold text-indigo-600 text-lg" x-text="'₹' + partsTotal().toFixed(2)"></td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -539,8 +499,6 @@
                                 <tr class="border-b-2">
                                     <th class="text-left pb-3 font-semibold text-gray-700">Service</th>
                                     <th class="text-left pb-3 font-semibold text-gray-700">Vendor</th>
-                                    <th class="text-center pb-3 font-semibold text-gray-700">SAC</th>
-                                    <th class="text-right pb-3 font-semibold text-gray-700">GST</th>
                                     <th class="text-right pb-3 font-semibold text-gray-700">Charge</th>
                                 </tr>
                             </thead>
@@ -552,24 +510,14 @@
                                             <div class="text-xs text-gray-400 mt-0.5" x-show="svc.description" x-text="svc.description"></div>
                                         </td>
                                         <td class="py-3 text-sm text-gray-600" x-text="svc.vendor ? svc.vendor.name : '-'"></td>
-                                        <td class="py-3 text-center text-xs text-gray-500 font-mono" x-text="svc.sac_code || '—'"></td>
-                                        <td class="py-3 text-right text-xs">
-                                            <template x-if="Number(svc.tax_amount) > 0">
-                                                <span class="text-orange-600 font-medium">
-                                                    <span x-text="Number(svc.tax_rate || 0).toFixed(0) + '%'"></span>
-                                                    <span class="text-gray-400 block" x-text="'₹' + Number(svc.tax_amount || 0).toFixed(2)"></span>
-                                                </span>
-                                            </template>
-                                            <template x-if="!Number(svc.tax_amount)"><span class="text-gray-300">—</span></template>
-                                        </td>
-                                        <td class="py-3 text-right font-bold text-indigo-600" x-text="'₹' + (Number(svc.customer_charge) + Number(svc.tax_amount || 0)).toFixed(2)"></td>
+                                        <td class="py-3 text-right font-bold text-indigo-600" x-text="'₹' + Number(svc.customer_charge).toFixed(2)"></td>
                                     </tr>
                                 </template>
                             </tbody>
                             <tfoot>
                                 <tr class="bg-indigo-50 border-t-2 border-indigo-200">
-                                    <td colspan="4" class="py-3 text-right font-bold text-gray-800">Total (incl. GST):</td>
-                                    <td class="py-3 text-right font-bold text-indigo-600 text-lg" x-text="'₹' + servicesGrossTotal().toFixed(2)"></td>
+                                    <td colspan="2" class="py-3 text-right font-bold text-gray-800">Total:</td>
+                                    <td class="py-3 text-right font-bold text-indigo-600 text-lg" x-text="'₹' + servicesTotal().toFixed(2)"></td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -742,13 +690,6 @@
                         <div class="flex justify-between items-center">
                             <span class="text-sm text-gray-600 font-medium">Our Service Fee</span>
                             <span class="text-sm font-bold text-gray-800" x-text="'₹' + Number(repair.service_charge || 0).toFixed(2)"></span>
-                        </div>
-                        <div x-show="totalTax() > 0" class="flex justify-between items-center border-t border-dashed border-orange-200 pt-2">
-                            <span class="text-sm text-orange-600 font-medium flex items-center gap-1">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
-                                GST (Tax)
-                            </span>
-                            <span class="text-sm font-bold text-orange-600" x-text="'₹' + totalTax().toFixed(2)"></span>
                         </div>
                     </div>
 
@@ -1236,7 +1177,6 @@ function repairDetail() {
         selectPart(pr) {
             this.partForm.part_id = pr.id;
             this.partForm._name = pr.name;
-            this.partForm._gst_rate = pr.tax_rate ? parseFloat(pr.tax_rate.percentage) : 0;
             this.partForm.cost_price = pr.cost_price || '';
             this.partResults = [];
             this.partSearch = '';
@@ -1279,8 +1219,6 @@ function repairDetail() {
         selectServiceType(st) {
             this.svcForm.service_type_id = st.id;
             this.svcForm.service_type_name = st.name;
-            this.svcForm._sac_code = st.sac_code || '';
-            this.svcForm._gst_rate = st.tax_rate ? parseFloat(st.tax_rate.percentage) : 0;
             if (st.default_price) this.svcForm.customer_charge = st.default_price;
             this.svcTypeResults = [];
             this.svcTypeHasMore = false;
@@ -1394,16 +1332,9 @@ function repairDetail() {
 
         // ===== CALCULATIONS =====
         partsTotal() { return (this.repair.parts || []).reduce((s, p) => s + Number(p.cost_price) * p.quantity, 0); },
-        partsGrossTotal() { return (this.repair.parts || []).reduce((s, p) => s + Number(p.cost_price) * p.quantity + Number(p.tax_amount || 0), 0); },
         servicesTotal() { return (this.repair.repair_services || []).reduce((s, svc) => s + Number(svc.customer_charge), 0); },
-        servicesGrossTotal() { return (this.repair.repair_services || []).reduce((s, svc) => s + Number(svc.customer_charge) + Number(svc.tax_amount || 0), 0); },
-        totalTax() {
-            const pt = (this.repair.parts || []).reduce((s, p) => s + Number(p.tax_amount || 0), 0);
-            const st = (this.repair.repair_services || []).reduce((s, svc) => s + Number(svc.tax_amount || 0), 0);
-            return pt + st;
-        },
         vendorChargesTotal() { return (this.repair.repair_services || []).reduce((s, svc) => s + Number(svc.vendor_charge), 0); },
-        grandTotal() { return this.partsTotal() + Number(this.repair.service_charge || 0) + this.servicesTotal() + this.totalTax(); },
+        grandTotal() { return this.partsTotal() + Number(this.repair.service_charge || 0) + this.servicesTotal(); },
         totalPaid() { return (this.repair.payments || []).filter(p => p.direction === 'IN').reduce((s, p) => s + Number(p.amount), 0); },
         totalRefunded() { return (this.repair.payments || []).filter(p => p.direction === 'OUT').reduce((s, p) => s + Number(p.amount), 0); },
         advancePaid() { return (this.repair.payments || []).filter(p => p.direction === 'IN' && p.payment_type === 'advance').reduce((s, p) => s + Number(p.amount), 0); },

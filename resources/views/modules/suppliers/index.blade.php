@@ -11,7 +11,7 @@
         <div class="card-body p-0">
             <div class="table-scroll">
                 <table class="data-table">
-                    <thead class="sticky top-0 z-10 bg-gray-50"><tr><th>#</th><th>Name</th><th>Company</th><th>Phone</th><th>Email</th><th>GST</th><th>Actions</th></tr></thead>
+                    <thead class="sticky top-0 z-10 bg-gray-50"><tr><th>#</th><th>Name</th><th>Company</th><th>Phone</th><th>Email</th><th>Actions</th></tr></thead>
                     <tbody>
                         <template x-for="(item, i) in items" :key="item.id">
                             <tr>
@@ -20,14 +20,13 @@
                                 <td x-text="item.company_name || '-'"></td>
                                 <td x-text="item.phone || '-'"></td>
                                 <td x-text="item.email || '-'"></td>
-                                <td x-text="item.gst_number || '-'"></td>
                                 <td class="whitespace-nowrap">
                                     <button @click="edit(item)" class="text-primary-600 hover:text-primary-800 mr-2"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
                                     <button @click="remove(item)" class="text-red-600 hover:text-red-800"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
                                 </td>
                             </tr>
                         </template>
-                        <tr x-show="items.length === 0 && !loading"><td colspan="7" class="text-center text-gray-400 py-8">No suppliers found</td></tr>
+                        <tr x-show="items.length === 0 && !loading"><td colspan="6" class="text-center text-gray-400 py-8">No suppliers found</td></tr>
                         <template x-if="loading">
                             <template x-for="i in 10" :key="'sk'+i">
                                 <tr>
@@ -36,7 +35,6 @@
                                     <td><div class="skeleton h-3 w-32"></div></td>
                                     <td><div class="skeleton h-3 w-24"></div></td>
                                     <td><div class="skeleton h-3 w-36"></div></td>
-                                    <td><div class="skeleton h-3 w-28"></div></td>
                                     <td><div class="skeleton h-3 w-16"></div></td>
                                 </tr>
                             </template>
@@ -56,7 +54,6 @@
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Company</label><input x-model="form.company_name" type="text" class="form-input-custom"></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Phone</label><input x-model="form.phone" type="text" class="form-input-custom"></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input x-model="form.email" type="email" class="form-input-custom"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">GST Number</label><input x-model="form.gst_number" type="text" class="form-input-custom"></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Address</label><textarea x-model="form.address" class="form-input-custom" rows="2"></textarea></div>
                 </div>
             </div>
@@ -74,9 +71,9 @@
 function suppliersPage() {
     return {
         items: [], showModal: false, editing: null, saving: false, loading: true,
-        form: { name: '', company_name: '', email: '', phone: '', address: '', gst_number: '' },
+        form: { name: '', company_name: '', email: '', phone: '', address: '' },
         async load() { this.loading = true; const r = await RepairBox.ajax('/suppliers'); if(r.data) this.items = r.data; this.loading = false; },
-        edit(item) { this.editing = item.id; this.form = { name: item.name, company_name: item.company_name || '', email: item.email || '', phone: item.phone || '', address: item.address || '', gst_number: item.gst_number || '' }; this.showModal = true; },
+        edit(item) { this.editing = item.id; this.form = { name: item.name, company_name: item.company_name || '', email: item.email || '', phone: item.phone || '', address: item.address || '' }; this.showModal = true; },
         async save() {
             this.saving = true;
             const r = await RepairBox.ajax(`/suppliers/${this.editing}`, 'PUT', this.form);
