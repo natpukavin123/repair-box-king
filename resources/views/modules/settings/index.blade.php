@@ -11,7 +11,7 @@
         <button @click="tab='recharge-providers'; updateUrl()" :class="tab==='recharge-providers' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Recharge Providers</button>
         <button @click="tab='email-templates'; updateUrl()" :class="tab==='email-templates' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Email Templates</button>
         <button @click="tab='notifications'; updateUrl(); loadNotifications()" :class="tab==='notifications' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Notifications</button>
-        <button @click="tab='invoice-layout'; updateUrl()" :class="tab==='invoice-layout' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Invoice Layout</button>
+        <button @click="tab='print-settings'; updateUrl()" :class="tab==='print-settings' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Print Settings</button>
         <button @click="tab='backups'; updateUrl()" :class="tab==='backups' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Backups</button>
     </div>
 
@@ -434,42 +434,221 @@
     </div>
     {{-- /Notifications --}}
 
-    {{-- Invoice Layout --}}
-    <div x-show="tab==='invoice-layout'" class="card">
-        <div class="card-header"><h3 class="text-lg font-semibold">Invoice Layout</h3></div>
-        <div class="card-body">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Paper Size</label>
-                    <select x-model="settings.invoice_paper_size" class="form-select-custom w-full">
-                        <option value="80mm auto">80mm<br>auto</option>
-                        <option value="80mm 200mm">80mm x 200mm</option>
-                        <option value="A4">A4</option>
-                        <option value="A5">A5</option>
-                    </select>
+    {{-- ══════════════════════════════════════════════════════════
+         Print Settings (all print types in one place)
+    ══════════════════════════════════════════════════════════ --}}
+    <div x-show="tab==='print-settings'" class="space-y-6">
+
+        {{-- ─── SALES INVOICE ─── --}}
+        <div class="card">
+            <div class="card-header flex items-center gap-3">
+                <div class="w-9 h-9 flex items-center justify-center rounded-lg bg-blue-100">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Design Variant</label>
-                    <select x-model="settings.invoice_design_variant" class="form-select-custom w-full">
-                        <option value="default">Default</option>
-                        <option value="modern">Modern</option>
-                        <option value="minimal">Minimal</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Header Title</label>
-                    <input type="text" x-model="settings.invoice_header_title" class="form-input-custom" placeholder="RepairBox">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Header Subtitle</label>
-                    <input type="text" x-model="settings.invoice_header_subtitle" class="form-input-custom" placeholder="Mobile Shop Management">
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Footer Text</label>
-                    <input type="text" x-model="settings.invoice_footer_text" class="form-input-custom" placeholder="Thank you for your business">
-                </div>
+                <h3 class="text-lg font-semibold">Sales Invoice</h3>
             </div>
-            <div class="mt-4"><button @click="saveSettings()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save Invoice Layout</button></div>
+            <div class="card-body space-y-5">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Default Print Language</label>
+                        <select x-model="settings.invoice_default_language" class="form-select-custom w-full">
+                            <option value="en">English</option>
+                            <option value="ta">Tamil (தமிழ்)</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Pre-selected when print dialog appears. Can be changed at print time.</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Paper Size</label>
+                        <select x-model="settings.invoice_paper_size" class="form-select-custom w-full">
+                            <option value="A4_landscape">A4 Landscape (half page)</option>
+                            <option value="A5">A5 Portrait</option>
+                        </select>
+                    </div>
+                </div>
+
+                {{-- Header Titles --}}
+                <div class="border-t pt-5">
+                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Header Titles</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Title (English)</label>
+                            <input type="text" x-model="settings.invoice_header_title_en" class="form-input-custom" placeholder="Sales Invoice">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Title (Tamil)</label>
+                            <input type="text" x-model="settings.invoice_header_title_ta" class="form-input-custom" placeholder="விற்பனை இரசீது">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Shop Info (Tamil variants) --}}
+                <div class="border-t pt-5">
+                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Tamil Shop Info</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Shop Name (Tamil)</label>
+                            <input type="text" x-model="settings.invoice_shop_name_ta" class="form-input-custom" placeholder="Leave blank to use English name">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Shop Slogan (Tamil)</label>
+                            <input type="text" x-model="settings.invoice_shop_slogan_ta" class="form-input-custom" placeholder="உங்கள் நம்பகமான மொபைல் பார்ட்னர்">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Shop Address (Tamil)</label>
+                            <input type="text" x-model="settings.invoice_shop_address_ta" class="form-input-custom" placeholder="Leave blank to use English address">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Footer --}}
+                <div class="border-t pt-5">
+                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Footer Text</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Footer (English)</label>
+                            <textarea x-model="settings.invoice_footer_text" class="form-input-custom" rows="2" placeholder="Subject to jurisdiction..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Footer (Tamil)</label>
+                            <textarea x-model="settings.invoice_footer_text_ta" class="form-input-custom" rows="2" placeholder="நீதிமன்ற அதிகார வரம்புக்கு உட்பட்டது..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Signature --}}
+                <div class="border-t pt-5">
+                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Signature Labels</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Signature Label (English)</label>
+                            <input type="text" x-model="settings.invoice_sign_label_en" class="form-input-custom" placeholder="Authorised Signatory">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Signature Label (Tamil)</label>
+                            <input type="text" x-model="settings.invoice_sign_label_ta" class="form-input-custom" placeholder="அங்கீகரிக்கப்பட்ட கையொப்பம்">
+                        </div>
+                    </div>
+                </div>
+
+                <div><button @click="saveSettings()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save Settings</button></div>
+            </div>
+        </div>
+
+        {{-- ─── REPAIR RECEIPT ─── --}}
+        <div class="card">
+            <div class="card-header flex items-center gap-3">
+                <div class="w-9 h-9 flex items-center justify-center rounded-lg bg-emerald-100">
+                    <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                </div>
+                <h3 class="text-lg font-semibold">Repair Receipt</h3>
+            </div>
+            <div class="card-body space-y-5">
+
+                {{-- Header Titles --}}
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Header Titles</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Receipt Title (English)</label>
+                            <input type="text" x-model="settings.receipt_header_title_en" class="form-input-custom" placeholder="Repair Receipt">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Receipt Title (Tamil)</label>
+                            <input type="text" x-model="settings.receipt_header_title_ta" class="form-input-custom" placeholder="பழுதுபார்ப்பு ரசீது">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Shop Info (Tamil variants) --}}
+                <div class="border-t pt-5">
+                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Tamil Shop Info</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Shop Name (Tamil)</label>
+                            <input type="text" x-model="settings.receipt_shop_name_ta" class="form-input-custom" placeholder="Leave blank to use English name">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Shop Slogan (Tamil)</label>
+                            <input type="text" x-model="settings.receipt_shop_slogan_ta" class="form-input-custom" placeholder="உங்கள் நம்பகமான மொபைல் பார்ட்னர்">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Shop Address (Tamil)</label>
+                            <input type="text" x-model="settings.receipt_shop_address_ta" class="form-input-custom" placeholder="Leave blank to use English address">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Important Notes --}}
+                <div class="border-t pt-5">
+                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Important Notes <span class="text-xs text-gray-400 font-normal">(printed on receipt, one per line)</span></h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Notes (English)</label>
+                            <textarea x-model="settings.receipt_notes_en" class="form-input-custom" rows="4" placeholder="Keep this receipt to claim your device.&#10;Estimated cost may change upon diagnosis.&#10;Data backup is customer's responsibility.&#10;Unclaimed devices after 30 days — not our liability."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Notes (Tamil)</label>
+                            <textarea x-model="settings.receipt_notes_ta" class="form-input-custom" rows="4" placeholder="உங்கள் சாதனத்தை பெற இந்த ரசீதை வைத்திருங்கள்.&#10;மதிப்பீட்டுச் செலவு ஆய்வுக்குப் பிறகு மாறலாம்."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Footer --}}
+                <div class="border-t pt-5">
+                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Footer Text</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Footer (English)</label>
+                            <textarea x-model="settings.receipt_footer_text" class="form-input-custom" rows="2" placeholder="Keep this receipt to claim your device..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Footer (Tamil)</label>
+                            <textarea x-model="settings.receipt_footer_text_ta" class="form-input-custom" rows="2" placeholder="உங்கள் சாதனத்தை பெற இந்த ரசீதை வைத்திருங்கள்..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Signature --}}
+                <div class="border-t pt-5">
+                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Signature Labels</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Signature Label (English)</label>
+                            <input type="text" x-model="settings.receipt_sign_label_en" class="form-input-custom" placeholder="Authorised Signatory">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Signature Label (Tamil)</label>
+                            <input type="text" x-model="settings.receipt_sign_label_ta" class="form-input-custom" placeholder="அங்கீகரிக்கப்பட்ட கையொப்பம்">
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Repair Invoice --}}
+                <div class="border-t pt-5">
+                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Repair Invoice Settings</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Repair Invoice Title (English)</label>
+                            <input type="text" x-model="settings.repair_invoice_header_title_en" class="form-input-custom" placeholder="Repair Invoice">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Repair Invoice Title (Tamil)</label>
+                            <input type="text" x-model="settings.repair_invoice_header_title_ta" class="form-input-custom" placeholder="பழுதுபார்ப்பு இரசீது">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Repair Invoice Footer (English)</label>
+                            <textarea x-model="settings.repair_invoice_footer_text" class="form-input-custom" rows="2" placeholder="Subject to jurisdiction..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Repair Invoice Footer (Tamil)</label>
+                            <textarea x-model="settings.repair_invoice_footer_text_ta" class="form-input-custom" rows="2" placeholder="நீதிமன்ற அதிகார வரம்புக்கு..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div><button @click="saveSettings()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save Settings</button></div>
+            </div>
         </div>
     </div>
 
@@ -661,7 +840,7 @@
 function settingsPage() {
     return {
         tab: 'general', saving: false, iconFile: null, previewIcon: '',
-        settings: {}, settingKeys: ['shop_name','shop_address','shop_phone','shop_email','currency_symbol','invoice_prefix','repair_prefix','low_stock_threshold','invoice_paper_size','invoice_design_variant','invoice_header_title','invoice_header_subtitle','invoice_footer_text'],
+        settings: {}, settingKeys: ['shop_name','shop_address','shop_phone','shop_email','shop_slogan','currency_symbol','invoice_prefix','repair_prefix','low_stock_threshold'],
         notificationSettingKeys: ['notify_email_received','notify_email_completed','notify_whatsapp_received','notify_whatsapp_completed','whatsapp_api_url','whatsapp_api_token','whatsapp_from_number','whatsapp_template_received','whatsapp_template_completed'],
         serviceTypes: [], showStModal: false, stEditing: null, stForm: {},
         stImageFile: null, stImagePreview: null, stThumbFile: null, stThumbPreview: null,
