@@ -11,14 +11,56 @@
 
         {{-- LEFT: Product / Service Search --}}
         <div class="lg:col-span-2 flex flex-col">
-            <div class="mb-3 flex gap-2">
-                <input x-model="searchQuery" @input.debounce.300ms="searchProducts()" type="text"
+
+            {{-- Search bar + type selector --}}
+            <div class="mb-2 flex gap-2">
+                <input x-model="searchQuery" @input.debounce.250ms="searchProducts()" type="text"
                     placeholder="Search by name, SKU, barcode..." class="form-input-custom flex-1" autofocus>
                 <select x-model="itemType" @change="if(itemType==='product') searchProducts()" class="form-select-custom w-40">
                     <option value="product">Product</option>
                     <option value="service">Service</option>
                     <option value="manual">Manual Entry</option>
                 </select>
+            </div>
+
+            {{-- Filter bar (products only) --}}
+            <div x-show="itemType === 'product'" class="mb-2 flex flex-wrap gap-2 items-center">
+
+                {{-- Category --}}
+                <select @change="selectCategory($event.target.value ? filterCategories.find(c=>c.id===$event.target.value*1) : null)"
+                    class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300">
+                    <option value="">All Categories</option>
+                    <template x-for="cat in filterCategories" :key="cat.id">
+                        <option :value="cat.id" :selected="filterCategory === cat.id" x-text="cat.name"></option>
+                    </template>
+                </select>
+
+                {{-- Subcategory (shown when a category with subcategories is selected) --}}
+                <select x-show="filterSubcategories.length > 0"
+                    @change="filterSubcategory = $event.target.value ? $event.target.value*1 : ''; onSubcategoryChange()"
+                    class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300">
+                    <option value="">All Subcategories</option>
+                    <template x-for="sc in filterSubcategories" :key="sc.id">
+                        <option :value="sc.id" :selected="filterSubcategory === sc.id" x-text="sc.name"></option>
+                    </template>
+                </select>
+
+                {{-- Brand (dynamic based on selected category/subcategory) --}}
+                <select x-show="filterBrands.length > 0"
+                    @change="filterBrand = $event.target.value ? $event.target.value*1 : ''; searchProducts()"
+                    class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300">
+                    <option value="">All Brands</option>
+                    <template x-for="b in filterBrands" :key="b.id">
+                        <option :value="b.id" :selected="filterBrand === b.id" x-text="b.name"></option>
+                    </template>
+                </select>
+
+                {{-- Clear button --}}
+                <button x-show="filterCategory !== null || filterSubcategory !== '' || filterBrand !== ''"
+                    @click="clearFilters()"
+                    class="text-xs text-red-500 hover:text-red-700 font-semibold px-2 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition-colors">
+                    &times; Clear
+                </button>
             </div>
 
             {{-- Product grid --}}
@@ -426,6 +468,14 @@ function posBilling() {
         saving: false,
         paying: false,
 
+        // Filters
+        filterCategories: [],
+        filterSubcategories: [],
+        filterBrands: [],
+        filterCategory: null,
+        filterSubcategory: '',
+        filterBrand: '',
+
         customerSearch: '',
         customerResults: [],
         selectedCustomer: null,
@@ -444,11 +494,64 @@ function posBilling() {
         canViewCostPrice: {{ $canViewCostPrice ? 'true' : 'false' }},
 
         async init() {
-            await Promise.all([this.searchProducts(), this.loadServices()]);
+            await Promise.all([this.searchProducts(), this.loadServices(), this.loadFilterData()]);
+        },
+
+        async loadFilterData() {
+            const r = await RepairBox.ajax('/products-filter-data');
+            const d = r.data || r;
+            if (d.categories) this.filterCategories = d.categories;
+            if (d.brands)     this.filterBrands     = d.brands;
+        },
+
+        async loadFilterBrands(categoryId, subcatId) {
+            const params = new URLSearchParams();
+            if (categoryId) params.set('category_id', categoryId);
+            if (subcatId)   params.set('subcategory_id', subcatId);
+            const r = await RepairBox.ajax('/products-filter-data?' + params.toString());
+            const d = r.data || r;
+            if (d.brands) this.filterBrands = d.brands;
+        },
+
+        async selectCategory(cat) {
+            if (!cat) {
+                this.filterCategory      = null;
+                this.filterSubcategory   = '';
+                this.filterSubcategories = [];
+                this.filterBrand         = '';
+                await this.loadFilterBrands();
+            } else {
+                this.filterCategory      = cat.id;
+                this.filterSubcategory   = '';
+                this.filterSubcategories = cat.subcategories || [];
+                this.filterBrand         = '';
+                await this.loadFilterBrands(cat.id);
+            }
+            this.searchProducts();
+        },
+
+        async onSubcategoryChange() {
+            this.filterBrand = '';
+            await this.loadFilterBrands(this.filterCategory, this.filterSubcategory || null);
+            this.searchProducts();
+        },
+
+        clearFilters() {
+            this.filterCategory      = null;
+            this.filterSubcategory   = '';
+            this.filterSubcategories = [];
+            this.filterBrand         = '';
+            this.loadFilterBrands();
+            this.searchProducts();
         },
 
         async searchProducts() {
-            const r = await RepairBox.ajax('/products-search?q=' + encodeURIComponent(this.searchQuery));
+            const params = new URLSearchParams();
+            params.set('q', this.searchQuery);
+            if (this.filterCategory)    params.set('category_id',    this.filterCategory);
+            if (this.filterSubcategory) params.set('subcategory_id', this.filterSubcategory);
+            if (this.filterBrand)       params.set('brand_id',       this.filterBrand);
+            const r = await RepairBox.ajax('/products-search?' + params.toString());
             if (r.data) this.searchResults = r.data;
         },
 

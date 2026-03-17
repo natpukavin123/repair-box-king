@@ -60,12 +60,45 @@ class ProductController extends Controller
 
     public function search()
     {
-        $q = request('q', '');
-        $products = Product::with('inventory')
+        $q            = request('q', '');
+        $categoryId   = request('category_id');
+        $subcatId     = request('subcategory_id');
+        $brandId      = request('brand_id');
+
+        $products = Product::with('inventory', 'category', 'subcategory', 'brand')
             ->where('status', 'active')
-            ->where(fn($query) => $query->where('name', 'like', "%{$q}%")->orWhere('sku', 'like', "%{$q}%")->orWhere('barcode', 'like', "%{$q}%"))
-            ->take(20)->get();
+            ->when($q, fn($query) => $query->where(fn($inner) => $inner->where('name', 'like', "%{$q}%")->orWhere('sku', 'like', "%{$q}%")->orWhere('barcode', 'like', "%{$q}%")))
+            ->when($categoryId,  fn($query) => $query->where('category_id',    $categoryId))
+            ->when($subcatId,    fn($query) => $query->where('subcategory_id', $subcatId))
+            ->when($brandId,     fn($query) => $query->where('brand_id',       $brandId))
+            ->orderBy('name')
+            ->take(60)->get();
+
         return response()->json($products);
+    }
+
+    public function filterData()
+    {
+        $categoryId = request('category_id');
+        $subcatId   = request('subcategory_id');
+
+        $categories = \App\Models\Category::where('status', 'active')
+            ->with(['subcategories' => fn($q) => $q->where('status', 'active')->orderBy('name')->select('id', 'category_id', 'name')])
+            ->orderBy('name')->get(['id', 'name']);
+
+        // When a category/subcategory is selected, only show brands that actually
+        // have active products in that scope so the brand chips are always relevant.
+        $brandsQuery = \App\Models\Brand::orderBy('name');
+        if ($categoryId || $subcatId) {
+            $brandsQuery->whereHas('products', function ($q) use ($categoryId, $subcatId) {
+                $q->where('status', 'active');
+                if ($categoryId) $q->where('category_id',    $categoryId);
+                if ($subcatId)   $q->where('subcategory_id', $subcatId);
+            });
+        }
+        $brands = $brandsQuery->get(['id', 'name']);
+
+        return response()->json(['categories' => $categories, 'brands' => $brands]);
     }
 
     public function uploadImage(\Illuminate\Http\Request $request, Product $product)

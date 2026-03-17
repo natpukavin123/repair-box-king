@@ -54,6 +54,7 @@ Route::middleware('auth')->group(function () {
     // Products & Inventory
     Route::resource('products', ProductController::class)->except(['edit']);
     Route::get('products-search', [ProductController::class, 'search']);
+    Route::get('products-filter-data', [ProductController::class, 'filterData']);
     Route::post('products/{product}/upload-image', [ProductController::class, 'uploadImage']);
     Route::get('inventory', [InventoryController::class, 'index'])->name('inventory.index');
     Route::post('inventory/adjust', [InventoryController::class, 'adjust']);
