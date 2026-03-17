@@ -8,7 +8,7 @@ class Product extends Model
 {
     protected $fillable = [
         'category_id', 'subcategory_id', 'brand_id', 'name', 'sku',
-        'barcode', 'purchase_price', 'mrp', 'selling_price',
+        'barcode', 'purchase_price', 'mrp', 'selling_price', 'max_selling_price',
         'description', 'status', 'image', 'thumbnail',
     ];
 
@@ -16,6 +16,7 @@ class Product extends Model
         'purchase_price' => 'decimal:2',
         'mrp' => 'decimal:2',
         'selling_price' => 'decimal:2',
+        'max_selling_price' => 'decimal:2',
     ];
 
     public function category()

@@ -20,9 +20,10 @@ class InvoiceRequest extends FormRequest
             'items.*.item_name' => 'required|string|max:255',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric|min:0',
-            'payments' => 'required|array|min:1',
-            'payments.*.payment_method' => 'required|string|max:50',
-            'payments.*.amount' => 'required|numeric|min:0',
+            // payments is optional – omit to create a draft/unpaid invoice
+            'payments' => 'nullable|array',
+            'payments.*.payment_method' => 'required_with:payments.*.amount|string|max:50',
+            'payments.*.amount' => 'required_with:payments.*.payment_method|numeric|min:0',
             'payments.*.transaction_reference' => 'nullable|string|max:100',
         ];
     }

@@ -52,5 +52,15 @@ class RolesAndPermissionsSeeder extends Seeder
                 );
             }
         }
+
+        // Special POS permissions
+        Permission::updateOrCreate(
+            ['name' => 'pos.view_cost_price'],
+            [
+                'module' => 'pos',
+                'display_name' => 'View Cost/Purchase Price in POS',
+                'description' => 'Can see purchase price, margin and max discount in POS billing',
+            ]
+        );
     }
 }

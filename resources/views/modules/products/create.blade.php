@@ -47,6 +47,7 @@
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Purchase Price *</label><input x-model="form.purchase_price" type="number" step="0.01" class="form-input-custom"></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">MRP *</label><input x-model="form.mrp" type="number" step="0.01" class="form-input-custom"></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Selling Price *</label><input x-model="form.selling_price" type="number" step="0.01" class="form-input-custom"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">Max Selling Price</label><input x-model="form.max_selling_price" type="number" step="0.01" class="form-input-custom" placeholder="Optional"></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Barcode</label><input x-model="form.barcode" type="text" class="form-input-custom"></div>
 
                 <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Description</label><textarea x-model="form.description" class="form-input-custom" rows="2"></textarea></div>
@@ -123,7 +124,7 @@ function createProductPage() {
         saving: false,
         subcategories: [],
         imageFile: null, imagePreview: null, thumbFile: null, thumbPreview: null,
-        form: { name: '', sku: '', category_id: '', subcategory_id: '', brand_id: '', purchase_price: '', mrp: '', selling_price: '', barcode: '', description: '' },
+        form: { name: '', sku: '', category_id: '', subcategory_id: '', brand_id: '', purchase_price: '', mrp: '', selling_price: '', max_selling_price: '', barcode: '', description: '' },
 
         handleFilePick(type, e) {
             const file = e.target.files[0];

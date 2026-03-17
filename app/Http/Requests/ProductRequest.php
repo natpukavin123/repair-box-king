@@ -21,6 +21,7 @@ class ProductRequest extends FormRequest
             'purchase_price' => 'required|numeric|min:0',
             'mrp'            => 'required|numeric|min:0',
             'selling_price'  => 'required|numeric|min:0',
+            'max_selling_price' => 'nullable|numeric|min:0',
             'description'    => 'nullable|string',
             'status'         => 'in:active,inactive',
         ];

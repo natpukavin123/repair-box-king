@@ -66,6 +66,7 @@ Route::middleware('auth')->group(function () {
     // POS & Invoices
     Route::get('pos', [InvoiceController::class, 'create'])->name('pos');
     Route::resource('invoices', InvoiceController::class)->except(['create', 'edit', 'update', 'destroy']);
+    Route::post('invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
     Route::get('invoices/{invoice}/print', [InvoiceController::class, 'print'])->name('invoices.print');
 
     // Repairs

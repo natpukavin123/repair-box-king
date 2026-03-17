@@ -50,9 +50,10 @@ class InvoiceService
                 }
             }
 
-            // Process payments
+            // Process payments (optional – omit to create draft/unpaid invoice)
+            $payments = $data['payments'] ?? [];
             $totalPaid = 0;
-            foreach ($data['payments'] as $payment) {
+            foreach ($payments as $payment) {
                 InvoicePayment::create([
                     'invoice_id' => $invoice->id,
                     'payment_method' => $payment['payment_method'],
@@ -69,29 +70,79 @@ class InvoiceService
                 $invoice->update(['payment_status' => 'partial']);
             }
 
-            // Update customer stats
-            if ($invoice->customer_id) {
-                $customer = $invoice->customer;
-                $customer->increment('total_spent', $finalAmount);
-                $customer->increment('loyalty_points', intval($finalAmount / 100));
-                $customer->update(['last_visit' => now()]);
-            }
+            // Only record ledger & customer stats when payment is received
+            if ($totalPaid > 0) {
+                // Update customer stats
+                if ($invoice->customer_id) {
+                    $customer = $invoice->customer;
+                    $customer->increment('total_spent', $totalPaid);
+                    $customer->increment('loyalty_points', intval($totalPaid / 100));
+                    $customer->update(['last_visit' => now()]);
+                }
 
-            // Ledger entry
-            LedgerTransaction::create([
-                'transaction_type' => 'sale',
-                'reference_module' => 'invoices',
-                'reference_id' => $invoice->id,
-                'amount' => $finalAmount,
-                'payment_method' => count($data['payments']) > 1 ? 'split' : $data['payments'][0]['payment_method'],
-                'direction' => 'IN',
-                'description' => "Invoice {$invoice->invoice_number}",
-                'created_by' => auth()->id(),
-            ]);
+                LedgerTransaction::create([
+                    'transaction_type' => 'sale',
+                    'reference_module' => 'invoices',
+                    'reference_id' => $invoice->id,
+                    'amount' => $totalPaid,
+                    'payment_method' => count($payments) > 1 ? 'split' : $payments[0]['payment_method'],
+                    'direction' => 'IN',
+                    'description' => "Invoice {$invoice->invoice_number}",
+                    'created_by' => auth()->id(),
+                ]);
+            }
 
             ActivityLog::log('create', 'invoices', $invoice->id, "Created invoice {$invoice->invoice_number}");
 
             return $invoice->load('items', 'payments', 'customer');
+        });
+    }
+
+    public function addPayment(Invoice $invoice, array $payments): Invoice
+    {
+        return DB::transaction(function () use ($invoice, $payments) {
+            $totalNewPayment = 0;
+            foreach ($payments as $payment) {
+                InvoicePayment::create([
+                    'invoice_id' => $invoice->id,
+                    'payment_method' => $payment['payment_method'],
+                    'amount' => $payment['amount'],
+                    'transaction_reference' => $payment['transaction_reference'] ?? null,
+                ]);
+                $totalNewPayment += $payment['amount'];
+            }
+
+            $totalPaid = $invoice->payments()->sum('amount');
+
+            if ($totalPaid >= $invoice->final_amount) {
+                $invoice->update(['payment_status' => 'paid', 'is_locked' => true]);
+            } elseif ($totalPaid > 0) {
+                $invoice->update(['payment_status' => 'partial']);
+            }
+
+            // Ledger entry for this batch of payments
+            LedgerTransaction::create([
+                'transaction_type' => 'sale',
+                'reference_module' => 'invoices',
+                'reference_id' => $invoice->id,
+                'amount' => $totalNewPayment,
+                'payment_method' => count($payments) > 1 ? 'split' : $payments[0]['payment_method'],
+                'direction' => 'IN',
+                'description' => "Payment for Invoice {$invoice->invoice_number}",
+                'created_by' => auth()->id(),
+            ]);
+
+            // Update customer stats if fully paid for first time
+            if ($invoice->wasChanged('payment_status') && $invoice->payment_status === 'paid' && $invoice->customer_id) {
+                $customer = $invoice->customer;
+                $customer->increment('total_spent', $invoice->final_amount);
+                $customer->increment('loyalty_points', intval($invoice->final_amount / 100));
+                $customer->update(['last_visit' => now()]);
+            }
+
+            ActivityLog::log('payment', 'invoices', $invoice->id, "Payment of ₹{$totalNewPayment} recorded for invoice {$invoice->invoice_number}");
+
+            return $invoice->fresh()->load('items', 'payments', 'customer');
         });
     }
 
