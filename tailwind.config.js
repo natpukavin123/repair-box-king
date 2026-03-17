@@ -21,11 +21,6 @@ export default {
                     900: '#1e3a8a',
                     950: '#172554',
                 },
-                sidebar: {
-                    DEFAULT: '#1e293b',
-                    hover: '#334155',
-                    active: '#0f172a',
-                }
             }
         },
     },

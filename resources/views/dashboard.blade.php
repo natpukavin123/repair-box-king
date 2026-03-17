@@ -7,21 +7,29 @@
     .dashboard-wrap { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
     .dashboard-wrap * { font-family: inherit; }
 
-    .ql-card {
-        display: flex; flex-direction: column; align-items: center; gap: 12px;
-        padding: 16px 10px; border-radius: 14px; text-decoration: none;
+    .nav-card {
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+        padding: 28px 16px; border-radius: 20px; text-decoration: none;
         transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-        border: 1px solid transparent;
+        border: 1px solid rgba(255,255,255,0.2);
+        position: relative; overflow: hidden;
     }
-    .ql-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px -5px rgba(0,0,0,0.1); }
-    .ql-icon {
-        width: 52px; height: 52px; border-radius: 14px;
+    .nav-card::before {
+        content: ''; position: absolute; inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+        pointer-events: none;
+    }
+    .nav-card:hover { transform: translateY(-5px); box-shadow: 0 12px 30px -5px rgba(0,0,0,0.2); }
+    .nav-card-icon {
+        width: 56px; height: 56px; border-radius: 16px;
         display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 4px 12px -2px rgba(0,0,0,0.15);
+        background: rgba(255,255,255,0.25);
+        backdrop-filter: blur(4px);
         transition: transform 0.3s ease;
     }
-    .ql-card:hover .ql-icon { transform: scale(1.08); }
-    .ql-label { font-size: 11px; font-weight: 600; color: #4b5563; text-align: center; letter-spacing: 0.02em; line-height: 1.3; }
+    .nav-card:hover .nav-card-icon { transform: scale(1.1); }
+    .nav-card-label { font-size: 15px; font-weight: 700; color: #fff; text-align: center; letter-spacing: 0.01em; line-height: 1.3; }
+    .nav-card-sub { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.8); text-align: center; }
 
     .stat-card-new {
         background: #fff; border-radius: 16px; padding: 20px; border: 1px solid #f3f4f6;
@@ -94,63 +102,63 @@
 
 <div class="dashboard-wrap" x-data="dashboardPage()">
 
-    {{-- ============ ROW 1: Quick Links + Reminders ============ --}}
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-
-        {{-- LEFT: Quick Links --}}
-        <div class="card-wrap">
-            <div class="card-head">
-                <div class="flex items-center gap-2.5">
-                    <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;">
-                        <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                    </div>
-                    <span class="section-title">Quick Links</span>
+    {{-- ============ ROW 1: Main Nav Cards + Reminders ============ --}}
+    {{-- Navigation Cards --}}
+    <div style="margin-bottom:28px;">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            {{-- Sales / POS --}}
+            <a href="/pos" class="nav-card" style="background:linear-gradient(135deg,#22c55e,#15803d);">
+                <div class="nav-card-icon">
+                    <svg style="width:28px;height:28px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
                 </div>
-                <span class="section-badge">Navigation</span>
-            </div>
-            <div style="padding:24px;">
-                <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
-                    {{-- New Customer --}}
-                    <a href="/customers?new=1" class="ql-card" style="background:#f0fdf4;">
-                        <div class="ql-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a);">
-                            <svg style="width:24px;height:24px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
-                        </div>
-                        <span class="ql-label">New Customer</span>
-                    </a>
-                    {{-- Search Customer --}}
-                    <a href="/customers" class="ql-card" style="background:#eff6ff;">
-                        <div class="ql-icon" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">
-                            <svg style="width:24px;height:24px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        </div>
-                        <span class="ql-label">Search Customer</span>
-                    </a>
-                    {{-- New Repair --}}
-                    <a href="/repairs?new=1" class="ql-card" style="background:#fff7ed;">
-                        <div class="ql-icon" style="background:linear-gradient(135deg,#f97316,#ea580c);">
-                            <svg style="width:24px;height:24px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.42 15.17l-4.655-5.55a.776.776 0 010-1.06v0a.776.776 0 011.13 0l3.72 3.72 7.08-7.08a.776.776 0 011.06 0v0a.776.776 0 010 1.06L11.42 15.17z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/></svg>
-                        </div>
-                        <span class="ql-label">New Repair</span>
-                    </a>
-                    {{-- Search Repair --}}
-                    <a href="/repairs" class="ql-card" style="background:#faf5ff;">
-                        <div class="ql-icon" style="background:linear-gradient(135deg,#a855f7,#7c3aed);">
-                            <svg style="width:24px;height:24px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        </div>
-                        <span class="ql-label">Search Repair</span>
-                    </a>
-                    {{-- Low Stock --}}
-                    <a href="/inventory" class="ql-card" style="background:#fef2f2;position:relative;">
-                        <div class="ql-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);">
-                            <svg style="width:24px;height:24px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                        </div>
-                        <span class="ql-label">Low Stock</span>
-                        <span x-show="stats.low_stock_count > 0" x-text="stats.low_stock_count" class="low-stock-badge"></span>
-                    </a>
+                <span class="nav-card-label">Sales</span>
+                <span class="nav-card-sub">POS Billing</span>
+            </a>
+            {{-- Repairs --}}
+            <a href="/repairs" class="nav-card" style="background:linear-gradient(135deg,#f97316,#c2410c);">
+                <div class="nav-card-icon">
+                    <svg style="width:28px;height:28px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 </div>
-            </div>
+                <span class="nav-card-label">Repairs</span>
+                <span class="nav-card-sub">Service Jobs</span>
+            </a>
+            {{-- Recharge --}}
+            <a href="/recharges" class="nav-card" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);">
+                <div class="nav-card-icon">
+                    <svg style="width:28px;height:28px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                </div>
+                <span class="nav-card-label">Recharge</span>
+                <span class="nav-card-sub">Mobile Plans</span>
+            </a>
+            {{-- Expenses --}}
+            <a href="/expenses" class="nav-card" style="background:linear-gradient(135deg,#ef4444,#b91c1c);">
+                <div class="nav-card-icon">
+                    <svg style="width:28px;height:28px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
+                <span class="nav-card-label">Expenses</span>
+                <span class="nav-card-sub">Track Costs</span>
+            </a>
+            {{-- Invoices --}}
+            <a href="/invoices" class="nav-card" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">
+                <div class="nav-card-icon">
+                    <svg style="width:28px;height:28px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <span class="nav-card-label">Invoices</span>
+                <span class="nav-card-sub">Bills & Receipts</span>
+            </a>
+            {{-- Returns --}}
+            <a href="/returns" class="nav-card" style="background:linear-gradient(135deg,#f59e0b,#b45309);">
+                <div class="nav-card-icon">
+                    <svg style="width:28px;height:28px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z"/></svg>
+                </div>
+                <span class="nav-card-label">Returns</span>
+                <span class="nav-card-sub">Refunds</span>
+            </a>
         </div>
+    </div>
 
-        {{-- RIGHT: Reminders --}}
+    {{-- Reminders --}}
+    <div class="mb-8">
         <div class="card-wrap">
             <div class="card-head">
                 <div class="flex items-center gap-2.5">

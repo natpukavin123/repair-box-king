@@ -42,128 +42,108 @@
         }
     </style>
 </head>
-<body class="h-full" x-data="{ sidebarOpen: window.innerWidth >= 1024 }" x-init="window.addEventListener('resize', () => { sidebarOpen = window.innerWidth >= 1024 })">
+<body class="h-full" x-data="{ mobileMenuOpen: false }">
 
 <div class="page-loader" id="pageLoader">
     <div class="loader-circle"></div>
 </div>
 
-<div class="flex h-screen overflow-hidden">
-    <!-- Sidebar -->
-    <div x-show="sidebarOpen"
-         x-transition:enter="transition ease-in-out duration-300 transform"
-         x-transition:enter-start="-translate-x-full"
-         x-transition:enter-end="translate-x-0"
-         x-transition:leave="transition ease-in-out duration-300 transform"
-         x-transition:leave-start="translate-x-0"
-         x-transition:leave-end="-translate-x-full"
-         class="fixed inset-y-0 left-0 z-50 w-64 bg-sidebar flex flex-col lg:relative lg:translate-x-0"
-         @click.away="if(window.innerWidth < 1024) sidebarOpen = false">
+@php
+    $shopIcon = \App\Models\Setting::getValue('shop_icon');
+    $shopName = \App\Models\Setting::getValue('shop_name', 'RepairBox');
 
-        <!-- Logo -->
-        @php
-            $shopIcon = \App\Models\Setting::getValue('shop_icon');
-            $shopName = \App\Models\Setting::getValue('shop_name', 'RepairBox');
-        @endphp
-        <div class="flex items-center gap-3 px-6 py-5 border-b border-gray-700">
+    $navItems = [
+        ['name' => 'Sales', 'route' => '/pos', 'match' => 'pos*', 'icon' => 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z'],
+        ['name' => 'Repairs', 'route' => '/repairs', 'match' => 'repairs*', 'icon' => 'M11.42 15.17l-4.655-5.55a.776.776 0 010-1.06v0a.776.776 0 011.13 0l3.72 3.72 7.08-7.08a.776.776 0 011.06 0v0a.776.776 0 010 1.06L11.42 15.17z'],
+        ['name' => 'Recharge', 'route' => '/recharges', 'match' => 'recharges*', 'icon' => 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z'],
+        ['name' => 'Expenses', 'route' => '/expenses', 'match' => 'expenses*', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'],
+        ['name' => 'Invoices', 'route' => '/invoices', 'match' => 'invoices*', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
+        ['name' => 'Returns', 'route' => '/returns', 'match' => 'returns*', 'icon' => 'M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z'],
+    ];
+@endphp
+
+<!-- Top Navigation Bar -->
+<nav class="topnav no-print">
+    <div class="flex items-center justify-between px-4 h-14">
+        <!-- Left: Logo + Shop Name -->
+        <a href="/dashboard" class="flex items-center gap-2.5 flex-shrink-0">
             @if($shopIcon)
-                <div class="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center bg-white">
-                    <img src="{{ asset('storage/' . $shopIcon) }}" alt="Shop Icon" class="w-full h-full object-contain">
+                <div class="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center bg-white border border-gray-200">
+                    <img src="{{ asset('storage/' . $shopIcon) }}" alt="Logo" class="w-full h-full object-contain">
                 </div>
             @else
-                <div class="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                     </svg>
                 </div>
             @endif
-            <div>
-                <h1 class="text-white font-bold text-lg">{{ Str::limit($shopName, 12) }}</h1>
-                <p class="text-gray-400 text-xs">Shop Management</p>
-            </div>
+            <span class="font-bold text-gray-800 text-sm hidden sm:block">{{ Str::limit($shopName, 14) }}</span>
+        </a>
+
+        <!-- Center: Module Links (desktop) -->
+        <div class="hidden md:flex items-center gap-1">
+            @foreach($navItems as $item)
+                <a href="{{ $item['route'] }}" class="topnav-link {{ request()->is($item['match']) ? 'active' : '' }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/></svg>
+                    <span>{{ $item['name'] }}</span>
+                </a>
+            @endforeach
         </div>
 
-        <!-- Navigation -->
-        @php
-            $menusBySection = \App\Models\Menu::getMenusForUser(auth()->user());
-        @endphp
-        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-            @foreach($menusBySection as $section => $menus)
-                @if($section && $section !== '0')
-                    <div class="pt-3 pb-1 px-4"><p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $section }}</p></div>
-                @endif
-                @foreach($menus as $menu)
-                    @php
-                        $menuRoute = $menu['route'] ?? '';
-                        $menuName = $menu['name'] ?? '';
-                        $menuIcon = $menu['icon'] ?? 'M4 6h16M4 12h16M4 18h16';
-                        $isActive = $menuRoute && request()->is(ltrim($menuRoute, '/') . '*');
-                    @endphp
-                    <a href="{{ $menuRoute ?: '#' }}" class="sidebar-link {{ $isActive ? 'active' : '' }}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $menuIcon }}"/></svg>
-                        <span>{{ $menuName }}</span>
-                    </a>
-                    @if(!empty($menu['children']))
-                        @foreach($menu['children'] as $child)
-                            @php
-                                $childRoute = $child['route'] ?? '';
-                                $childName = $child['name'] ?? '';
-                                $childIcon = $child['icon'] ?? 'M9 5l7 7-7 7';
-                                $childActive = $childRoute && request()->is(ltrim($childRoute, '/') . '*');
-                            @endphp
-                            <a href="{{ $childRoute ?: '#' }}" class="sidebar-link pl-12 {{ $childActive ? 'active' : '' }}">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $childIcon }}"/></svg>
-                                <span>{{ $childName }}</span>
-                            </a>
-                        @endforeach
-                    @endif
-                @endforeach
-            @endforeach
-        </nav>
+        <!-- Right: Settings + User + Logout -->
+        <div class="flex items-center gap-2">
+            <a href="/settings" class="topnav-link {{ request()->is('settings*') ? 'active' : '' }}" title="Settings">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <span class="hidden lg:inline">Settings</span>
+            </a>
 
-        <!-- User info -->
-        <div class="p-4 border-t border-gray-700">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+            <div class="hidden sm:flex items-center gap-2 pl-2 border-l border-gray-200">
+                <div class="w-7 h-7 bg-primary-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                     {{ substr(auth()->user()->name ?? 'U', 0, 1) }}
                 </div>
-                <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-white truncate">{{ auth()->user()->name ?? 'User' }}</p>
-                    <p class="text-xs text-gray-400 truncate">{{ auth()->user()->role->name ?? 'Staff' }}</p>
-                </div>
-                <form method="POST" action="/logout">
-                    @csrf
-                    <button type="submit" class="text-gray-400 hover:text-white" title="Logout">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                    </button>
-                </form>
+                <span class="text-xs font-medium text-gray-700 hidden lg:block">{{ auth()->user()->name ?? 'User' }}</span>
             </div>
+
+            <form method="POST" action="/logout">
+                @csrf
+                <button type="submit" class="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-100 transition-colors" title="Logout">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                </button>
+            </form>
+
+            <!-- Mobile hamburger -->
+            <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-1.5 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="flex-1 flex flex-col overflow-hidden">
-        <!-- Top bar -->
-        <header class="bg-white shadow-sm border-b border-gray-200 no-print">
-            <div class="flex items-center justify-between px-4 sm:px-6 py-3">
-                <div class="flex items-center gap-3">
-                    <button @click="sidebarOpen = !sidebarOpen" class="text-gray-500 hover:text-gray-700 lg:hidden">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                    </button>
-                    <h2 class="text-lg font-semibold text-gray-800">@yield('page-title', 'Dashboard')</h2>
-                </div>
-            </div>
-        </header>
-
-        <!-- Page Content -->
-        <main class="flex-1 overflow-y-auto p-4 sm:p-6 @yield('content-class')">
-            @yield('content')
-        </main>
+    <!-- Mobile dropdown menu -->
+    <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-1" @click.away="mobileMenuOpen = false" class="md:hidden border-t border-gray-200 bg-white px-3 pb-3">
+        @foreach($navItems as $item)
+            <a href="{{ $item['route'] }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium {{ request()->is($item['match']) ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/></svg>
+                {{ $item['name'] }}
+            </a>
+        @endforeach
     </div>
-</div>
+</nav>
 
-<!-- Overlay for mobile -->
-<div x-show="sidebarOpen" @click="sidebarOpen = false" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+<!-- Main Content -->
+<div class="flex flex-col" style="min-height: calc(100vh - 56px);">
+    <!-- Page Header -->
+    <header class="bg-white border-b border-gray-200 no-print">
+        <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+            <h2 class="text-lg font-semibold text-gray-800">@yield('page-title', 'Dashboard')</h2>
+        </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="flex-1 overflow-y-auto p-4 sm:p-6 @yield('content-class')">
+        @yield('content')
+    </main>
+</div>
 
 <script>
 window.RepairBox = {
@@ -175,11 +155,9 @@ window.RepairBox = {
             if (method === 'GET' && data) config.params = data;
             var response = await axios(config);
             var d = response.data;
-            // Auto-unwrap Laravel paginated responses
             if (d && typeof d === 'object' && Array.isArray(d.data) && 'current_page' in d) {
                 return { data: d.data, meta: { current_page: d.current_page, last_page: d.last_page, total: d.total }, success: true };
             }
-            // Auto-unwrap {success, data, message} envelope responses
             if (d && typeof d === 'object' && 'success' in d && 'data' in d) {
                 var result = { data: d.data, success: d.success, message: d.message || null };
                 if ('has_more' in d) result.has_more = d.has_more;
@@ -233,7 +211,6 @@ window.RepairBox = {
 // Page Loader
 const pageLoader = document.getElementById('pageLoader');
 if (pageLoader) {
-    // Show loader on page navigation
     document.addEventListener('click', function(e) {
         const link = e.target.closest('a');
         if (link && link.href && !link.href.includes('#') && link.target !== '_blank' && !link.classList.contains('no-loader')) {
@@ -243,7 +220,6 @@ if (pageLoader) {
         }
     });
 
-    // Hide loader on page load
     window.addEventListener('load', () => {
         setTimeout(() => {
             if (pageLoader.classList.contains('active')) {
