@@ -41,6 +41,7 @@ class InvoiceService
                     'item_name' => $item['item_name'],
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
+                    'mrp' => $item['mrp'] ?? $item['price'],
                     'total' => $item['total'],
                 ]);
 

@@ -110,7 +110,7 @@
             <div x-show="itemType === 'service'"
                 class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2.5 overflow-y-auto flex-1 max-h-[60vh] pb-1 pr-1 content-start auto-rows-max">
                 <template x-for="s in filteredServices" :key="s.id">
-                    <button @click="addService(s)"
+                    <button @click="openServiceModal(s)"
                         class="group relative bg-white rounded-lg text-left shadow-sm hover:shadow-lg border border-gray-100 hover:border-indigo-300 transition-all duration-200 overflow-hidden flex flex-col cursor-pointer">
                         <div class="relative w-full overflow-hidden" style="height:80px">
                             <img x-show="s.thumbnail" :src="'/storage/' + s.thumbnail"
@@ -210,6 +210,10 @@
                                     <p class="text-sm font-medium text-gray-900 truncate leading-tight cursor-default"
                                         x-text="item.item_name"
                                         @if($canViewCostPrice) @click="item._showDisc = !item._showDisc" @endif></p>
+                                    {{-- Service work description --}}
+                                    <p x-show="item.item_type === 'service' && item.notes"
+                                        class="text-[10px] text-indigo-500 truncate leading-tight mt-0.5"
+                                        x-text="item.notes + (item.item_unit && item.item_unit !== 'pcs' ? ' · ' + item.item_unit : '')"></p>
                                     {{-- MRP reference --}}
                                     <div x-show="item.mrp && item.mrp > item.price" class="flex items-center gap-1 mt-0.5">
                                         <span class="text-[10px] text-gray-400">MRP:</span>
@@ -385,6 +389,87 @@
         </div>
     </div>
 
+    {{-- SERVICE ENTRY MODAL --}}
+    <div x-show="svcModal.open" x-cloak class="modal-overlay" @keydown.escape.window="svcModal.open = false">
+        <div class="modal-container max-w-lg" @click.stop>
+            <div class="modal-header">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-900" x-text="svcModal.service?.name"></h3>
+                        <p class="text-xs text-gray-400" x-text="svcModal.service?.description || 'Enter service details below'"></p>
+                    </div>
+                </div>
+                <button @click="svcModal.open = false" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+            </div>
+            <div class="modal-body space-y-4">
+
+                {{-- Smart quick-fill suggestions --}}
+                <div x-show="svcModalSuggestions.length > 0">
+                    <p class="text-xs font-medium text-gray-500 mb-1.5">Quick fill</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        <template x-for="(tag, i) in svcModalSuggestions" :key="i">
+                            <button type="button"
+                                @click="svcModal.desc = tag[0]; if(tag[1]) svcModal.unit = tag[1]"
+                                :class="svcModal.desc === tag[0] ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-400 hover:text-indigo-600'"
+                                class="px-2.5 py-1 rounded-full text-xs font-medium border transition-colors"
+                                x-text="tag[0]"></button>
+                        </template>
+                    </div>
+                </div>
+
+                {{-- What was done --}}
+                <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Work Description <span class="text-gray-400 font-normal">(what was done)</span></label>
+                    <textarea x-model="svcModal.desc" rows="2" class="form-input-custom text-sm resize-none"
+                        placeholder="e.g. A4 B&amp;W 20 pages, iPhone 13 OEM screen, Grade-A battery..."></textarea>
+                </div>
+
+                {{-- Qty / Unit / Price --}}
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Quantity</label>
+                        <input x-model.number="svcModal.qty" type="number" min="1" step="1"
+                            class="form-input-custom text-sm text-center" placeholder="1">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Unit</label>
+                        <select x-model="svcModal.unit" class="form-select-custom text-sm">
+                            <option value="pcs">pcs</option>
+                            <option value="pages">pages</option>
+                            <option value="sheets">sheets</option>
+                            <option value="hours">hours</option>
+                            <option value="minutes">minutes</option>
+                            <option value="sets">sets</option>
+                            <option value="items">items</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Price / unit (₹)</label>
+                        <input x-model.number="svcModal.price" type="number" min="0" step="0.01"
+                            class="form-input-custom text-sm text-right" placeholder="0.00">
+                    </div>
+                </div>
+
+                {{-- Live total --}}
+                <div class="bg-indigo-50 rounded-lg px-4 py-3 flex items-center justify-between">
+                    <span class="text-sm text-indigo-700 font-medium">Total</span>
+                    <span class="text-xl font-bold text-indigo-700"
+                        x-text="'₹' + ((svcModal.qty || 0) * (svcModal.price || 0)).toLocaleString('en-IN', {minimumFractionDigits: 2})"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" @click="svcModal.open = false" class="btn-secondary">Cancel</button>
+                <button type="button" @click="confirmAddService()" class="btn-primary">
+                    <svg class="w-4 h-4 inline mr-1.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Add to Cart
+                </button>
+            </div>
+        </div>
+    </div>
+
     {{-- SUCCESS MODAL --}}
     <div x-show="showSuccessModal" x-cloak class="modal-overlay">
         <div class="modal-container max-w-sm text-center" @click.stop>
@@ -483,6 +568,8 @@ function posBilling() {
         newCustomer: { name: '', mobile_number: '', email: '', address: '' },
 
         manualItem: { item_name: '', price: 0, mrp: 0 },
+
+        svcModal: { open: false, service: null, desc: '', qty: 1, unit: 'pcs', price: 0 },
 
         form: { customer_id: null, discount: 0 },
 
@@ -586,21 +673,50 @@ function posBilling() {
             });
         },
 
-        addService(s) {
-            const existing = this.cart.find(c => c.service_id === s.id && c.item_type === 'service');
-            if (existing) { existing.quantity++; return; }
+        openServiceModal(s) {
+            this.svcModal = { open: true, service: s, desc: '', qty: 1, unit: 'pcs', price: Number(s.default_price || 0) };
+        },
+
+        get svcModalSuggestions() {
+            const n = (this.svcModal.service?.name || '').toLowerCase();
+            if (n.includes('xerox') || n.includes('print') || n.includes('copy') || n.includes('photocopy'))
+                return [['A4 B&W', 'pages'], ['A4 Color', 'pages'], ['A3 B&W', 'pages'], ['A3 Color', 'pages'], ['Legal B&W', 'pages']];
+            if (n.includes('lamination') || n.includes('laminate'))
+                return [['A4 Lamination', 'sheets'], ['A3 Lamination', 'sheets'], ['ID Card Size', 'pcs'], ['Passport Size', 'pcs']];
+            if (n.includes('screen') || n.includes('display') || n.includes('lcd'))
+                return [['Original Screen', null], ['OEM Screen', null], ['Grade A Screen', null], ['Grade B Screen', null], ['Copy Screen', null]];
+            if (n.includes('battery'))
+                return [['Original Battery', null], ['OEM Battery', null], ['Duplicate Battery', null]];
+            if (n.includes('charging') || n.includes('port') || n.includes('usb'))
+                return [['USB-C Port', null], ['Micro-USB Port', null], ['Lightning Port', null], ['Type-B Port', null]];
+            if (n.includes('software') || n.includes('flash') || n.includes('update'))
+                return [['Flash / Re-flash', null], ['Factory Reset', null], ['OS Update', null], ['IMEI Repair', null], ['Pattern Unlock', null]];
+            if (n.includes('data') || n.includes('recovery'))
+                return [['Full Recovery', null], ['Contacts Only', null], ['Photos Only', null], ['WhatsApp Backup', null]];
+            if (n.includes('water') || n.includes('damage'))
+                return [['Diagnosis Done', null], ['Board Level Repair', null], ['Cleaning + Dry', null]];
+            return [];
+        },
+
+        confirmAddService() {
+            const m = this.svcModal;
+            if (!m.qty || m.qty <= 0) { RepairBox.toast('Quantity must be at least 1', 'error'); return; }
+            if (!m.price || m.price < 0) { RepairBox.toast('Enter a valid price', 'error'); return; }
             this.cart.push({
                 item_type: 'service',
                 product_id: null,
-                service_id: s.id,
-                item_name: s.name,
-                quantity: 1,
-                price: Number(s.default_price || 0),
-                mrp: Number(s.default_price || 0),
+                service_id: m.service.id,
+                item_name: m.service.name,
+                notes: m.desc.trim(),
+                item_unit: m.unit,
+                quantity: m.qty,
+                price: m.price,
+                mrp: m.price,
                 cost_price: 0,
                 max_selling_price: 0,
                 _showDisc: false,
             });
+            this.svcModal.open = false;
         },
 
         addManualItem() {
@@ -678,9 +794,10 @@ function posBilling() {
                     item_type: item.item_type,
                     product_id: item.product_id || null,
                     service_id: item.service_id || null,
-                    item_name: item.item_name,
+                    item_name: item.notes ? item.item_name + ' — ' + item.notes : item.item_name,
                     quantity: item.quantity,
                     price: item.price,
+                    mrp: item.mrp || item.price,
                 })),
             };
 

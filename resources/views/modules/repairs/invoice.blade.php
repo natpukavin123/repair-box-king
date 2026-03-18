@@ -68,10 +68,15 @@
     // Line items
     $lineItems = collect();
     foreach ($repair->parts as $part) {
+        // Derive MRP: products have mrp field; parts use selling_price as listed price
+        $mrp = $part->product
+            ? (float) ($part->product->mrp ?? $part->cost_price)
+            : ($part->part ? (float) ($part->part->selling_price ?? $part->cost_price) : (float) $part->cost_price);
         $lineItems->push([
             'name'   => $part->part ? $part->part->name : ($part->product ? $part->product->name : 'Part'),
             'serial' => $part->imei ?? null,
             'qty'    => (int) $part->quantity,
+            'mrp'    => $mrp,
             'rate'   => (float) $part->cost_price,
             'total'  => (float) $part->cost_price * (int) $part->quantity,
         ]);
@@ -81,6 +86,7 @@
             'name'   => $svc->service_type_name,
             'serial' => null,
             'qty'    => 1,
+            'mrp'    => (float) $svc->customer_charge,
             'rate'   => (float) $svc->customer_charge,
             'total'  => (float) $svc->customer_charge,
         ]);
@@ -90,6 +96,7 @@
             'name'   => 'Service Charge',
             'serial' => null,
             'qty'    => 1,
+            'mrp'    => (float) $repair->service_charge,
             'rate'   => (float) $repair->service_charge,
             'total'  => (float) $repair->service_charge,
         ]);
@@ -319,11 +326,12 @@ table.sum-tbl .row-full td{color:#059669;font-weight:700;text-align:center;borde
             <div class="inv-tbl-wrap">
                 <table class="inv-tbl">
                     <thead><tr>
-                        <th style="width:22px;">#</th>
+                        <th style="width:18px;">#</th>
                         <th class="tl" data-en="Product / Service" data-ta="பொருள் / சேவை">{{ $defaultLang === 'ta' ? 'பொருள் / சேவை' : 'Product / Service' }}</th>
-                        <th style="width:30px;" data-en="Qty" data-ta="எண்.">{{ $defaultLang === 'ta' ? 'எண்.' : 'Qty' }}</th>
-                        <th style="width:58px;" class="tr" data-en="Rate" data-ta="விலை">{{ $defaultLang === 'ta' ? 'விலை' : 'Rate' }}</th>
-                        <th style="width:64px;" class="tr" data-en="Amount" data-ta="தொகை">{{ $defaultLang === 'ta' ? 'தொகை' : 'Amount' }}</th>
+                        <th style="width:24px;" data-en="Qty" data-ta="எண்.">{{ $defaultLang === 'ta' ? 'எண்.' : 'Qty' }}</th>
+                        <th style="width:46px;" class="tr" data-en="MRP" data-ta="அதிகபட்ச விலை">{{ $defaultLang === 'ta' ? 'அதிகபட்ச விலை' : 'MRP' }}</th>
+                        <th style="width:46px;" class="tr" data-en="Price" data-ta="விலை">{{ $defaultLang === 'ta' ? 'விலை' : 'Price' }}</th>
+                        <th style="width:58px;" class="tr" data-en="Amount" data-ta="தொகை">{{ $defaultLang === 'ta' ? 'தொகை' : 'Amount' }}</th>
                     </tr></thead>
                     <tbody>
                         @foreach($lineItems as $idx => $item)
@@ -331,17 +339,19 @@ table.sum-tbl .row-full td{color:#059669;font-weight:700;text-align:center;borde
                             <td class="tc">{{ $idx+1 }}</td>
                             <td>{{ $item['name'] }}@if($item['serial'])<div class="serial-sub">IMEI: {{ $item['serial'] }}</div>@endif</td>
                             <td class="tc">{{ $item['qty'] }}</td>
-                            <td class="tr">{{ number_format($item['rate'],2) }}</td>
+                            <td class="tr" style="color:#6b7280;">@if($item['mrp'] > $item['rate']){{ number_format($item['mrp'],2) }}@else&mdash;@endif</td>
+                            <td class="tr" style="font-weight:600;">{{ number_format($item['rate'],2) }}</td>
                             <td class="tr" style="font-weight:600;">{{ number_format($item['total'],2) }}</td>
                         </tr>
                         @endforeach
                         @for($e=0;$e<$emptyRows;$e++)
-                        <tr class="erow"><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr class="erow"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
                         @endfor
                     </tbody>
                     <tfoot><tr>
                         <td colspan="2" class="tr" style="letter-spacing:1px;font-size:7px;" data-en="TOTAL" data-ta="மொத்தம்">{{ $defaultLang === 'ta' ? 'மொத்தம்' : 'TOTAL' }}</td>
                         <td class="tc">{{ number_format($totalQty) }}</td>
+                        <td></td>
                         <td></td>
                         <td class="tr">{{ number_format($grandTotal,2) }}</td>
                     </tr></tfoot>

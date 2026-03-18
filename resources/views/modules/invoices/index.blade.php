@@ -346,13 +346,21 @@
                 <div>
                     <h4 class="text-sm font-semibold text-gray-700 mb-2">Items</h4>
                     <table class="data-table">
-                        <thead><tr><th>Item</th><th>Type</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
+                        <thead><tr><th>Item</th><th>Type</th><th>Qty</th><th>MRP</th><th>Price</th><th>Total</th></tr></thead>
                         <tbody>
                             <template x-for="it in viewData?.items || []" :key="it.id">
                                 <tr>
                                     <td x-text="it.item_name"></td>
                                     <td><span class="badge badge-secondary text-xs" x-text="it.item_type"></span></td>
                                     <td x-text="it.quantity"></td>
+                                    <td>
+                                        <template x-if="Number(it.mrp) > Number(it.price)">
+                                            <span class="text-gray-500 text-xs" x-text="'₹' + Number(it.mrp).toFixed(2)"></span>
+                                        </template>
+                                        <template x-if="!(Number(it.mrp) > Number(it.price))">
+                                            <span class="text-gray-400 text-xs">—</span>
+                                        </template>
+                                    </td>
                                     <td x-text="'₹' + Number(it.price).toFixed(2)"></td>
                                     <td class="font-medium" x-text="'₹' + Number(it.total).toFixed(2)"></td>
                                 </tr>

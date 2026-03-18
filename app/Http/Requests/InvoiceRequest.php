@@ -16,7 +16,7 @@ class InvoiceRequest extends FormRequest
             'items' => 'required|array|min:1',
             'items.*.item_type' => 'required|in:product,service,recharge,manual',
             'items.*.product_id' => 'nullable|exists:products,id',
-            'items.*.service_id' => 'nullable|exists:services,id',
+            'items.*.service_id' => 'nullable|exists:service_types,id',
             'items.*.item_name' => 'required|string|max:255',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric|min:0',
