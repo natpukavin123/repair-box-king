@@ -13,53 +13,133 @@
         <div class="lg:col-span-2 flex flex-col">
 
             {{-- Search bar + type selector --}}
-            <div class="mb-2 flex gap-2">
+            <div class="mb-2 flex gap-2 items-center">
                 <input x-model="searchQuery" @input.debounce.250ms="searchProducts()" type="text"
                     placeholder="Search by name, SKU, barcode..." class="form-input-custom flex-1" autofocus>
-                <select x-model="itemType" @change="if(itemType==='product') searchProducts()" class="form-select-custom w-40">
-                    <option value="product">Product</option>
-                    <option value="service">Service</option>
-                    <option value="manual">Manual Entry</option>
-                </select>
+                <div class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1">
+                    <button type="button"
+                        @click="itemType = 'product'; searchProducts()"
+                        :class="itemType === 'product' ? 'bg-white text-primary-700 shadow-sm border-primary-200' : 'text-gray-600 hover:text-gray-800'"
+                        class="px-3 py-1.5 text-sm font-medium rounded-md border border-transparent transition-all">
+                        Product
+                    </button>
+                    <button type="button"
+                        @click="itemType = 'service'"
+                        :class="itemType === 'service' ? 'bg-white text-primary-700 shadow-sm border-primary-200' : 'text-gray-600 hover:text-gray-800'"
+                        class="px-3 py-1.5 text-sm font-medium rounded-md border border-transparent transition-all">
+                        Service
+                    </button>
+                    <button type="button"
+                        @click="itemType = 'manual'"
+                        :class="itemType === 'manual' ? 'bg-white text-primary-700 shadow-sm border-primary-200' : 'text-gray-600 hover:text-gray-800'"
+                        class="px-3 py-1.5 text-sm font-medium rounded-md border border-transparent transition-all">
+                        Manual Entry
+                    </button>
+                </div>
             </div>
 
             {{-- Filter bar (products only) --}}
             <div x-show="itemType === 'product'" class="mb-2 flex flex-wrap gap-2 items-center">
 
-                {{-- Category --}}
-                <select @change="selectCategory($event.target.value ? filterCategories.find(c=>c.id===$event.target.value*1) : null)"
-                    class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300">
-                    <option value="">All Categories</option>
-                    <template x-for="cat in filterCategories" :key="cat.id">
-                        <option :value="cat.id" :selected="filterCategory === cat.id" x-text="cat.name"></option>
-                    </template>
-                </select>
+                {{-- Category multi-select --}}
+                <div class="relative" @click.away="catOpen = false">
+                    <button type="button" @click="catOpen = !catOpen"
+                        :class="selCategories.length ? 'border-primary-400 bg-primary-50 text-primary-700' : 'border-gray-300 bg-white text-gray-700'"
+                        class="flex items-center gap-1.5 text-sm h-9 pl-3 pr-2 rounded-lg border shadow-sm hover:shadow transition-all cursor-pointer">
+                        <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18"/></svg>
+                        <span x-text="selCategories.length === 0 ? 'Category' : (selCategories.length === 1 ? filterCategories.find(c=>c.id===selCategories[0])?.name || 'Category' : selCategories.length + ' Categories')"></span>
+                        <span x-show="selCategories.length" class="ml-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1" x-text="selCategories.length"></span>
+                        <svg class="w-3 h-3 ml-0.5 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div x-show="catOpen" x-cloak x-transition.origin.top.left
+                        class="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl w-64 z-50">
+                        <div class="p-2 border-b border-gray-100">
+                            <input x-model="catSearch" type="text" placeholder="Search categories..."
+                                class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-300">
+                        </div>
+                        <div class="max-h-52 overflow-y-auto p-1">
+                            <template x-for="cat in filterCategories.filter(c => !catSearch || c.name.toLowerCase().includes(catSearch.toLowerCase()))" :key="cat.id">
+                                <label class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 cursor-pointer text-sm">
+                                    <input type="checkbox" :checked="selCategories.includes(cat.id)"
+                                        @change="toggleCategory(cat.id)"
+                                        class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                                    <span x-text="cat.name" class="text-gray-700 truncate"></span>
+                                </label>
+                            </template>
+                            <div x-show="filterCategories.filter(c => !catSearch || c.name.toLowerCase().includes(catSearch.toLowerCase())).length === 0"
+                                class="px-3 py-3 text-sm text-gray-400 text-center">No categories found</div>
+                        </div>
+                    </div>
+                </div>
 
-                {{-- Subcategory (shown when a category with subcategories is selected) --}}
-                <select x-show="filterSubcategories.length > 0"
-                    @change="filterSubcategory = $event.target.value ? $event.target.value*1 : ''; onSubcategoryChange()"
-                    class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300">
-                    <option value="">All Subcategories</option>
-                    <template x-for="sc in filterSubcategories" :key="sc.id">
-                        <option :value="sc.id" :selected="filterSubcategory === sc.id" x-text="sc.name"></option>
-                    </template>
-                </select>
+                {{-- Subcategory multi-select --}}
+                <div class="relative" x-show="allFilterSubcategories.length > 0" @click.away="subOpen = false">
+                    <button type="button" @click="subOpen = !subOpen"
+                        :class="selSubcategories.length ? 'border-primary-400 bg-primary-50 text-primary-700' : 'border-gray-300 bg-white text-gray-700'"
+                        class="flex items-center gap-1.5 text-sm h-9 pl-3 pr-2 rounded-lg border shadow-sm hover:shadow transition-all cursor-pointer">
+                        <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+                        <span x-text="selSubcategories.length === 0 ? 'Subcategory' : (selSubcategories.length === 1 ? allFilterSubcategories.find(s=>s.id===selSubcategories[0])?.name || 'Subcategory' : selSubcategories.length + ' Subcategories')"></span>
+                        <span x-show="selSubcategories.length" class="ml-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1" x-text="selSubcategories.length"></span>
+                        <svg class="w-3 h-3 ml-0.5 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div x-show="subOpen" x-cloak x-transition.origin.top.left
+                        class="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl w-64 z-50">
+                        <div class="p-2 border-b border-gray-100">
+                            <input x-model="subSearch" type="text" placeholder="Search subcategories..."
+                                class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-300">
+                        </div>
+                        <div class="max-h-52 overflow-y-auto p-1">
+                            <template x-for="sc in allFilterSubcategories.filter(s => !subSearch || s.name.toLowerCase().includes(subSearch.toLowerCase()))" :key="sc.id">
+                                <label class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 cursor-pointer text-sm">
+                                    <input type="checkbox" :checked="selSubcategories.includes(sc.id)"
+                                        @change="toggleSubcategory(sc.id)"
+                                        class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                                    <span x-text="sc.name" class="text-gray-700 truncate"></span>
+                                </label>
+                            </template>
+                            <div x-show="allFilterSubcategories.filter(s => !subSearch || s.name.toLowerCase().includes(subSearch.toLowerCase())).length === 0"
+                                class="px-3 py-3 text-sm text-gray-400 text-center">No subcategories found</div>
+                        </div>
+                    </div>
+                </div>
 
-                {{-- Brand (dynamic based on selected category/subcategory) --}}
-                <select x-show="filterBrands.length > 0"
-                    @change="filterBrand = $event.target.value ? $event.target.value*1 : ''; searchProducts()"
-                    class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300">
-                    <option value="">All Brands</option>
-                    <template x-for="b in filterBrands" :key="b.id">
-                        <option :value="b.id" :selected="filterBrand === b.id" x-text="b.name"></option>
-                    </template>
-                </select>
+                {{-- Brand multi-select --}}
+                <div class="relative" x-show="filterBrands.length > 0" @click.away="brandOpen = false">
+                    <button type="button" @click="brandOpen = !brandOpen"
+                        :class="selBrands.length ? 'border-primary-400 bg-primary-50 text-primary-700' : 'border-gray-300 bg-white text-gray-700'"
+                        class="flex items-center gap-1.5 text-sm h-9 pl-3 pr-2 rounded-lg border shadow-sm hover:shadow transition-all cursor-pointer">
+                        <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5a1.99 1.99 0 011.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>
+                        <span x-text="selBrands.length === 0 ? 'Brand' : (selBrands.length === 1 ? filterBrands.find(b=>b.id===selBrands[0])?.name || 'Brand' : selBrands.length + ' Brands')"></span>
+                        <span x-show="selBrands.length" class="ml-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1" x-text="selBrands.length"></span>
+                        <svg class="w-3 h-3 ml-0.5 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div x-show="brandOpen" x-cloak x-transition.origin.top.left
+                        class="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl w-64 z-50">
+                        <div class="p-2 border-b border-gray-100">
+                            <input x-model="brandSearch" type="text" placeholder="Search brands..."
+                                class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-300">
+                        </div>
+                        <div class="max-h-52 overflow-y-auto p-1">
+                            <template x-for="b in filterBrands.filter(b => !brandSearch || b.name.toLowerCase().includes(brandSearch.toLowerCase()))" :key="b.id">
+                                <label class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 cursor-pointer text-sm">
+                                    <input type="checkbox" :checked="selBrands.includes(b.id)"
+                                        @change="toggleBrand(b.id)"
+                                        class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                                    <span x-text="b.name" class="text-gray-700 truncate"></span>
+                                </label>
+                            </template>
+                            <div x-show="filterBrands.filter(b => !brandSearch || b.name.toLowerCase().includes(brandSearch.toLowerCase())).length === 0"
+                                class="px-3 py-3 text-sm text-gray-400 text-center">No brands found</div>
+                        </div>
+                    </div>
+                </div>
 
-                {{-- Clear button --}}
-                <button x-show="filterCategory !== null || filterSubcategory !== '' || filterBrand !== ''"
+                {{-- Clear all filters --}}
+                <button x-show="selCategories.length || selSubcategories.length || selBrands.length"
                     @click="clearFilters()"
-                    class="text-xs text-red-500 hover:text-red-700 font-semibold px-2 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition-colors">
-                    &times; Clear
+                    class="flex items-center gap-1 text-xs text-red-600 hover:text-red-700 font-semibold px-3 h-9 rounded-lg border border-red-200 hover:bg-red-50 transition-colors cursor-pointer">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    Clear
                 </button>
             </div>
 
@@ -565,11 +645,12 @@ function posBilling() {
 
         // Filters
         filterCategories: [],
-        filterSubcategories: [],
         filterBrands: [],
-        filterCategory: null,
-        filterSubcategory: '',
-        filterBrand: '',
+        selCategories: [],
+        selSubcategories: [],
+        selBrands: [],
+        catOpen: false, subOpen: false, brandOpen: false,
+        catSearch: '', subSearch: '', brandSearch: '',
 
         customerSearch: '',
         customerResults: [],
@@ -598,6 +679,17 @@ function posBilling() {
             await Promise.all([this.searchProducts(), this.loadServices(), this.loadFilterData()]);
         },
 
+        get allFilterSubcategories() {
+            if (this.selCategories.length === 0) return [];
+            const subs = [];
+            this.filterCategories.forEach(cat => {
+                if (this.selCategories.includes(cat.id) && cat.subcategories) {
+                    subs.push(...cat.subcategories);
+                }
+            });
+            return subs;
+        },
+
         async loadFilterData() {
             const r = await RepairBox.ajax('/products-filter-data');
             const d = r.data || r;
@@ -605,53 +697,61 @@ function posBilling() {
             if (d.brands)     this.filterBrands     = d.brands;
         },
 
-        async loadFilterBrands(categoryId, subcatId) {
+        async reloadBrands() {
             const params = new URLSearchParams();
-            if (categoryId) params.set('category_id', categoryId);
-            if (subcatId)   params.set('subcategory_id', subcatId);
+            if (this.selCategories.length)    params.set('category_id',    this.selCategories.join(','));
+            if (this.selSubcategories.length) params.set('subcategory_id', this.selSubcategories.join(','));
             const r = await RepairBox.ajax('/products-filter-data?' + params.toString());
             const d = r.data || r;
             if (d.brands) this.filterBrands = d.brands;
+            // Remove any selected brands no longer in the list
+            const validIds = this.filterBrands.map(b => b.id);
+            this.selBrands = this.selBrands.filter(id => validIds.includes(id));
         },
 
-        async selectCategory(cat) {
-            if (!cat) {
-                this.filterCategory      = null;
-                this.filterSubcategory   = '';
-                this.filterSubcategories = [];
-                this.filterBrand         = '';
-                await this.loadFilterBrands();
-            } else {
-                this.filterCategory      = cat.id;
-                this.filterSubcategory   = '';
-                this.filterSubcategories = cat.subcategories || [];
-                this.filterBrand         = '';
-                await this.loadFilterBrands(cat.id);
-            }
+        async toggleCategory(id) {
+            const idx = this.selCategories.indexOf(id);
+            if (idx === -1) this.selCategories.push(id);
+            else this.selCategories.splice(idx, 1);
+            // Remove subcategory selections that no longer belong to selected categories
+            const validSubIds = this.allFilterSubcategories.map(s => s.id);
+            this.selSubcategories = this.selSubcategories.filter(sid => validSubIds.includes(sid));
+            await this.reloadBrands();
             this.searchProducts();
         },
 
-        async onSubcategoryChange() {
-            this.filterBrand = '';
-            await this.loadFilterBrands(this.filterCategory, this.filterSubcategory || null);
+        async toggleSubcategory(id) {
+            const idx = this.selSubcategories.indexOf(id);
+            if (idx === -1) this.selSubcategories.push(id);
+            else this.selSubcategories.splice(idx, 1);
+            await this.reloadBrands();
+            this.searchProducts();
+        },
+
+        toggleBrand(id) {
+            const idx = this.selBrands.indexOf(id);
+            if (idx === -1) this.selBrands.push(id);
+            else this.selBrands.splice(idx, 1);
             this.searchProducts();
         },
 
         clearFilters() {
-            this.filterCategory      = null;
-            this.filterSubcategory   = '';
-            this.filterSubcategories = [];
-            this.filterBrand         = '';
-            this.loadFilterBrands();
+            this.selCategories = [];
+            this.selSubcategories = [];
+            this.selBrands = [];
+            this.catSearch = '';
+            this.subSearch = '';
+            this.brandSearch = '';
+            this.reloadBrands();
             this.searchProducts();
         },
 
         async searchProducts() {
             const params = new URLSearchParams();
             params.set('q', this.searchQuery);
-            if (this.filterCategory)    params.set('category_id',    this.filterCategory);
-            if (this.filterSubcategory) params.set('subcategory_id', this.filterSubcategory);
-            if (this.filterBrand)       params.set('brand_id',       this.filterBrand);
+            if (this.selCategories.length)    params.set('category_id',    this.selCategories.join(','));
+            if (this.selSubcategories.length) params.set('subcategory_id', this.selSubcategories.join(','));
+            if (this.selBrands.length)        params.set('brand_id',       this.selBrands.join(','));
             const r = await RepairBox.ajax('/products-search?' + params.toString());
             if (r.data) this.searchResults = r.data;
         },

@@ -60,17 +60,17 @@ class ProductController extends Controller
 
     public function search()
     {
-        $q            = request('q', '');
-        $categoryId   = request('category_id');
-        $subcatId     = request('subcategory_id');
-        $brandId      = request('brand_id');
+        $q           = request('q', '');
+        $categoryIds = array_filter(explode(',', request('category_id', '')));
+        $subcatIds   = array_filter(explode(',', request('subcategory_id', '')));
+        $brandIds    = array_filter(explode(',', request('brand_id', '')));
 
         $products = Product::with('inventory', 'category', 'subcategory', 'brand')
             ->where('status', 'active')
             ->when($q, fn($query) => $query->where(fn($inner) => $inner->where('name', 'like', "%{$q}%")->orWhere('sku', 'like', "%{$q}%")->orWhere('barcode', 'like', "%{$q}%")))
-            ->when($categoryId,  fn($query) => $query->where('category_id',    $categoryId))
-            ->when($subcatId,    fn($query) => $query->where('subcategory_id', $subcatId))
-            ->when($brandId,     fn($query) => $query->where('brand_id',       $brandId))
+            ->when(count($categoryIds), fn($query) => $query->whereIn('category_id',    $categoryIds))
+            ->when(count($subcatIds),   fn($query) => $query->whereIn('subcategory_id', $subcatIds))
+            ->when(count($brandIds),    fn($query) => $query->whereIn('brand_id',       $brandIds))
             ->orderBy('name')
             ->take(60)->get();
 
@@ -79,21 +79,19 @@ class ProductController extends Controller
 
     public function filterData()
     {
-        $categoryId = request('category_id');
-        $subcatId   = request('subcategory_id');
+        $categoryIds = array_filter(explode(',', request('category_id', '')));
+        $subcatIds   = array_filter(explode(',', request('subcategory_id', '')));
 
         $categories = \App\Models\Category::where('status', 'active')
             ->with(['subcategories' => fn($q) => $q->where('status', 'active')->orderBy('name')->select('id', 'category_id', 'name')])
             ->orderBy('name')->get(['id', 'name']);
 
-        // When a category/subcategory is selected, only show brands that actually
-        // have active products in that scope so the brand chips are always relevant.
         $brandsQuery = \App\Models\Brand::orderBy('name');
-        if ($categoryId || $subcatId) {
-            $brandsQuery->whereHas('products', function ($q) use ($categoryId, $subcatId) {
+        if (count($categoryIds) || count($subcatIds)) {
+            $brandsQuery->whereHas('products', function ($q) use ($categoryIds, $subcatIds) {
                 $q->where('status', 'active');
-                if ($categoryId) $q->where('category_id',    $categoryId);
-                if ($subcatId)   $q->where('subcategory_id', $subcatId);
+                if (count($categoryIds)) $q->whereIn('category_id',    $categoryIds);
+                if (count($subcatIds))   $q->whereIn('subcategory_id', $subcatIds);
             });
         }
         $brands = $brandsQuery->get(['id', 'name']);
