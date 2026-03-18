@@ -12,7 +12,7 @@ class RechargeController extends Controller
     {
         if (request()->ajax()) {
             $data = Recharge::with('customer', 'provider')
-                ->when(request('search'), fn($q, $s) => $q->where('mobile_number', 'like', "%{$s}%")->orWhere('transaction_id', 'like', "%{$s}%"))
+                ->when(request('search'), fn($q, $s) => $q->where('mobile_number', 'like', "%{$s}%")->orWhere('transaction_id', 'like', "%{$s}%")->orWhereHas('customer', fn($cq) => $cq->where('name', 'like', "%{$s}%")))
                 ->when(request('customer_id'), fn($q, $id) => $q->where('customer_id', $id))
                 ->when(request('provider_id'), fn($q, $id) => $q->where('provider_id', $id))
                 ->when(request('status'), fn($q, $s) => $q->where('status', $s))
@@ -29,6 +29,12 @@ class RechargeController extends Controller
     {
         $data = $request->validated();
         $data['status'] = 'success';
+        if (empty($data['commission']) && !empty($data['provider_id'])) {
+            $provider = \App\Models\RechargeProvider::find($data['provider_id']);
+            if ($provider) {
+                $data['commission'] = round($data['recharge_amount'] * $provider->commission_percentage / 100, 2);
+            }
+        }
         $recharge = Recharge::create($data);
 
         LedgerTransaction::create([

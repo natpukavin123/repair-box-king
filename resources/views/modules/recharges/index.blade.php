@@ -45,6 +45,7 @@
     </div>
 
     {{-- Main Content: Two Column Layout when customer selected --}}
+    <div x-show="!viewItem">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
         {{-- Left: New Recharge Form (only when customer selected) --}}
@@ -60,10 +61,10 @@
                     <div class="space-y-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Provider *</label>
-                            <select x-model="form.provider_id" @change="calcCommission()" class="form-select-custom text-sm">
+                            <select x-model="form.provider_id" class="form-select-custom text-sm">
                                 <option value="">Select Provider</option>
                                 <template x-for="p in providers" :key="p.id">
-                                    <option :value="p.id" x-text="p.name + ' (' + p.commission_percentage + '%)'"></option>
+                                    <option :value="p.id" x-text="p.name"></option>
                                 </template>
                             </select>
                         </div>
@@ -71,15 +72,9 @@
                             <label class="block text-xs font-medium text-gray-600 mb-1">Mobile Number *</label>
                             <input x-model="form.mobile_number" type="text" class="form-input-custom text-sm" placeholder="Enter mobile number">
                         </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">Amount *</label>
-                                <input x-model="form.recharge_amount" @input="calcCommission()" type="number" step="0.01" class="form-input-custom text-sm" placeholder="0.00">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">Commission</label>
-                                <input x-model="form.commission" type="number" step="0.01" class="form-input-custom text-sm bg-green-50 text-green-700 font-medium" readonly>
-                            </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Amount *</label>
+                            <input x-model="form.recharge_amount" type="number" step="0.01" class="form-input-custom text-sm" placeholder="0.00">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-600 mb-1">Payment Method</label>
@@ -94,6 +89,10 @@
                                 </template>
                             </div>
                         </div>
+                        <div x-show="form.payment_method === 'upi' || form.payment_method === 'card'" x-cloak>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Reference No.</label>
+                            <input x-model="form.transaction_id" type="text" class="form-input-custom text-sm" placeholder="UTR / Transaction ID">
+                        </div>
                         <button @click="save()" class="btn-primary w-full mt-2" :disabled="saving">
                             <span x-show="saving" class="spinner mr-1"></span>
                             <svg x-show="!saving" class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -107,7 +106,7 @@
         {{-- Right: Recharge History --}}
         <div :class="selCust ? 'lg:col-span-2' : 'lg:col-span-3'">
             {{-- Stats Cards (when customer selected) --}}
-            <div x-show="selCust" x-cloak class="grid grid-cols-3 gap-3 mb-4">
+            <div x-show="selCust" x-cloak class="grid grid-cols-2 gap-3 mb-4">
                 <div class="card">
                     <div class="card-body py-3 px-4 text-center">
                         <div class="text-2xl font-bold text-primary-600" x-text="custStats.totalRecharges"></div>
@@ -118,12 +117,6 @@
                     <div class="card-body py-3 px-4 text-center">
                         <div class="text-2xl font-bold text-blue-600" x-text="'₹' + Number(custStats.totalAmount).toFixed(0)"></div>
                         <div class="text-xs text-gray-500">Total Amount</div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-body py-3 px-4 text-center">
-                        <div class="text-2xl font-bold text-green-600" x-text="'₹' + Number(custStats.totalCommission).toFixed(0)"></div>
-                        <div class="text-xs text-gray-500">Total Commission</div>
                     </div>
                 </div>
             </div>
@@ -139,9 +132,9 @@
                             <input x-model="dateTo" @change="loadHistory(1)" type="date" class="form-input-custom text-sm w-36" title="To date">
                             <button x-show="dateFrom || dateTo" @click="dateFrom = ''; dateTo = ''; loadHistory(1)" class="text-xs text-red-500 hover:text-red-700 whitespace-nowrap" title="Clear dates">&times; Clear</button>
                         </div>
-                        <div x-show="!selCust" class="relative">
+                        <div class="relative">
                             <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                            <input x-model="tableSearch" @input.debounce.400ms="loadHistory(1)" type="text" class="form-input-custom text-sm pl-10 w-48" placeholder="Search number...">
+                            <input x-model="tableSearch" @input.debounce.400ms="loadHistory(1)" type="text" class="form-input-custom text-sm pl-10 w-56" placeholder="Search by number or name...">
                         </div>
                     </div>
                 </div>
@@ -156,18 +149,22 @@
                                     <th>Number</th>
                                     <th>Amount</th>
                                     <th>Payment</th>
+                                    <th>Ref No.</th>
                                     <th>Status</th>
                                     <th>Date</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <template x-for="(r, i) in items" :key="r.id">
-                                    <tr class="hover:bg-gray-50 transition-colors">
+                                    <tr class="hover:bg-primary-50 transition-colors cursor-pointer" @click="viewDetail(r)">
                                         <td class="text-gray-400 text-xs" x-text="(pagination.from || 0) + i"></td>
                                         <td x-show="!selCust">
                                             <div class="flex items-center gap-2">
-                                                <div class="w-6 h-6 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center text-xs font-bold" x-text="r.customer ? r.customer.name.charAt(0).toUpperCase() : '?'"></div>
-                                                <span class="text-sm" x-text="r.customer ? r.customer.name : '-'"></span>
+                                                <button @click.stop="selectCustomer(r.customer)" x-show="r.customer" class="flex items-center gap-2 hover:text-primary-600 transition-colors group" title="Filter by this customer">
+                                                    <div class="w-6 h-6 bg-gray-100 text-gray-500 group-hover:bg-primary-100 group-hover:text-primary-600 rounded-full flex items-center justify-center text-xs font-bold" x-text="r.customer ? r.customer.name.charAt(0).toUpperCase() : '?'"></div>
+                                                    <span class="text-sm font-medium" x-text="r.customer ? r.customer.name : '-'"></span>
+                                                </button>
+                                                <span x-show="!r.customer" class="text-gray-400 text-sm">Walk-in</span>
                                             </div>
                                         </td>
                                         <td>
@@ -193,6 +190,7 @@
                                                 <span x-text="r.payment_method === 'bank_transfer' ? 'Bank' : r.payment_method ? r.payment_method.toUpperCase() : '-'"></span>
                                             </span>
                                         </td>
+                                        <td class="text-xs text-gray-400 font-mono" x-text="r.transaction_id || '—'"></td>
                                         <td>
                                             <span class="badge" :class="r.status === 'success' ? 'badge-success' : r.status === 'failed' ? 'badge-danger' : 'badge-warning'" x-text="r.status"></span>
                                         </td>
@@ -200,7 +198,7 @@
                                     </tr>
                                 </template>
                                 <tr x-show="items.length === 0">
-                                    <td :colspan="selCust ? 7 : 8" class="text-center py-10">
+                                    <td :colspan="selCust ? 8 : 9" class="text-center py-10">
                                         <svg class="w-10 h-10 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                         <div class="text-gray-400 text-sm" x-text="selCust ? 'No recharges found for this customer' : 'No recharges found'"></div>
                                     </td>
@@ -220,6 +218,68 @@
                             </template>
                             <button @click="loadHistory(pagination.currentPage + 1)" :disabled="pagination.currentPage >= pagination.lastPage" class="px-3 py-1 text-xs rounded border hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">Next</button>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>{{-- /!viewItem --}}
+
+    {{-- Recharge Detail View --}}
+    <div x-show="viewItem" x-cloak>
+        <div class="card">
+            <div class="card-header flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <button @click="closeDetail()" class="flex items-center gap-1.5 text-gray-500 hover:text-gray-800 transition-colors text-sm font-medium">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                        Back to Recharges
+                    </button>
+                    <span class="text-gray-300">|</span>
+                    <h3 class="text-base font-semibold text-gray-700">Recharge Detail</h3>
+                </div>
+                <span class="badge" :class="viewItem?.status === 'success' ? 'badge-success' : viewItem?.status === 'failed' ? 'badge-danger' : 'badge-warning'" x-text="viewItem?.status || ''"></span>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <div>
+                        <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Customer</div>
+                        <div class="font-semibold text-gray-800" x-text="viewItem?.customer?.name || 'Walk-in'"></div>
+                        <div class="text-xs text-gray-400 mt-0.5" x-text="viewItem?.customer?.mobile_number || ''"></div>
+                    </div>
+                    <div>
+                        <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Mobile Number</div>
+                        <div class="font-mono font-bold text-gray-800 text-lg" x-text="viewItem?.mobile_number || '—'"></div>
+                    </div>
+                    <div>
+                        <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Provider</div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" :style="'background:' + providerColor(viewItem?.provider?.name)" x-text="viewItem?.provider?.name?.charAt(0).toUpperCase() || '?'"></span>
+                            <span class="font-semibold text-gray-800" x-text="viewItem?.provider?.name || '—'"></span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Amount</div>
+                        <div class="font-bold text-2xl text-primary-600" x-text="'₹' + Number(viewItem?.recharge_amount || 0).toFixed(2)"></div>
+                    </div>
+                    <div x-show="viewItem?.plan_name">
+                        <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Plan</div>
+                        <div class="font-medium text-gray-700" x-text="viewItem?.plan_name || '—'"></div>
+                    </div>
+                    <div>
+                        <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Payment Method</div>
+                        <div class="inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1 rounded-full" :class="{
+                            'bg-green-100 text-green-700': viewItem?.payment_method === 'cash',
+                            'bg-blue-100 text-blue-700': viewItem?.payment_method === 'upi',
+                            'bg-purple-100 text-purple-700': viewItem?.payment_method === 'card',
+                        }" x-text="viewItem?.payment_method ? viewItem.payment_method.toUpperCase() : '—'"></div>
+                    </div>
+                    <div x-show="viewItem?.transaction_id">
+                        <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Reference No.</div>
+                        <div class="font-mono text-sm font-semibold text-gray-700" x-text="viewItem?.transaction_id || '—'"></div>
+                    </div>
+                    <div>
+                        <div class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Date &amp; Time</div>
+                        <div class="text-sm text-gray-700" x-text="viewItem?.created_at ? formatDate(viewItem.created_at) : '—'"></div>
                     </div>
                 </div>
             </div>
@@ -252,18 +312,23 @@ function rechargesPage() {
         custSearch: '', custResults: [], selCust: null,
         showAddCust: false, newCust: {name: '', mobile_number: '', email: '', address: ''},
         tableSearch: '', dateFrom: '', dateTo: '',
-        form: { customer_id: null, provider_id: '', mobile_number: '', recharge_amount: '', commission: '', payment_method: 'cash' },
-        custStats: { totalRecharges: 0, totalAmount: 0, totalCommission: 0 },
+        viewItem: null,
+        form: { customer_id: null, provider_id: '', mobile_number: '', recharge_amount: '', transaction_id: '', payment_method: 'cash' },
+        custStats: { totalRecharges: 0, totalAmount: 0 },
         pagination: { currentPage: 1, lastPage: 1, from: 0, to: 0, total: 0 },
 
         async init() {
             const p = new URLSearchParams(window.location.search);
+            const now = new Date();
+            const y = now.getFullYear(), mo = String(now.getMonth() + 1).padStart(2, '0');
+            this.dateFrom = p.get('date_from') || (y + '-' + mo + '-01');
+            this.dateTo   = p.get('date_to')   || now.toISOString().split('T')[0];
             if (p.has('search')) this.tableSearch = p.get('search');
-            if (p.has('date_from')) this.dateFrom = p.get('date_from');
-            if (p.has('date_to')) this.dateTo = p.get('date_to');
             const r = await RepairBox.ajax('/recharge-providers');
             if (r.data) this.providers = r.data;
-            this.loadHistory(1);
+            if (p.has('customer_id')) await this.loadCustomerById(p.get('customer_id'));
+            await this.loadHistory(1);
+            if (p.has('view')) this.loadDetailById(p.get('view'));
         },
 
         async findCust() {
@@ -278,6 +343,10 @@ function rechargesPage() {
             this.form.mobile_number = c.mobile_number || '';
             this.custResults = [];
             this.custSearch = '';
+            // persist in URL
+            const params = new URLSearchParams(window.location.search);
+            params.set('customer_id', c.id);
+            history.replaceState(null, '', window.location.pathname + '?' + params.toString());
             this.loadHistory(1);
         },
 
@@ -285,15 +354,20 @@ function rechargesPage() {
             this.selCust = null;
             this.form.customer_id = null;
             this.form.mobile_number = '';
-            this.custStats = { totalRecharges: 0, totalAmount: 0, totalCommission: 0 };
+            this.custStats = { totalRecharges: 0, totalAmount: 0 };
+            const params = new URLSearchParams(window.location.search);
+            params.delete('customer_id');
+            history.replaceState(null, '', window.location.pathname + (params.toString() ? '?' + params.toString() : ''));
             this.loadHistory(1);
         },
 
         updateUrl() {
-            const params = new URLSearchParams();
+            const params = new URLSearchParams(window.location.search);
+            params.delete('search'); params.delete('date_from'); params.delete('date_to');
             if (this.tableSearch) params.set('search', this.tableSearch);
             if (this.dateFrom) params.set('date_from', this.dateFrom);
             if (this.dateTo) params.set('date_to', this.dateTo);
+            if (this.selCust) params.set('customer_id', this.selCust.id); else params.delete('customer_id');
             const qs = params.toString();
             history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
         },
@@ -323,7 +397,6 @@ function rechargesPage() {
                     if (all.data) {
                         this.custStats.totalRecharges = all.data.length;
                         this.custStats.totalAmount = all.data.reduce((s, r) => s + parseFloat(r.recharge_amount || 0), 0);
-                        this.custStats.totalCommission = all.data.reduce((s, r) => s + parseFloat(r.commission || 0), 0);
                     }
                 }
                 this.updateUrl();
@@ -368,18 +441,39 @@ function rechargesPage() {
             this.saving = false;
             if (r.success !== false) {
                 RepairBox.toast('Recharge recorded successfully', 'success');
-                this.form = { customer_id: this.selCust?.id, provider_id: '', mobile_number: this.selCust?.mobile_number || '', recharge_amount: '', commission: '', payment_method: 'cash' };
+                this.form = { customer_id: this.selCust?.id, provider_id: '', mobile_number: this.selCust?.mobile_number || '', recharge_amount: '', transaction_id: '', payment_method: 'cash' };
                 this.loadHistory(1);
             }
         },
 
-        calcCommission() {
-            const provider = this.providers.find(p => p.id == this.form.provider_id);
-            const amt = parseFloat(this.form.recharge_amount) || 0;
-            if (provider && amt > 0) {
-                this.form.commission = (amt * parseFloat(provider.commission_percentage) / 100).toFixed(2);
-            } else {
-                this.form.commission = '';
+        viewDetail(r) {
+            this.viewItem = r;
+            const params = new URLSearchParams(window.location.search);
+            params.set('view', r.id);
+            history.pushState(null, '', window.location.pathname + '?' + params.toString());
+        },
+
+        closeDetail() {
+            this.viewItem = null;
+            const params = new URLSearchParams(window.location.search);
+            params.delete('view');
+            const qs = params.toString();
+            history.pushState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
+        },
+
+        async loadDetailById(id) {
+            const r = await RepairBox.ajax('/recharges/' + id);
+            if (r.data) this.viewItem = r.data;
+            else if (r.id) this.viewItem = r;
+        },
+
+        async loadCustomerById(id) {
+            const r = await RepairBox.ajax('/customers/' + id);
+            const c = r.data || r;
+            if (c && c.id) {
+                this.selCust = c;
+                this.form.customer_id = c.id;
+                this.form.mobile_number = c.mobile_number || '';
             }
         },
 
