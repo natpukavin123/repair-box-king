@@ -78,7 +78,7 @@
                 <h2 class="text-2xl font-bold text-gray-800" x-text="repair.ticket_number"></h2>
                 <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold" :class="statusBadgeClass(repair.status)" x-text="statusLabel(repair.status)"></span>
                 <template x-if="repair.record_type !== 'original'">
-                    <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded" :class="repair.record_type === 'void' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'" x-text="repair.record_type"></span>
+                    <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-blue-100 text-blue-700" x-text="repair.record_type"></span>
                 </template>
                 <template x-if="repair.is_locked">
                     <span class="text-xs text-gray-400 flex items-center gap-1">
@@ -616,7 +616,7 @@
         <div class="space-y-5">
 
             <!-- ===== REPAIR OPERATIONS PANEL (Compact) ===== -->
-            <template x-if="!repair.is_locked && repair.status !== 'cancelled' && repair.record_type !== 'void'">
+            <template x-if="!repair.is_locked && repair.status !== 'cancelled'">
                 <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
                     <!-- Header -->
                     <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-3 flex items-center justify-between">
@@ -847,11 +847,7 @@
                 </div>
             </div>
 
-            <!-- ===== ACTIONS CONTAINER ===== -->
-            <template x-if="repair.record_type === 'void' || repair.status === 'cancelled'">
-            </template>
-
-            <!-- ===== CHILD REPAIRS (voids/duplicates) ===== -->
+            <!-- ===== CHILD REPAIRS ===== -->
             <template x-if="(repair.child_repairs || []).length > 0">
                 <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
                     <div class="bg-gray-50 px-4 py-3 border-b"><h3 class="font-semibold text-sm text-gray-600">Related Repairs</h3></div>
@@ -860,7 +856,7 @@
                             <a :href="'/repairs/' + child.id" class="flex items-center justify-between py-2.5 border-b last:border-0 text-sm hover:bg-gray-50 rounded px-2 -mx-2 transition">
                                 <div class="flex items-center gap-2">
                                     <span class="font-medium text-primary-600" x-text="child.ticket_number"></span>
-                                    <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded" :class="child.record_type === 'void' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'" x-text="child.record_type"></span>
+                                    <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-blue-100 text-blue-600" x-text="child.record_type"></span>
                                 </div>
                                 <span class="text-xs text-gray-400" x-text="formatDate(child.created_at)"></span>
                             </a>
@@ -943,14 +939,12 @@
     </div>
 
     <!-- ===== CANCEL & REFUND MODAL ===== -->
-    <!-- ===== UNIFIED CANCEL MODAL (Refund or Void) ===== -->
     <div x-show="showCancel" class="modal-overlay" x-cloak>
         <div class="modal-container max-w-md" @click.away="showCancel = false">
             <div class="modal-header">
                 <h3 class="text-lg font-bold text-red-700">
                     <span x-show="repair.net_paid > 0">Cancel & Refund</span>
-                    <span x-show="repair.net_paid <= 0 && repair.status === 'received'">Void Repair</span>
-                    <span x-show="repair.net_paid <= 0 && repair.status !== 'received'">Cancel Repair</span>
+                    <span x-show="repair.net_paid <= 0">Cancel Repair</span>
                 </h3>
                 <button @click="showCancel = false" class="text-gray-400 hover:text-gray-600">&times;</button>
             </div>
@@ -1005,36 +999,19 @@
                     </div>
                 </template>
 
-                <!-- Direct Cancel/Void Flow (if no payment) -->
+                <!-- Direct cancel flow (if no payment) -->
                 <template x-if="repair.net_paid <= 0">
                     <div>
-                        <!-- Void for 'received' status -->
-                        <template x-if="repair.status === 'received'">
-                            <div>
-                                <div class="bg-red-50 rounded-lg p-3 mb-4 text-sm text-red-700">
-                                    <p><strong>Void Repair (Mistake Entry)</strong></p>
-                                    <p class="mt-2 text-xs">This will mark the repair as void and exclude it from all reports and revenue calculations. The record will be locked.</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Reason *</label>
-                                    <textarea x-model="cancelForm.reason" class="form-input-custom" rows="2" placeholder="Why is this being voided?"></textarea>
-                                </div>
+                        <div>
+                            <div class="bg-red-50 rounded-lg p-3 mb-4 text-sm text-red-700">
+                                <p class="font-medium">This will cancel the repair.</p>
+                                <p class="mt-1 text-xs">No advance payment to refund.</p>
                             </div>
-                        </template>
-
-                        <!-- Direct cancel for other statuses -->
-                        <template x-if="repair.status !== 'received'">
                             <div>
-                                <div class="bg-red-50 rounded-lg p-3 mb-4 text-sm text-red-700">
-                                    <p class="font-medium">This will cancel the repair.</p>
-                                    <p class="mt-1 text-xs">No advance payment to refund.</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Reason *</label>
-                                    <textarea x-model="cancelForm.reason" class="form-input-custom" rows="2" placeholder="Why is this being cancelled?"></textarea>
-                                </div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Reason *</label>
+                                <textarea x-model="cancelForm.reason" class="form-input-custom" rows="2" placeholder="Why is this being cancelled?"></textarea>
                             </div>
-                        </template>
+                        </div>
                     </div>
                 </template>
             </div>
@@ -1042,8 +1019,7 @@
                 <button @click="showCancel = false" class="btn-secondary">Go Back</button>
                 <button @click="handleCancel()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
                     <span x-show="repair.net_paid > 0">Cancel & Refund</span>
-                    <span x-show="repair.net_paid <= 0 && repair.status === 'received'">Void Repair</span>
-                    <span x-show="repair.net_paid <= 0 && repair.status !== 'received'">Cancel Repair</span>
+                    <span x-show="repair.net_paid <= 0">Cancel Repair</span>
                 </button>
             </div>
         </div>
@@ -1251,7 +1227,7 @@ function repairDetail() {
         svcTypeResults: [], svcTypeHasMore: false, svcTypePage: 1, svcTypeLoading: false,
         vendorSearch: '', vendorResults: [], vendorHasMore: false, vendorPage: 1, vendorLoading: false,
 
-        // Cancel form (handles refund, void, and simple cancel)
+        // Cancel form (handles refund and simple cancel)
         cancelForm: { reason: '', refund_method: 'cash', parts_action: 'return_stock' },
 
         init() {
@@ -1549,12 +1525,6 @@ function repairDetail() {
                 successMsg = 'Repair cancelled and refund processed';
                 payload = this.cancelForm; // includes refund_method and parts_action
             }
-            // If received status with no payment, it's a void
-            else if (this.repair.status === 'received') {
-                endpoint = '/repairs/' + this.repair.id + '/void';
-                successMsg = 'Repair marked as void';
-            }
-
             const r = await RepairBox.ajax(endpoint, 'POST', payload);
             if (r.success !== false) {
                 RepairBox.toast(successMsg, 'success');

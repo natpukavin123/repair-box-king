@@ -82,7 +82,6 @@ Route::middleware('auth')->group(function () {
     Route::put('repairs/{repair}/services/{serviceId}', [RepairController::class, 'updateService']);
     Route::delete('repairs/{repair}/services/{serviceId}', [RepairController::class, 'removeService']);
     Route::post('repairs/{repair}/cancel-refund', [RepairController::class, 'cancelWithRefund']);
-    Route::post('repairs/{repair}/void', [RepairController::class, 'voidRepair']);
     Route::post('repairs/{repair}/duplicate', [RepairController::class, 'duplicateRepair']);
     Route::get('repairs/{repair}/print', [RepairController::class, 'print'])->name('repairs.print');
     Route::get('repairs/{repair}/invoice', [RepairController::class, 'invoice'])->name('repairs.invoice');

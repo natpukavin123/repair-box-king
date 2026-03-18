@@ -21,7 +21,7 @@ class ReportService
             ->pluck('id')
             ->merge(
                 Customer::where('created_at', '<', $today)
-                    ->whereHas('repairs', fn($q) => $q->whereDate('created_at', $today)->where('record_type', '!=', 'void'))
+                    ->whereHas('repairs', fn($q) => $q->whereDate('created_at', $today)->where('record_type', 'original'))
                     ->pluck('id')
             )
             ->unique()
@@ -33,7 +33,7 @@ class ReportService
         $refundAmount = Refund::whereDate('created_at', $today)->sum('refund_amount');
 
         // ---------- Repair Ticket Counts by Status ----------
-        $repairCounts = Repair::where('record_type', '!=', 'void')
+        $repairCounts = Repair::where('record_type', 'original')
             ->select('status', DB::raw('count(*) as count'))
             ->groupBy('status')
             ->pluck('count', 'status')

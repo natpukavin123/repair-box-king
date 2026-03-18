@@ -32,7 +32,7 @@ class RepairController extends Controller
                     if ($ps === 'paid') $q->whereHas('payments');
                     if ($ps === 'unpaid') $q->whereDoesntHave('payments');
                 })
-                ->when(request('record_type'), fn($q, $t) => $q->where('record_type', $t), fn($q) => $q->whereIn('record_type', ['original', 'void']));
+                ->when(request('record_type'), fn($q, $t) => $q->where('record_type', $t), fn($q) => $q->where('record_type', 'original'));
 
             // For kanban view, load all without pagination
             if (request('view') === 'kanban') {
@@ -387,20 +387,6 @@ class RepairController extends Controller
         try {
             $repair = $service->cancelWithRefund($repair, $data['reason'], $data['refund_method'], $data['parts_action'] ?? 'return_stock');
             return response()->json(['success' => true, 'data' => $repair, 'message' => 'Repair cancelled with refund processed']);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
-        }
-    }
-
-    public function voidRepair(Request $request, Repair $repair, RepairService $service)
-    {
-        $data = $request->validate([
-            'reason' => 'required|string|max:500',
-        ]);
-
-        try {
-            $repair = $service->markAsVoid($repair, $data['reason']);
-            return response()->json(['success' => true, 'data' => $repair, 'message' => 'Repair marked as void']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
         }

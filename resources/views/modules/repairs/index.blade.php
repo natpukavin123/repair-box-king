@@ -144,7 +144,7 @@
                                 <div class="text-xs text-gray-400" x-show="r.imei" x-text="'IMEI: ' + r.imei"></div>
                             </td>
                             <td class="px-4 py-3">
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold" :class="r.record_type === 'void' ? 'bg-gray-800 text-white' : statusBadgeClass(r.status)" x-text="r.record_type === 'void' ? 'Void' : statusLabel(r.status)"></span>
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold" :class="statusBadgeClass(r.status)" x-text="statusLabel(r.status)"></span>
                             </td>
                             <td class="px-4 py-3">
                                 <div class="text-sm font-medium" x-text="'₹' + Number(r.grand_total || r.estimated_cost || 0).toFixed(2)"></div>
@@ -277,35 +277,19 @@ function repairsPage() {
 
         // Computed
         get statusFilterOptions() {
-            return [
-                ...Object.entries(this.statusMeta).map(([key, meta]) => ({
-                    key,
-                    label: meta.label,
-                    activeCardClass: this.statusCardActiveClass(key),
-                    inactiveCardClass: this.statusCardInactiveClass(key),
-                    activeEyebrowClass: 'text-white/70',
-                    countActiveClass: this.statusCountActiveClass(key),
-                })),
-                {
-                    key: 'void',
-                    label: 'Void',
-                    activeCardClass: 'border-gray-900 bg-gray-900 text-white',
-                    inactiveCardClass: 'border-slate-200 bg-white text-slate-700 hover:border-slate-300',
-                    activeEyebrowClass: 'text-white/70',
-                    countActiveClass: 'bg-gray-900 text-white',
-                },
-            ];
+            return Object.entries(this.statusMeta).map(([key, meta]) => ({
+                key,
+                label: meta.label,
+                activeCardClass: this.statusCardActiveClass(key),
+                inactiveCardClass: this.statusCardInactiveClass(key),
+                activeEyebrowClass: 'text-white/70',
+                countActiveClass: this.statusCountActiveClass(key),
+            }));
         },
         get filteredItems() {
             let items = this.items;
             if (this.selectedStatuses.length) {
-                items = items.filter(i => {
-                    if (i.record_type === 'void') {
-                        return this.selectedStatuses.includes('void');
-                    }
-
-                    return this.selectedStatuses.includes(i.status);
-                });
+                items = items.filter(i => this.selectedStatuses.includes(i.status));
             }
             return items;
         },
@@ -403,10 +387,8 @@ function repairsPage() {
 
         // Status helpers
         statusCount(status) {
-            if (status === 'void') return this.voidCount;
-            return this.items.filter(i => i.status === status && i.record_type !== 'void').length;
+            return this.items.filter(i => i.status === status).length;
         },
-        get voidCount() { return this.items.filter(i => i.record_type === 'void').length; },
         statusLabel(status) { return this.statusMeta[status]?.label || status?.replace('_', ' ') || ''; },
         statusBadgeClass(status) {
             const map = { received: 'bg-blue-100 text-blue-700', in_progress: 'bg-amber-100 text-amber-700', completed: 'bg-emerald-100 text-emerald-700', payment: 'bg-purple-100 text-purple-700', closed: 'bg-green-100 text-green-800', cancelled: 'bg-red-100 text-red-700' };
@@ -449,13 +431,12 @@ function repairsPage() {
             const map = { received: 'bg-blue-500 text-white', in_progress: 'bg-amber-500 text-white', completed: 'bg-emerald-500 text-white', payment: 'bg-purple-500 text-white', closed: 'bg-green-700 text-white', cancelled: 'bg-red-500 text-white' };
             return map[status] || 'bg-gray-500 text-white';
         },
-        kanbanItems(status) { return this.items.filter(i => i.status === status && i.record_type !== 'void'); },
+        kanbanItems(status) { return this.items.filter(i => i.status === status); },
 
         deviceLabel(repair) {
             return [repair.device_brand, repair.device_model].filter(Boolean).join(' ') || 'Device not set';
         },
         amountMeta(repair) {
-            if (repair.record_type === 'void') return 'Voided record';
             if (repair.status === 'cancelled' && Number(repair.total_refunded || 0) > 0) {
                 return 'Refunded: ₹' + Number(repair.total_refunded).toFixed(2);
             }

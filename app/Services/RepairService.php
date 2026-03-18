@@ -192,28 +192,6 @@ class RepairService
         });
     }
 
-    public function markAsVoid(Repair $repair, string $reason): Repair
-    {
-        return DB::transaction(function () use ($repair, $reason) {
-            $repair->record_type = 'void';
-            $repair->cancel_reason = $reason;
-            $repair->status = 'cancelled';
-            $repair->is_locked = true;
-            $repair->save();
-
-            RepairStatusHistory::create([
-                'repair_id' => $repair->id,
-                'status' => 'cancelled',
-                'notes' => "Voided: {$reason}",
-                'updated_by' => auth()->id(),
-            ]);
-
-            ActivityLog::log('update', 'repairs', $repair->id, "Marked as void: {$reason}");
-
-            return $repair->load('customer', 'technician');
-        });
-    }
-
     public function createDuplicate(Repair $repair): Repair
     {
         return DB::transaction(function () use ($repair) {
