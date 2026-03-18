@@ -97,13 +97,13 @@
             <div class="modal-header"><h3 class="text-lg font-semibold">Add Customer</h3><button @click="showAddCust = false" class="text-gray-400 hover:text-gray-600">&times;</button></div>
             <div class="modal-body">
                 <div class="space-y-3">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label><input x-model="newCust.name" type="text" class="form-input-custom"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Mobile *</label><input x-model="newCust.mobile_number" type="text" class="form-input-custom"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input x-model="newCust.email" type="email" class="form-input-custom"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label><input x-model="newCust.name" type="text" class="form-input-custom" required></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Mobile * <span class="text-xs text-gray-500">(10 digits)</span></label><input x-model="newCust.mobile_number" type="text" class="form-input-custom" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required @keydown="if(!/[0-9]/.test($event.key) && !['Backspace','Delete','Tab','ArrowLeft','ArrowRight'].includes($event.key)) $event.preventDefault()"><p x-show="newCust.mobile_number && !/^\d{10}$/.test(newCust.mobile_number)" class="text-xs text-red-500 mt-1">Mobile must be exactly 10 digits</p></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input x-model="newCust.email" type="email" class="form-input-custom"><p x-show="newCust.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCust.email)" class="text-xs text-red-500 mt-1">Please enter a valid email</p></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Address</label><input x-model="newCust.address" type="text" class="form-input-custom"></div>
                 </div>
             </div>
-            <div class="modal-footer"><button type="button" @click="showAddCust = false" class="btn-secondary">Cancel</button><button type="button" @click.prevent="saveNewCust()" class="btn-primary">Save & Select</button></div>
+            <div class="modal-footer"><button type="button" @click="showAddCust = false" class="btn-secondary">Cancel</button><button type="button" @click.prevent="saveNewCust()" class="btn-primary" :disabled="!newCust.name.trim() || !/^\d{10}$/.test(newCust.mobile_number) || (newCust.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCust.email))">Save & Select</button></div>
         </div>
     </div>
 </div>
@@ -131,7 +131,23 @@ function servicesPage() {
         handleCustScroll(e) { const el = e.target; if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10 && this.custHasMore && !this.custLoading) { this.findCust(this.custPage + 1); } },
         selectCust(c) { this.selCust = c; this.form.customer_id = c.id; this.custResults = []; this.custOpen = false; this.custSearch = ''; },
         async saveNewCust() {
-            if (!this.newCust.name || !this.newCust.mobile_number) { RepairBox.toast('Name and mobile are required', 'error'); return; }
+            if (!this.newCust.name.trim()) {
+                RepairBox.toast('Name is required', 'error');
+                return;
+            }
+            const mobile = this.newCust.mobile_number.trim();
+            if (!mobile) {
+                RepairBox.toast('Mobile number is required', 'error');
+                return;
+            }
+            if (!/^\d{10}$/.test(mobile)) {
+                RepairBox.toast('Mobile must be exactly 10 digits', 'error');
+                return;
+            }
+            if (this.newCust.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.newCust.email)) {
+                RepairBox.toast('Please enter a valid email address', 'error');
+                return;
+            }
             const r = await RepairBox.ajax('/customers', 'POST', this.newCust);
             if (r.success !== false && r.data) { this.selCust = r.data; this.form.customer_id = r.data.id; this.custResults = []; this.custSearch = ''; this.showAddCust = false; RepairBox.toast('Customer added', 'success'); }
         },

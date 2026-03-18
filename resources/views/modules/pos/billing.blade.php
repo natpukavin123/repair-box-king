@@ -520,15 +520,19 @@
             <div class="modal-body space-y-3">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-                    <input x-model="newCustomer.name" type="text" class="form-input-custom" placeholder="Full name">
+                    <input x-model="newCustomer.name" type="text" class="form-input-custom" placeholder="Full name" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Mobile *</label>
-                    <input x-model="newCustomer.mobile_number" type="text" class="form-input-custom" placeholder="10-digit mobile number">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mobile * <span class="text-xs text-gray-500">(10 digits)</span></label>
+                    <input x-model="newCustomer.mobile_number" type="text" class="form-input-custom" placeholder="10-digit mobile number"
+                        inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required
+                        @keydown="if(!/[0-9]/.test($event.key) && !['Backspace','Delete','Tab','ArrowLeft','ArrowRight'].includes($event.key)) $event.preventDefault()">
+                    <p x-show="newCustomer.mobile_number && !/^\d{10}$/.test(newCustomer.mobile_number)" class="text-xs text-red-500 mt-1">Mobile must be exactly 10 digits</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                     <input x-model="newCustomer.email" type="email" class="form-input-custom" placeholder="Optional">
+                    <p x-show="newCustomer.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCustomer.email)" class="text-xs text-red-500 mt-1">Please enter a valid email</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
@@ -537,7 +541,10 @@
             </div>
             <div class="modal-footer">
                 <button type="button" @click="showAddCustomer = false" class="btn-secondary">Cancel</button>
-                <button type="button" @click.prevent="saveNewCustomer()" class="btn-primary">Save &amp; Select</button>
+                <button type="button" @click.prevent="saveNewCustomer()" class="btn-primary"
+                    :disabled="!newCustomer.name.trim() || !/^\d{10}$/.test(newCustomer.mobile_number) || (newCustomer.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCustomer.email))">
+                    Save &amp; Select
+                </button>
             </div>
         </div>
     </div>
@@ -775,8 +782,21 @@ function posBilling() {
         },
 
         async saveNewCustomer() {
-            if (!this.newCustomer.name || !this.newCustomer.mobile_number) {
-                RepairBox.toast('Name and mobile are required', 'error');
+            if (!this.newCustomer.name.trim()) {
+                RepairBox.toast('Name is required', 'error');
+                return;
+            }
+            const mobile = this.newCustomer.mobile_number.trim();
+            if (!mobile) {
+                RepairBox.toast('Mobile number is required', 'error');
+                return;
+            }
+            if (!/^\d{10}$/.test(mobile)) {
+                RepairBox.toast('Mobile must be exactly 10 digits', 'error');
+                return;
+            }
+            if (this.newCustomer.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.newCustomer.email)) {
+                RepairBox.toast('Please enter a valid email address', 'error');
                 return;
             }
             const r = await RepairBox.ajax('/customers', 'POST', this.newCustomer);

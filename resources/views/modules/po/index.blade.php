@@ -12,7 +12,7 @@
             <div class="card" style="overflow:visible">
                 <div class="card-body py-3" style="overflow:visible">
                     <label class="text-xs font-medium text-gray-500 mb-1 block">Customer</label>
-                    <div class="flex gap-2">
+                    <div x-show="!selectedCustomer" class="flex gap-2">
                         <div class="relative flex-1" @click.away="custOpen = false">
                             <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                             <input x-model="custSearch" @focus="findCustomers(1)" @input.debounce.300ms="findCustomers(1)" type="text"
@@ -39,13 +39,13 @@
                                 </div>
                             </div>
                         </div>
-                        <button type="button" @click="showNewCust = !showNewCust"
+                        <button type="button" @click="showNewCust = true; newCust = {name:'', mobile_number:'', email:'', address:''}"
                             class="btn-secondary text-sm px-3 whitespace-nowrap">
                             <svg class="w-4 h-4 inline mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
                             New
                         </button>
                     </div>
-                    <div x-show="custOpen && !custLoading && custResults.length === 0"
+                    <div x-show="!selectedCustomer && custOpen && !custLoading && custResults.length === 0"
                         class="text-xs text-gray-400 mt-1">No customers found — click <strong>New</strong> to add manually.</div>
 
                     {{-- Selected Customer Badge --}}
@@ -59,18 +59,6 @@
                         <button @click="clearCustomer()" class="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
-                    </div>
-
-                    {{-- New Customer Inline Form --}}
-                    <div x-show="showNewCust" x-cloak x-transition class="mt-3 p-3 bg-gray-50 rounded-lg border space-y-2">
-                        <div>
-                            <label class="text-xs font-medium text-gray-600">Name *</label>
-                            <input x-model="form.customer_name" type="text" class="form-input-custom text-sm mt-0.5" placeholder="Customer name">
-                        </div>
-                        <div>
-                            <label class="text-xs font-medium text-gray-600">Phone</label>
-                            <input x-model="form.customer_phone" type="text" class="form-input-custom text-sm mt-0.5" placeholder="Mobile number">
-                        </div>
                     </div>
                 </div>
             </div>
@@ -304,6 +292,40 @@
             </div>
         </div>
     </div>
+
+    {{-- ADD CUSTOMER MODAL --}}
+    <div x-show="showNewCust" x-cloak class="modal-overlay">
+        <div class="modal-container max-w-md" @click.stop>
+            <div class="modal-header">
+                <h3 class="text-lg font-semibold">Add New Customer</h3>
+                <button @click="showNewCust = false" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+            </div>
+            <div class="modal-body space-y-3">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                    <input x-model="newCust.name" type="text" class="form-input-custom" placeholder="Full name" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mobile * <span class="text-xs text-gray-500">(10 digits)</span></label>
+                    <input x-model="newCust.mobile_number" type="text" class="form-input-custom" placeholder="10-digit mobile number"
+                        inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required
+                        @keydown="if(!/[0-9]/.test($event.key) && !['Backspace','Delete','Tab','ArrowLeft','ArrowRight'].includes($event.key)) $event.preventDefault()">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input x-model="newCust.email" type="email" class="form-input-custom" placeholder="Optional">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                    <input x-model="newCust.address" type="text" class="form-input-custom" placeholder="Optional">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" @click="showNewCust = false" class="btn-secondary">Cancel</button>
+                <button type="button" @click="saveNewCust()" class="btn-primary">Save &amp; Select</button>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -332,6 +354,7 @@ function poPage() {
         custLoading: false,
         selectedCustomer: null,
         showNewCust: false,
+        newCust: { name: '', mobile_number: '', email: '', address: '' },
 
         statusList: [
             { key: 'open',      label: 'Open',      activeCls: 'border-blue-500 bg-blue-50 text-blue-700' },
@@ -420,6 +443,39 @@ function poPage() {
             this.form.customer_name = '';
             this.form.customer_phone = '';
             this.custSearch = '';
+        },
+
+        async saveNewCust() {
+            if (!this.newCust.name.trim()) {
+                RepairBox.toast('Name is required', 'error');
+                return;
+            }
+            const mobile = this.newCust.mobile_number.trim();
+            if (!mobile) {
+                RepairBox.toast('Mobile number is required', 'error');
+                return;
+            }
+            if (!/^\d{10}$/.test(mobile)) {
+                RepairBox.toast('Mobile must be exactly 10 digits', 'error');
+                return;
+            }
+            if (this.newCust.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.newCust.email)) {
+                RepairBox.toast('Please enter a valid email address', 'error');
+                return;
+            }
+            const r = await RepairBox.ajax('/customers', 'POST', this.newCust);
+            if (r.success !== false && r.data) {
+                this.form.customer_id = r.data.id;
+                this.form.customer_name = r.data.name;
+                this.form.customer_phone = r.data.mobile_number || '';
+                this.selectedCustomer = r.data;
+                this.custResults = [];
+                this.custSearch = '';
+                this.custOpen = false;
+                this.showNewCust = false;
+                this.newCust = { name: '', mobile_number: '', email: '', address: '' };
+                RepairBox.toast('Customer added', 'success');
+            }
         },
 
         // === Helpers ===
