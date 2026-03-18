@@ -65,10 +65,10 @@ class MenuSeeder extends Seeder
             'sort_order' => $order++,
         ]);
         Menu::create([
-            'name' => 'Returns',
-            'route' => '/returns',
-            'icon' => 'M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z',
-            'module' => 'returns',
+            'name' => 'PO',
+            'route' => '/po',
+            'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2',
+            'module' => 'po',
             'section' => 'Main',
             'sort_order' => $order++,
         ]);

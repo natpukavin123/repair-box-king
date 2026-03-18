@@ -58,7 +58,7 @@
         ['name' => 'Recharge', 'route' => '/recharges', 'match' => 'recharges*', 'icon' => 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z'],
         ['name' => 'Expenses', 'route' => '/expenses', 'match' => 'expenses*', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'],
         ['name' => 'Invoices', 'route' => '/invoices', 'match' => 'invoices*', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
-        ['name' => 'Returns', 'route' => '/returns', 'match' => 'returns*', 'icon' => 'M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z'],
+        ['name' => 'PO', 'route' => '/po', 'match' => 'po*', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
     ];
 @endphp
 
@@ -156,7 +156,9 @@ window.RepairBox = {
             var response = await axios(config);
             var d = response.data;
             if (d && typeof d === 'object' && Array.isArray(d.data) && 'current_page' in d) {
-                return { data: d.data, meta: { current_page: d.current_page, last_page: d.last_page, total: d.total }, success: true };
+                var result = { data: d.data, meta: { current_page: d.current_page, last_page: d.last_page, total: d.total }, success: true };
+                if (d.counts) result.counts = d.counts;
+                return result;
             }
             if (d && typeof d === 'object' && 'success' in d && 'data' in d) {
                 var result = { data: d.data, success: d.success, message: d.message || null };

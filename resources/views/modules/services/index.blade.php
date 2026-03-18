@@ -62,11 +62,18 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
                         <div class="flex gap-2">
-                            <input x-model="custSearch" @input.debounce.300ms="findCust()" type="text" class="form-input-custom flex-1" placeholder="Search customer...">
+                            <div class="relative flex-1" @click.away="custOpen = false">
+                                <input x-model="custSearch" @focus="findCust(1)" @input.debounce.300ms="findCust(1)" type="text" class="form-input-custom" placeholder="Search customer...">
+                                <div x-show="custOpen && custResults.length > 0" x-cloak class="absolute left-0 right-0 mt-1 border rounded-lg bg-white shadow-lg overflow-hidden" style="z-index:50">
+                                    <div class="max-h-48 overflow-y-auto" @scroll="handleCustScroll($event)">
+                                        <template x-for="c in custResults" :key="c.id"><button @click="selectCust(c)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b" x-text="c.name + ' - ' + (c.mobile_number || '')"></button></template>
+                                        <div x-show="custLoading" class="px-3 py-2 text-xs text-gray-400 text-center flex items-center justify-center gap-2"><svg class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>Loading…</div>
+                                    </div>
+                                </div>
+                            </div>
                             <button type="button" @click="showAddCust = true; newCust = {name:'', mobile_number:'', email:'', address:''}" class="btn-primary text-sm px-3 whitespace-nowrap">+ New</button>
                         </div>
-                        <div x-show="custResults.length > 0" class="border rounded mt-1 max-h-32 overflow-y-auto bg-white shadow"><template x-for="c in custResults" :key="c.id"><button @click="form.customer_id = c.id; selCust = c; custResults = []; custSearch = ''" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b" x-text="c.name + ' - ' + (c.mobile_number || '')"></button></template></div>
-                        <div x-show="custSearch.length >= 2 && custResults.length === 0" class="text-xs text-gray-400 mt-1">No customers found. Click <strong>+ New</strong> to add.</div>
+                        <div x-show="custOpen && !custLoading && custResults.length === 0" class="text-xs text-gray-400 mt-1">No customers found. Click <strong>+ New</strong> to add.</div>
                         <div x-show="selCust" class="mt-1"><span class="badge badge-primary" x-text="selCust?.name"></span> <button @click="selCust = null; form.customer_id = null" class="text-red-400 text-xs">&times;</button></div>
                     </div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Customer Charge *</label><input x-model="form.customer_charge" type="number" step="0.01" class="form-input-custom"></div>
@@ -107,11 +114,22 @@
 function servicesPage() {
     return {
         items: [], stypes: [], showModal: false, editing: null, saving: false, loading: true,
-        custSearch: '', custResults: [], selCust: null,
+        custSearch: '', custResults: [], custOpen: false, custHasMore: false, custPage: 1, custLoading: false, selCust: null,
         showAddCust: false, newCust: {name: '', mobile_number: '', email: '', address: ''},
         form: { service_type_id: '', customer_id: null, description: '', customer_charge: '', vendor_cost: '', payment_method: 'cash', status: 'completed' },
         async load() { this.loading = true; const r = await RepairBox.ajax('/services'); if(r.data) this.items = r.data; this.loading = false; },
-        async findCust() { if(this.custSearch.length < 2) { this.custResults = []; return; } const r = await RepairBox.ajax('/customers-search?q='+encodeURIComponent(this.custSearch)); if(r.data) this.custResults = r.data; },
+        async findCust(page) {
+            page = page || 1; if (page === 1) this.custPage = 1;
+            this.custLoading = true;
+            const r = await RepairBox.ajax('/customers-search?page=' + page + '&q=' + encodeURIComponent(this.custSearch || ''));
+            this.custLoading = false;
+            const rows = Array.isArray(r.data) ? r.data : [];
+            this.custResults = page === 1 ? rows : this.custResults.concat(rows);
+            this.custHasMore = r.has_more || false; this.custPage = page;
+            if (this.custResults.length > 0 || this.custSearch) this.custOpen = true;
+        },
+        handleCustScroll(e) { const el = e.target; if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10 && this.custHasMore && !this.custLoading) { this.findCust(this.custPage + 1); } },
+        selectCust(c) { this.selCust = c; this.form.customer_id = c.id; this.custResults = []; this.custOpen = false; this.custSearch = ''; },
         async saveNewCust() {
             if (!this.newCust.name || !this.newCust.mobile_number) { RepairBox.toast('Name and mobile are required', 'error'); return; }
             const r = await RepairBox.ajax('/customers', 'POST', this.newCust);

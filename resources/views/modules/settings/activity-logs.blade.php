@@ -53,7 +53,7 @@
 function activityLogsPage() {
     return {
         items: [], page: 1, lastPage: 1, filterModule: '',
-        modules: ['invoices','repairs','customers','products','inventory','purchases','expenses','recharges','services','users','settings','returns'],
+        modules: ['invoices','repairs','customers','products','inventory','purchases','expenses','recharges','services','users','settings','po'],
         async load() {
             let url = `/activity-logs?page=${this.page}`;
             if(this.filterModule) url += `&module=${encodeURIComponent(this.filterModule)}`;

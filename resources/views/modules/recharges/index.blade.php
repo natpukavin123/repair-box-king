@@ -12,24 +12,27 @@
                 <div class="flex-1 relative">
                     <label class="block text-xs font-medium text-gray-500 mb-1">Select Customer</label>
                     <div class="flex gap-2">
-                        <div class="relative flex-1">
+                        <div class="relative flex-1" @click.away="custOpen = false">
                             <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                            <input x-model="custSearch" @input.debounce.300ms="findCust()" type="text" class="form-input-custom pl-10" placeholder="Search by name or mobile...">
+                            <input x-model="custSearch" @focus="findCust(1)" @input.debounce.300ms="findCust(1)" type="text" class="form-input-custom pl-10" placeholder="Search by name or mobile...">
                         </div>
                         <button type="button" @click="showAddCust = true; newCust = {name:'', mobile_number:'', email:'', address:''}" class="btn-secondary text-sm px-3 whitespace-nowrap">
                             <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg> New Customer
                         </button>
                     </div>
                     {{-- Search Results Dropdown --}}
-                    <div x-show="custResults.length > 0" x-cloak class="absolute left-0 right-0 mt-1 border rounded-lg bg-white shadow-lg max-h-48 overflow-y-auto" style="z-index:50">
-                        <template x-for="c in custResults" :key="c.id">
-                            <button @click="selectCustomer(c)" class="w-full text-left px-4 py-2.5 hover:bg-primary-50 text-sm border-b last:border-b-0 flex items-center gap-3 transition-colors">
-                                <div class="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-xs font-bold" x-text="c.name.charAt(0).toUpperCase()"></div>
-                                <div><div class="font-medium text-gray-800" x-text="c.name"></div><div class="text-xs text-gray-400" x-text="c.mobile_number"></div></div>
-                            </button>
-                        </template>
+                    <div x-show="custOpen && custResults.length > 0" x-cloak class="absolute left-0 right-0 mt-1 border rounded-lg bg-white shadow-lg overflow-hidden" style="z-index:50">
+                        <div class="max-h-48 overflow-y-auto" @scroll="handleCustScroll($event)">
+                            <template x-for="c in custResults" :key="c.id">
+                                <button @click="selectCustomer(c)" class="w-full text-left px-4 py-2.5 hover:bg-primary-50 text-sm border-b last:border-b-0 flex items-center gap-3 transition-colors">
+                                    <div class="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-xs font-bold" x-text="c.name.charAt(0).toUpperCase()"></div>
+                                    <div><div class="font-medium text-gray-800" x-text="c.name"></div><div class="text-xs text-gray-400" x-text="c.mobile_number"></div></div>
+                                </button>
+                            </template>
+                            <div x-show="custLoading" class="px-4 py-2.5 text-xs text-gray-400 text-center flex items-center justify-center gap-2"><svg class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>Loading…</div>
+                        </div>
                     </div>
-                    <div x-show="custSearch.length >= 2 && custResults.length === 0" class="text-xs text-gray-400 mt-1">No customers found.</div>
+                    <div x-show="custOpen && !custLoading && custResults.length === 0" class="text-xs text-gray-400 mt-1">No customers found.</div>
                 </div>
                 {{-- Selected Customer Badge --}}
                 <div x-show="selCust" class="flex items-center gap-2 bg-primary-50 border border-primary-200 rounded-lg px-3 py-2">
@@ -309,7 +312,7 @@
 function rechargesPage() {
     return {
         items: [], providers: [], saving: false,
-        custSearch: '', custResults: [], selCust: null,
+        custSearch: '', custResults: [], custOpen: false, custHasMore: false, custPage: 1, custLoading: false, selCust: null,
         showAddCust: false, newCust: {name: '', mobile_number: '', email: '', address: ''},
         tableSearch: '', dateFrom: '', dateTo: '',
         viewItem: null,
@@ -331,10 +334,24 @@ function rechargesPage() {
             if (p.has('view')) this.loadDetailById(p.get('view'));
         },
 
-        async findCust() {
-            if (this.custSearch.length < 2) { this.custResults = []; return; }
-            const r = await RepairBox.ajax('/customers-search?q=' + encodeURIComponent(this.custSearch));
-            if (r.data) this.custResults = r.data;
+        async findCust(page) {
+            page = page || 1;
+            if (page === 1) this.custPage = 1;
+            this.custLoading = true;
+            const r = await RepairBox.ajax('/customers-search?page=' + page + '&q=' + encodeURIComponent(this.custSearch || ''));
+            this.custLoading = false;
+            const rows = Array.isArray(r.data) ? r.data : [];
+            this.custResults = page === 1 ? rows : this.custResults.concat(rows);
+            this.custHasMore = r.has_more || false;
+            this.custPage = page;
+            if (this.custResults.length > 0 || this.custSearch) this.custOpen = true;
+        },
+
+        handleCustScroll(e) {
+            const el = e.target;
+            if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10 && this.custHasMore && !this.custLoading) {
+                this.findCust(this.custPage + 1);
+            }
         },
 
         selectCustomer(c) {
@@ -342,6 +359,7 @@ function rechargesPage() {
             this.form.customer_id = c.id;
             this.form.mobile_number = c.mobile_number || '';
             this.custResults = [];
+            this.custOpen = false;
             this.custSearch = '';
             // persist in URL
             const params = new URLSearchParams(window.location.search);

@@ -165,24 +165,27 @@
         <div class="flex flex-col gap-3">
 
             {{-- Customer selector --}}
-            <div class="card">
-                <div class="card-body py-3">
+            <div class="card" style="overflow:visible">
+                <div class="card-body py-3" style="overflow:visible">
                     <div class="flex gap-2 items-end">
-                        <div class="flex-1">
+                        <div class="flex-1 relative" @click.away="custOpen = false">
                             <label class="text-xs font-medium text-gray-600">Customer</label>
-                            <input x-model="customerSearch" @input.debounce.300ms="findCustomers()" type="text"
+                            <input x-model="customerSearch" @focus="findCustomers(1)" @input.debounce.300ms="findCustomers(1)" type="text"
                                 class="form-input-custom mt-1 text-sm" placeholder="Search by name / phone...">
+                            <div x-show="custOpen && customerResults.length > 0" x-cloak class="absolute left-0 right-0 mt-1 border rounded-lg bg-white shadow-lg overflow-hidden" style="z-index:50">
+                                <div class="max-h-48 overflow-y-auto" @scroll="handleCustScroll($event)">
+                                    <template x-for="c in customerResults" :key="c.id">
+                                        <button @click="selectCustomer(c)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b last:border-0"
+                                            x-text="c.name + ' - ' + c.mobile_number"></button>
+                                    </template>
+                                    <div x-show="custLoading" class="px-3 py-2 text-xs text-gray-400 text-center flex items-center justify-center gap-2"><svg class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>Loading…</div>
+                                </div>
+                            </div>
                         </div>
                         <button type="button" @click="showAddCustomer = true; newCustomer = {name:'',mobile_number:'',email:'',address:''}"
                             class="btn-primary text-sm px-3 py-2 whitespace-nowrap">+ New</button>
                     </div>
-                    <div x-show="customerResults.length > 0" class="border rounded mt-1 max-h-32 overflow-y-auto bg-white shadow-sm z-20 relative">
-                        <template x-for="c in customerResults" :key="c.id">
-                            <button @click="selectCustomer(c)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b last:border-0"
-                                x-text="c.name + ' - ' + c.mobile_number"></button>
-                        </template>
-                    </div>
-                    <div x-show="customerSearch.length >= 2 && customerResults.length === 0"
+                    <div x-show="custOpen && !custLoading && customerResults.length === 0"
                         class="text-xs text-gray-400 mt-1">No customers found - click <strong>+ New</strong> to add.</div>
                     <div x-show="selectedCustomer" class="mt-2 flex items-center gap-2">
                         <span class="badge badge-primary text-xs" x-text="selectedCustomer?.name"></span>
@@ -563,6 +566,10 @@ function posBilling() {
 
         customerSearch: '',
         customerResults: [],
+        custOpen: false,
+        custHasMore: false,
+        custPage: 1,
+        custLoading: false,
         selectedCustomer: null,
         showAddCustomer: false,
         newCustomer: { name: '', mobile_number: '', email: '', address: '' },
@@ -739,16 +746,31 @@ function posBilling() {
             this.manualItem = { item_name: '', price: 0, mrp: 0 };
         },
 
-        async findCustomers() {
-            if (this.customerSearch.length < 2) { this.customerResults = []; return; }
-            const r = await RepairBox.ajax('/customers-search?q=' + encodeURIComponent(this.customerSearch));
-            if (r.data) this.customerResults = r.data;
+        async findCustomers(page) {
+            page = page || 1;
+            if (page === 1) this.custPage = 1;
+            this.custLoading = true;
+            const r = await RepairBox.ajax('/customers-search?page=' + page + '&q=' + encodeURIComponent(this.customerSearch || ''));
+            this.custLoading = false;
+            const rows = Array.isArray(r.data) ? r.data : [];
+            this.customerResults = page === 1 ? rows : this.customerResults.concat(rows);
+            this.custHasMore = r.has_more || false;
+            this.custPage = page;
+            if (this.customerResults.length > 0 || this.customerSearch) this.custOpen = true;
+        },
+
+        handleCustScroll(e) {
+            const el = e.target;
+            if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10 && this.custHasMore && !this.custLoading) {
+                this.findCustomers(this.custPage + 1);
+            }
         },
 
         selectCustomer(c) {
             this.selectedCustomer = c;
             this.form.customer_id = c.id;
             this.customerResults = [];
+            this.custOpen = false;
             this.customerSearch = '';
         },
 

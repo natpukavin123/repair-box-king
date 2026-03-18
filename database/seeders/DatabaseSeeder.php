@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
 
         // === PERMISSIONS ===
         $modules = ['dashboard', 'categories', 'products', 'inventory', 'purchases', 'suppliers',
-            'pos', 'invoices', 'repairs', 'recharges', 'services', 'customers', 'returns',
+            'pos', 'invoices', 'repairs', 'recharges', 'services', 'customers', 'po',
             'ledger', 'expenses', 'reports', 'users', 'settings', 'backups', 'notifications'];
         $actions = ['view', 'create', 'edit', 'delete'];
         $permIds = [];

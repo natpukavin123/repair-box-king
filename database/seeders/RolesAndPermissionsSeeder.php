@@ -22,7 +22,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'recharges' => 'Recharges',
             'services' => 'Services',
             'customers' => 'Customers',
-            'returns' => 'Returns & Refunds',
+            'po' => 'PO',
             'ledger' => 'Ledger',
             'expenses' => 'Expenses',
             'reports' => 'Reports',

@@ -6,7 +6,7 @@ use App\Http\Controllers\{
     BrandController, ProductController, InventoryController, SupplierController,
     PurchaseController, InvoiceController, RepairController, CustomerController,
     RechargeController, ServiceController, ExpenseController, LedgerController,
-    ReturnController, UserController, SettingController, ReportController,
+    PoRequestController, UserController, SettingController, ReportController,
     PartController, RepairReturnController, RoleController, MenuController,
     CreditNoteController, SetupController, DevToolsController
 };
@@ -115,13 +115,10 @@ Route::middleware('auth')->group(function () {
     Route::get('ledger', [LedgerController::class, 'index'])->name('ledger.index');
     Route::get('ledger/summary', [LedgerController::class, 'summary']);
 
-    // Returns & Refunds
-    Route::get('returns', [ReturnController::class, 'index'])->name('returns.index');
-    Route::post('returns/customer', [ReturnController::class, 'storeCustomerReturn']);
-    Route::post('returns/supplier', [ReturnController::class, 'storeSupplierReturn']);
-    Route::put('returns/{type}/{id}/status', [ReturnController::class, 'updateStatus']);
-    Route::get('refunds', [ReturnController::class, 'refunds']);
-    Route::post('refunds', [ReturnController::class, 'storeRefund']);
+    // PO Requests (Out-of-stock customer requests)
+    Route::get('po', [PoRequestController::class, 'index'])->name('po.index');
+    Route::post('po', [PoRequestController::class, 'store']);
+    Route::put('po/{poRequest}/status', [PoRequestController::class, 'updateStatus']);
 
     // Users
     Route::resource('users', UserController::class)->except(['edit']);
