@@ -71,7 +71,7 @@ Route::middleware('auth')->group(function () {
     Route::get('invoices/{invoice}/print', [InvoiceController::class, 'print'])->name('invoices.print');
 
     // Repairs
-    Route::resource('repairs', RepairController::class)->except(['edit', 'update', 'destroy']);
+    Route::resource('repairs', RepairController::class)->except(['edit', 'destroy']);
     Route::put('repairs/{repair}/status', [RepairController::class, 'updateStatus']);
     Route::put('repairs/{repair}/service-charge', [RepairController::class, 'updateServiceCharge']);
     Route::post('repairs/{repair}/payment', [RepairController::class, 'addPayment']);

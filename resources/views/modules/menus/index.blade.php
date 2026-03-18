@@ -95,7 +95,7 @@
             </div>
             <div class="modal-body">
                 <div class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="form-label">Name *</label>
                             <input x-model="form.name" type="text" class="form-input-custom" placeholder="Menu label">
@@ -105,7 +105,7 @@
                             <input x-model="form.route" type="text" class="form-input-custom" placeholder="/example">
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="form-label">Section</label>
                             <select x-model="form.section" class="form-select-custom">
@@ -124,7 +124,7 @@
                             <input x-model="form.module" type="text" class="form-input-custom" placeholder="e.g. dashboard, repairs">
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="form-label">Sort Order</label>
                             <input x-model="form.sort_order" type="number" class="form-input-custom" min="0">

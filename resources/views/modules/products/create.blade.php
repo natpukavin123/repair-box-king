@@ -3,59 +3,54 @@
 
 @section('content')
 <div x-data="createProductPage()" class="max-w-3xl mx-auto">
-    <div class="flex items-center justify-between mb-5">
+    <div class="flex flex-col gap-3 mb-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h2 class="text-2xl font-bold text-gray-800">Add Product</h2>
             <p class="text-sm text-gray-500 mt-0.5">Create a new product in inventory</p>
         </div>
-        <a href="/products" class="btn-secondary inline-flex items-center gap-1.5">
+        <a href="/products" class="btn-secondary inline-flex w-full items-center justify-center gap-1.5 sm:w-auto">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
             Back
         </a>
     </div>
 
     <div class="card">
-        <div class="card-body">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label><input x-model="form.name" type="text" class="form-input-custom"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">SKU</label><input x-model="form.sku" type="text" class="form-input-custom"></div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                    <select x-model="form.category_id" @change="loadSubcategories()" class="form-select-custom">
-                        <option value="">Select</option>
-                        @foreach($categories as $c)
-                            <option value="{{ $c->id }}">{{ $c->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Subcategory</label>
-                    <select x-model="form.subcategory_id" class="form-select-custom">
-                        <option value="">Select</option>
-                        <template x-for="s in subcategories" :key="s.id"><option :value="s.id" x-text="s.name"></option></template>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-                    <select x-model="form.brand_id" class="form-select-custom">
-                        <option value="">Select</option>
-                        @foreach($brands as $b)
-                            <option value="{{ $b->id }}">{{ $b->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Purchase Price *</label><input x-model="form.purchase_price" type="number" step="0.01" class="form-input-custom"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">MRP *</label><input x-model="form.mrp" type="number" step="0.01" class="form-input-custom"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Selling Price *</label><input x-model="form.selling_price" type="number" step="0.01" class="form-input-custom"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Max Selling Price</label><input x-model="form.max_selling_price" type="number" step="0.01" class="form-input-custom" placeholder="Optional"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Barcode</label><input x-model="form.barcode" type="text" class="form-input-custom"></div>
+        <div class="card-body space-y-5">
+            <x-ui.form-section title="Product Identity" description="Core catalogue details that staff search and scan most often.">
+                <x-ui.input-field label="Name" x-model="form.name" required />
+                <x-ui.input-field label="SKU" x-model="form.sku" />
+                <x-ui.select-field label="Category" x-model="form.category_id" @change="loadSubcategories()">
+                    <option value="">Select</option>
+                    @foreach($categories as $c)
+                        <option value="{{ $c->id }}">{{ $c->name }}</option>
+                    @endforeach
+                </x-ui.select-field>
+                <x-ui.select-field label="Subcategory" x-model="form.subcategory_id">
+                    <option value="">Select</option>
+                    <template x-for="s in subcategories" :key="s.id"><option :value="s.id" x-text="s.name"></option></template>
+                </x-ui.select-field>
+                <x-ui.select-field label="Brand" x-model="form.brand_id">
+                    <option value="">Select</option>
+                    @foreach($brands as $b)
+                        <option value="{{ $b->id }}">{{ $b->name }}</option>
+                    @endforeach
+                </x-ui.select-field>
+                <x-ui.input-field label="Barcode" x-model="form.barcode" />
+            </x-ui.form-section>
 
-                <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Description</label><textarea x-model="form.description" class="form-input-custom" rows="2"></textarea></div>
+            <x-ui.form-section title="Pricing" description="Use the same structured fields for purchase, MRP, and selling values.">
+                <x-ui.input-field label="Purchase Price" x-model="form.purchase_price" type="number" step="0.01" required />
+                <x-ui.input-field label="MRP" x-model="form.mrp" type="number" step="0.01" required />
+                <x-ui.input-field label="Selling Price" x-model="form.selling_price" type="number" step="0.01" required />
+                <x-ui.input-field label="Max Selling Price" x-model="form.max_selling_price" type="number" step="0.01" placeholder="Optional" />
+            </x-ui.form-section>
 
-                {{-- Image Upload --}}
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Product Images</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <x-ui.form-section title="Description" description="Optional product note for staff and inventory context." gridClass="grid grid-cols-1 gap-4">
+                <x-ui.textarea-field label="Description" x-model="form.description" rows="3" />
+            </x-ui.form-section>
+
+            <x-ui.form-section title="Product Images" description="Main image and thumbnail uploads keep the existing flow but now sit inside the shared section layout." gridClass="grid grid-cols-1 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {{-- Main Image --}}
                         <div>
                             <p class="text-xs text-gray-500 mb-1.5 font-medium">Main Image <span class="text-gray-400 font-normal">(full size)</span></p>
@@ -102,13 +97,12 @@
                                        @change="handleFilePick('thumb', $event)">
                             </div>
                         </div>
-                    </div>
                 </div>
-            </div>
+            </x-ui.form-section>
         </div>
-        <div class="card-footer flex justify-end gap-3">
-            <a href="/products" class="btn-secondary">Cancel</a>
-            <button @click="save()" class="btn-primary inline-flex items-center gap-2" :disabled="saving">
+        <div class="card-footer flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <a href="/products" class="btn-secondary w-full text-center sm:w-auto">Cancel</a>
+            <button @click="save()" class="btn-primary inline-flex w-full items-center justify-center gap-2 sm:w-auto" :disabled="saving">
                 <span x-show="saving" class="spinner"></span>
                 Create Product
             </button>

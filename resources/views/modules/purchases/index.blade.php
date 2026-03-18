@@ -52,7 +52,7 @@
         <div class="modal-container modal-lg">
             <div class="modal-header"><h3 class="text-lg font-semibold">Purchase Details</h3><button @click="showView = false" class="text-gray-400 hover:text-gray-600">&times;</button></div>
             <div class="modal-body" x-show="viewData">
-                <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 text-sm">
                     <div><span class="text-gray-500">Supplier:</span> <span class="font-medium" x-text="viewData?.supplier?.name"></span></div>
                     <div><span class="text-gray-500">Invoice:</span> <span class="font-medium" x-text="viewData?.invoice_number || '-'"></span></div>
                     <div><span class="text-gray-500">Date:</span> <span class="font-medium" x-text="viewData?.purchase_date ? new Date(viewData.purchase_date).toLocaleDateString('en-IN') : '-'"></span></div>

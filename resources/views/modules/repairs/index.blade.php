@@ -1,19 +1,13 @@
 @extends('layouts.app')
 @section('page-title', 'Repairs')
-@section('content-class', 'flex flex-col')
+@section('content-class', 'workspace-content')
 
 @section('content')
-<div x-data="repairsPage()" x-init="init()" class="page-list">
+<div x-data="repairsPage()" x-init="init()" class="workspace-screen">
 
-    <!-- ===== HEADER BAR ===== -->
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-800">Repair Orders</h2>
-            <p class="text-sm text-gray-500 mt-0.5">Manage device repair workflow from received to closed</p>
-        </div>
-        <div class="flex items-center gap-2">
-            <!-- View Toggle -->
-            <div class="inline-flex bg-white border rounded-lg shadow-sm">
+    <x-ui.action-bar title="Repair Workspace" description="Run the entire repair queue from one contained screen with internal table and board scrolling.">
+        <div class="flex flex-wrap items-center justify-end gap-3 w-full sm:w-auto">
+            <div class="inline-flex bg-white border rounded-lg shadow-sm w-full sm:w-auto">
                 <button @click="viewMode = 'table'; updateUrl()" class="px-3 py-2 text-sm font-medium rounded-l-lg transition-colors" :class="viewMode === 'table' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:bg-gray-50'" title="Table View">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
                 </button>
@@ -21,39 +15,63 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
                 </button>
             </div>
-            <a href="/repairs/create" class="btn-primary inline-flex items-center gap-1.5">
+            <a href="/repairs/create" class="btn-primary inline-flex w-full items-center justify-center gap-1.5 sm:w-auto">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 New Repair
             </a>
         </div>
-    </div>
+    </x-ui.action-bar>
 
-    <!-- ===== FILTERS & SEARCH ===== -->
-    <div class="bg-white rounded-xl shadow-sm border p-4 mb-5">
-        <div class="flex flex-col lg:flex-row gap-3">
-            <!-- Search -->
-            <div class="relative flex-1">
-                <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                <input x-model="searchQuery" @input.debounce.400ms="load()" type="text" class="form-input-custom pl-10 w-full" placeholder="Search ticket, customer, device, IMEI...">
-                <button x-show="searchQuery" @click="searchQuery = ''; load()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
+    <x-ui.filter-bar class="flex-col items-stretch gap-3">
+        <div class="w-full space-y-4">
+            <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                <div class="relative min-w-0 flex-1 xl:max-w-none">
+                    <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <input x-model="searchQuery" @input.debounce.400ms="load()" type="text" class="form-input-custom pl-10 w-full" placeholder="Search ticket, customer, device, IMEI...">
+                    <button x-show="searchQuery" @click="searchQuery = ''; load()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center xl:flex-none xl:justify-end">
+                    <button type="button" @click="showAdvancedFilters = !showAdvancedFilters" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-600 shadow-sm transition hover:border-slate-300 hover:text-slate-900 hover:shadow-md">
+                        <svg class="h-4 w-4 transition-transform" :class="showAdvancedFilters ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        <span x-text="showAdvancedFilters ? 'Hide filters' : 'More filters'"></span>
+                    </button>
+
+                    <button x-show="searchQuery || selectedStatuses.length || techFilter || dateFrom || dateTo || paymentFilter" type="button" @click="resetFilters()" class="inline-flex h-11 items-center justify-center rounded-xl px-2 text-sm font-medium text-red-600 transition hover:text-red-700">
+                        Clear all
+                    </button>
+                </div>
             </div>
-            <!-- Status Filter Pills -->
-            <div class="flex flex-wrap gap-1.5">
-                <button @click="statusFilter = ''; currentPage = 1; updateUrl()" class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all" :class="statusFilter === '' ? 'bg-gray-800 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
-                    All <span class="ml-1 opacity-70" x-text="'(' + items.length + ')'"></span>
-                </button>
-                <template x-for="[key, meta] of Object.entries(statusMeta)" :key="key">
-                    <button @click="statusFilter = key; currentPage = 1; updateUrl()" class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all" :class="statusFilter === key ? statusPillActive(key) : statusPillInactive(key)" x-text="meta.label + ' (' + statusCount(key) + ')'"></button>
-                </template>
-                <button @click="statusFilter = 'void'; currentPage = 1; updateUrl()" class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all" :class="statusFilter === 'void' ? 'bg-red-800 text-white shadow-md' : 'bg-red-50 text-red-700 hover:bg-red-100'">
-                    Void <span class="ml-1 opacity-70" x-text="'(' + voidCount + ')'"></span>
-                </button>
+
+            <div class="overflow-x-auto border-t border-slate-200 pt-3 pb-1">
+                <div class="flex min-w-max items-center gap-2">
+                    <button type="button" @click="clearStatusSelection()"
+                        class="min-w-[8.5rem] rounded-xl border px-3 py-2.5 text-left transition-colors"
+                        :class="selectedStatuses.length === 0 ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'">
+                        <div class="text-[11px] font-semibold uppercase tracking-[0.16em]" :class="selectedStatuses.length === 0 ? 'text-white/70' : 'text-slate-400'">All Repairs</div>
+                        <div class="mt-1.5 flex items-center justify-between gap-2">
+                            <span class="text-sm font-semibold">Everything</span>
+                            <span class="text-base font-bold leading-none" x-text="items.length"></span>
+                        </div>
+                    </button>
+
+                    <template x-for="option in statusFilterOptions" :key="option.key">
+                        <button type="button" @click="toggleStatusSelection(option.key)"
+                            class="min-w-[7.75rem] rounded-xl border px-3 py-2.5 text-left transition-colors"
+                            :class="isStatusSelected(option.key) ? option.activeCardClass : option.inactiveCardClass">
+                            <div class="text-[11px] font-semibold uppercase tracking-[0.16em]" :class="isStatusSelected(option.key) ? option.activeEyebrowClass : 'text-slate-400'">Status</div>
+                            <div class="mt-1.5 flex items-center justify-between gap-2">
+                                <span class="text-sm font-semibold" x-text="option.label"></span>
+                                <span class="text-base font-bold leading-none" x-text="statusCount(option.key)"></span>
+                            </div>
+                        </button>
+                    </template>
+                </div>
             </div>
         </div>
-        <!-- Advanced Filters (collapsible) -->
-        <div x-show="showAdvancedFilters" x-collapse class="mt-3 pt-3 border-t grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div x-show="showAdvancedFilters" x-collapse class="grid w-full self-stretch grid-cols-1 gap-3 border-t border-slate-200 pt-3 sm:grid-cols-2 md:grid-cols-4">
             <div>
                 <label class="text-xs font-medium text-gray-500 mb-1 block">Technician</label>
                 <select x-model="techFilter" @change="load()" class="form-select-custom text-sm w-full">
@@ -80,28 +98,28 @@
                 </select>
             </div>
         </div>
-        <div class="flex items-center justify-between mt-2">
-            <button @click="showAdvancedFilters = !showAdvancedFilters" class="text-xs text-primary-600 hover:text-primary-800 font-medium inline-flex items-center gap-1">
-                <svg class="w-3 h-3 transition-transform" :class="showAdvancedFilters && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                <span x-text="showAdvancedFilters ? 'Hide Filters' : 'More Filters'"></span>
-            </button>
-            <button x-show="searchQuery || statusFilter || techFilter || dateFrom || dateTo || paymentFilter" @click="searchQuery = ''; statusFilter = ''; techFilter = ''; dateFrom = ''; dateTo = ''; paymentFilter = ''; currentPage = 1; load()" class="text-xs text-red-600 hover:text-red-800 font-medium inline-flex items-center gap-1">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+            <button x-show="searchQuery || selectedStatuses.length || techFilter || dateFrom || dateTo || paymentFilter" @click="resetFilters()" class="text-xs text-red-600 hover:text-red-800 font-medium inline-flex items-center gap-1 sm:hidden">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 Clear All
             </button>
         </div>
-    </div>
+    </x-ui.filter-bar>
 
-    <!-- ===== TABLE VIEW ===== -->
-    <div x-show="viewMode === 'table'" class="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col min-h-0 flex-1">
-        <div class="table-scroll">
-            <table class="data-table w-full">
+    <x-ui.table-card x-show="viewMode === 'table'" x-cloak>
+        <x-slot:header>
+            <div>
+                <h3 class="text-base font-semibold text-slate-900">Repair Queue</h3>
+                <p class="text-sm text-slate-500">A shorter list with just the core repair details.</p>
+            </div>
+        </x-slot:header>
+
+        <table class="data-table w-full">
                 <thead class="sticky top-0 z-10">
                     <tr class="bg-gray-50">
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Ticket</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Customer</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Device</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Progress</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Amount</th>
                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date</th>
@@ -112,50 +130,25 @@
                     <template x-for="r in paginatedItems" :key="r.id">
                         <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="window.location.href = '/repairs/' + r.id">
                             <td class="px-4 py-3">
-                                <span class="font-semibold text-primary-600" x-text="r.ticket_number"></span>
+                                <div class="flex flex-col gap-1">
+                                    <span class="font-semibold text-primary-600" x-text="r.ticket_number"></span>
+                                    <span class="text-xs text-gray-400" x-text="'#' + r.id"></span>
+                                </div>
                             </td>
                             <td class="px-4 py-3">
                                 <div class="font-medium text-gray-800 text-sm" x-text="r.customer ? r.customer.name : '-'"></div>
                                 <div class="text-xs text-gray-400" x-text="r.customer ? r.customer.mobile_number : ''"></div>
                             </td>
                             <td class="px-4 py-3">
-                                <div class="text-sm" x-text="(r.device_brand || '') + ' ' + (r.device_model || '')"></div>
+                                <div class="text-sm font-medium text-gray-800" x-text="deviceLabel(r)"></div>
                                 <div class="text-xs text-gray-400" x-show="r.imei" x-text="'IMEI: ' + r.imei"></div>
-                            </td>
-                            <td class="px-4 py-3">
-                                <div class="flex items-center" x-show="r.status !== 'cancelled'">
-                                    <template x-for="(step, idx) in progressSteps" :key="step.key">
-                                        <div class="flex items-center">
-                                            <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all border-2"
-                                                :class="stepReached(r.status, step.key)
-                                                    ? (r.status === step.key ? statusDotCurrent(step.key) : 'bg-green-500 border-green-500 text-white')
-                                                    : 'bg-white border-gray-200 text-gray-300'"
-                                                x-text="idx + 1">
-                                            </div>
-                                            <div x-show="idx < progressSteps.length - 1" class="w-4 h-0.5" :class="stepReached(r.status, step.key) && stepReached(r.status, progressSteps[idx+1]?.key) ? 'bg-green-500' : 'bg-gray-200'"></div>
-                                        </div>
-                                    </template>
-                                </div>
-                                <span x-show="r.status === 'cancelled' && r.record_type !== 'void'" class="inline-flex items-center gap-1 text-red-500 text-xs font-semibold">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                    Cancelled
-                                </span>
-                                <span x-show="r.record_type === 'void'" class="inline-flex items-center gap-1 text-gray-500 text-xs font-semibold">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
-                                    Void
-                                </span>
                             </td>
                             <td class="px-4 py-3">
                                 <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold" :class="r.record_type === 'void' ? 'bg-gray-800 text-white' : statusBadgeClass(r.status)" x-text="r.record_type === 'void' ? 'Void' : statusLabel(r.status)"></span>
                             </td>
                             <td class="px-4 py-3">
                                 <div class="text-sm font-medium" x-text="'₹' + Number(r.grand_total || r.estimated_cost || 0).toFixed(2)"></div>
-                                <template x-if="r.status === 'cancelled'">
-                                    <div class="text-xs text-red-500" x-show="r.total_refunded > 0" x-text="'Refunded: ₹' + Number(r.total_refunded).toFixed(2)"></div>
-                                </template>
-                                <template x-if="r.status !== 'cancelled'">
-                                    <div class="text-xs" :class="r.balance_due > 0 ? 'text-red-500' : 'text-green-500'" x-text="r.balance_due > 0 ? 'Due: ₹' + Number(r.balance_due).toFixed(2) : (r.grand_total > 0 ? 'Paid' : '')"></div>
-                                </template>
+                                <div class="text-xs" :class="r.balance_due > 0 ? 'text-red-500' : 'text-green-500'" x-text="amountMeta(r)"></div>
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-500" x-text="formatDate(r.created_at)"></td>
                             <td class="px-4 py-3 text-center" @click.stop>
@@ -175,7 +168,7 @@
                         </tr>
                     </template>
                     <tr x-show="paginatedItems.length === 0 && !loading">
-                        <td colspan="8" class="text-center py-12">
+                        <td colspan="7" class="text-center py-12">
                             <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                             <p class="text-gray-400 font-medium">No repairs found</p>
                             <p class="text-gray-300 text-sm mt-1">Try adjusting your filters or create a new repair</p>
@@ -188,7 +181,6 @@
                                 <td><div class="skeleton h-3 w-24"></div></td>
                                 <td><div class="skeleton h-3 w-32"></div></td>
                                 <td><div class="skeleton h-3 w-28"></div></td>
-                                <td><div class="flex gap-1"><div class="skeleton h-4 w-4 rounded-full"></div><div class="skeleton h-4 w-4 rounded-full"></div><div class="skeleton h-4 w-4 rounded-full"></div><div class="skeleton h-4 w-4 rounded-full"></div><div class="skeleton h-4 w-4 rounded-full"></div></div></td>
                                 <td><div class="skeleton h-3 w-24 rounded-full"></div></td>
                                 <td><div class="skeleton h-3 w-24"></div></td>
                                 <td><div class="skeleton h-3 w-20"></div></td>
@@ -198,9 +190,8 @@
                     </template>
                 </tbody>
             </table>
-        </div>
-        <!-- Pagination -->
-        <div x-show="totalPages > 1" class="flex items-center justify-between px-4 py-3 border-t bg-gray-50/50">
+        <x-slot:footer>
+        <div x-show="totalPages > 1" class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div class="text-sm text-gray-500">
                 Showing <span class="font-medium" x-text="((currentPage - 1) * perPage) + 1"></span> to <span class="font-medium" x-text="Math.min(currentPage * perPage, filteredItems.length)"></span> of <span class="font-medium" x-text="filteredItems.length"></span>
             </div>
@@ -212,40 +203,50 @@
                 <button @click="currentPage = Math.min(totalPages, currentPage + 1)" :disabled="currentPage === totalPages" class="px-3 py-1.5 text-sm border rounded-lg hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed">Next</button>
             </div>
         </div>
-    </div>
+        </x-slot:footer>
+    </x-ui.table-card>
 
-    <!-- ===== KANBAN BOARD VIEW ===== -->
-    <div x-show="viewMode === 'kanban'" class="overflow-x-auto pb-4">
-        <div class="flex gap-4 min-w-max">
-            <template x-for="[colKey, colMeta] of kanbanColumns" :key="colKey">
-                <div class="w-72 flex-shrink-0">
-                    <div class="rounded-t-xl px-4 py-3 flex items-center justify-between" :class="kanbanHeaderClass(colKey)">
-                        <div class="flex items-center gap-2">
-                            <span class="font-semibold text-sm" x-text="colMeta.label"></span>
-                            <span class="text-xs bg-white/30 px-2 py-0.5 rounded-full font-medium" x-text="kanbanItems(colKey).length"></span>
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 rounded-b-xl p-2 min-h-[200px] max-h-[calc(100vh-280px)] overflow-y-auto space-y-2">
-                        <template x-for="r in kanbanItems(colKey)" :key="r.id">
-                            <a :href="'/repairs/' + r.id" class="block bg-white rounded-lg border border-gray-200 p-3 shadow-sm hover:shadow-md hover:border-primary-300 transition-all cursor-pointer group">
-                                <div class="flex items-start justify-between mb-2">
-                                    <span class="text-xs font-bold text-primary-600" x-text="r.ticket_number"></span>
+    <div x-show="viewMode === 'kanban'" x-cloak class="card overflow-hidden">
+        <div class="card-header">
+            <div>
+                <h3 class="text-base font-semibold text-slate-900">Repair Board</h3>
+                <p class="text-sm text-slate-500">Drag your focus across stages without leaving the same workspace.</p>
+            </div>
+        </div>
 
+        <div class="px-4 pb-4 pt-0 sm:px-5 sm:pb-5">
+            <div class="overflow-x-auto overflow-y-hidden pb-2">
+                <div class="flex items-start gap-4 min-w-max">
+                    <template x-for="[colKey, colMeta] of kanbanColumns" :key="colKey">
+                        <div class="w-72 flex-shrink-0">
+                            <div class="rounded-t-xl px-4 py-3 flex items-center justify-between" :class="kanbanHeaderClass(colKey)">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold text-sm" x-text="colMeta.label"></span>
+                                    <span class="text-xs bg-white/30 px-2 py-0.5 rounded-full font-medium" x-text="kanbanItems(colKey).length"></span>
                                 </div>
-                                <div class="text-sm font-medium text-gray-800 mb-1" x-text="r.customer ? r.customer.name : 'Walk-in'"></div>
-                                <div class="text-xs text-gray-500 mb-2" x-text="(r.device_brand || '') + ' ' + (r.device_model || '')"></div>
-                                <div class="flex items-center justify-between">
-                                    <span class="text-xs font-semibold" :class="r.balance_due > 0 ? 'text-red-500' : 'text-green-600'" x-text="'₹' + Number(r.grand_total || r.estimated_cost || 0).toFixed(0)"></span>
-                                    <span class="text-[10px] text-gray-400" x-text="formatDate(r.created_at)"></span>
+                            </div>
+                            <div class="bg-gray-50 rounded-b-xl p-2 min-h-[200px] max-h-[50vh] lg:max-h-[calc(100vh-320px)] overflow-y-auto space-y-2">
+                                <template x-for="r in kanbanItems(colKey)" :key="r.id">
+                                    <a :href="'/repairs/' + r.id" class="block bg-white rounded-lg border border-gray-200 p-3 shadow-sm hover:shadow-md hover:border-primary-300 transition-all cursor-pointer group">
+                                        <div class="flex items-start justify-between mb-2">
+                                            <span class="text-xs font-bold text-primary-600" x-text="r.ticket_number"></span>
+                                        </div>
+                                        <div class="text-sm font-medium text-gray-800 mb-1" x-text="r.customer ? r.customer.name : 'Walk-in'"></div>
+                                        <div class="text-xs text-gray-500 mb-2" x-text="(r.device_brand || '') + ' ' + (r.device_model || '')"></div>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-semibold" :class="r.balance_due > 0 ? 'text-red-500' : 'text-green-600'" x-text="'₹' + Number(r.grand_total || r.estimated_cost || 0).toFixed(0)"></span>
+                                            <span class="text-[10px] text-gray-400" x-text="formatDate(r.created_at)"></span>
+                                        </div>
+                                    </a>
+                                </template>
+                                <div x-show="kanbanItems(colKey).length === 0" class="text-center py-8">
+                                    <p class="text-xs text-gray-400">No repairs</p>
                                 </div>
-                            </a>
-                        </template>
-                        <div x-show="kanbanItems(colKey).length === 0" class="text-center py-8">
-                            <p class="text-xs text-gray-400">No repairs</p>
+                            </div>
                         </div>
-                    </div>
+                    </template>
                 </div>
-            </template>
+            </div>
         </div>
     </div>
 
@@ -265,7 +266,7 @@ function repairsPage() {
         perPage: 15,
 
         searchQuery: '',
-        statusFilter: '',
+        selectedStatuses: [],
         techFilter: '',
         dateFrom: '',
         dateTo: '',
@@ -274,21 +275,37 @@ function repairsPage() {
 
         statusMeta: @json($statusMeta),
 
-        progressSteps: [
-            { key: 'received', label: 'Received' },
-            { key: 'in_progress', label: 'In Progress' },
-            { key: 'completed', label: 'Completed' },
-            { key: 'payment', label: 'Payment' },
-            { key: 'closed', label: 'Closed' },
-        ],
-
         // Computed
+        get statusFilterOptions() {
+            return [
+                ...Object.entries(this.statusMeta).map(([key, meta]) => ({
+                    key,
+                    label: meta.label,
+                    activeCardClass: this.statusCardActiveClass(key),
+                    inactiveCardClass: this.statusCardInactiveClass(key),
+                    activeEyebrowClass: 'text-white/70',
+                    countActiveClass: this.statusCountActiveClass(key),
+                })),
+                {
+                    key: 'void',
+                    label: 'Void',
+                    activeCardClass: 'border-gray-900 bg-gray-900 text-white',
+                    inactiveCardClass: 'border-slate-200 bg-white text-slate-700 hover:border-slate-300',
+                    activeEyebrowClass: 'text-white/70',
+                    countActiveClass: 'bg-gray-900 text-white',
+                },
+            ];
+        },
         get filteredItems() {
             let items = this.items;
-            if (this.statusFilter === 'void') {
-                items = items.filter(i => i.record_type === 'void');
-            } else if (this.statusFilter) {
-                items = items.filter(i => i.status === this.statusFilter);
+            if (this.selectedStatuses.length) {
+                items = items.filter(i => {
+                    if (i.record_type === 'void') {
+                        return this.selectedStatuses.includes('void');
+                    }
+
+                    return this.selectedStatuses.includes(i.status);
+                });
             }
             return items;
         },
@@ -316,7 +333,7 @@ function repairsPage() {
         async init() {
             const p = new URLSearchParams(window.location.search);
             if (p.has('search')) this.searchQuery = p.get('search');
-            if (p.has('status')) this.statusFilter = p.get('status');
+            if (p.has('status')) this.selectedStatuses = p.get('status').split(',').filter(Boolean);
             if (p.has('technician')) this.techFilter = p.get('technician');
             if (p.has('from')) this.dateFrom = p.get('from');
             if (p.has('to')) this.dateTo = p.get('to');
@@ -329,7 +346,7 @@ function repairsPage() {
         updateUrl() {
             const params = new URLSearchParams();
             if (this.searchQuery) params.set('search', this.searchQuery);
-            if (this.statusFilter) params.set('status', this.statusFilter);
+            if (this.selectedStatuses.length) params.set('status', this.selectedStatuses.join(','));
             if (this.techFilter) params.set('technician', this.techFilter);
             if (this.dateFrom) params.set('from', this.dateFrom);
             if (this.dateTo) params.set('to', this.dateTo);
@@ -355,35 +372,98 @@ function repairsPage() {
             this.updateUrl();
         },
 
+        toggleStatusSelection(status) {
+            if (this.selectedStatuses.includes(status)) {
+                this.selectedStatuses = this.selectedStatuses.filter(value => value !== status);
+            } else {
+                this.selectedStatuses = [...this.selectedStatuses, status];
+            }
+
+            this.currentPage = 1;
+            this.updateUrl();
+        },
+        clearStatusSelection() {
+            this.selectedStatuses = [];
+            this.currentPage = 1;
+            this.updateUrl();
+        },
+        resetFilters() {
+            this.searchQuery = '';
+            this.selectedStatuses = [];
+            this.techFilter = '';
+            this.dateFrom = '';
+            this.dateTo = '';
+            this.paymentFilter = '';
+            this.currentPage = 1;
+            this.load();
+        },
+        isStatusSelected(status) {
+            return this.selectedStatuses.includes(status);
+        },
+
         // Status helpers
-        statusCount(status) { return this.items.filter(i => i.status === status).length; },
+        statusCount(status) {
+            if (status === 'void') return this.voidCount;
+            return this.items.filter(i => i.status === status && i.record_type !== 'void').length;
+        },
         get voidCount() { return this.items.filter(i => i.record_type === 'void').length; },
         statusLabel(status) { return this.statusMeta[status]?.label || status?.replace('_', ' ') || ''; },
         statusBadgeClass(status) {
             const map = { received: 'bg-blue-100 text-blue-700', in_progress: 'bg-amber-100 text-amber-700', completed: 'bg-emerald-100 text-emerald-700', payment: 'bg-purple-100 text-purple-700', closed: 'bg-green-100 text-green-800', cancelled: 'bg-red-100 text-red-700' };
             return map[status] || 'bg-gray-100 text-gray-700';
         },
-        statusPillActive(status) {
-            const map = { received: 'bg-blue-600 text-white shadow-md', in_progress: 'bg-amber-500 text-white shadow-md', completed: 'bg-emerald-600 text-white shadow-md', payment: 'bg-purple-600 text-white shadow-md', closed: 'bg-green-700 text-white shadow-md', cancelled: 'bg-red-600 text-white shadow-md' };
-            return map[status] || 'bg-gray-800 text-white shadow-md';
+        statusCardActiveClass(status) {
+            const map = {
+                received: 'border-blue-600 bg-blue-600 text-white',
+                in_progress: 'border-amber-500 bg-amber-500 text-white',
+                completed: 'border-emerald-600 bg-emerald-600 text-white',
+                payment: 'border-purple-600 bg-purple-600 text-white',
+                closed: 'border-green-700 bg-green-700 text-white',
+                cancelled: 'border-red-600 bg-red-600 text-white',
+            };
+            return map[status] || 'border-slate-900 bg-slate-900 text-white';
         },
-        statusPillInactive(status) {
-            const map = { received: 'bg-blue-50 text-blue-600 hover:bg-blue-100', in_progress: 'bg-amber-50 text-amber-600 hover:bg-amber-100', completed: 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100', payment: 'bg-purple-50 text-purple-600 hover:bg-purple-100', closed: 'bg-green-50 text-green-700 hover:bg-green-100', cancelled: 'bg-red-50 text-red-600 hover:bg-red-100' };
-            return map[status] || 'bg-gray-100 text-gray-600 hover:bg-gray-200';
+        statusCardInactiveClass(status) {
+            const map = {
+                received: 'border-blue-100 bg-blue-50/70 text-blue-700 hover:border-blue-200',
+                in_progress: 'border-amber-100 bg-amber-50/70 text-amber-700 hover:border-amber-200',
+                completed: 'border-emerald-100 bg-emerald-50/70 text-emerald-700 hover:border-emerald-200',
+                payment: 'border-purple-100 bg-purple-50/70 text-purple-700 hover:border-purple-200',
+                closed: 'border-green-100 bg-green-50/70 text-green-700 hover:border-green-200',
+                cancelled: 'border-red-100 bg-red-50/70 text-red-700 hover:border-red-200',
+            };
+            return map[status] || 'border-slate-200 bg-white text-slate-700 hover:border-slate-300';
         },
-        statusDotCurrent(status) {
-            const map = { received: 'bg-blue-500 border-blue-500 text-white ring-2 ring-blue-200', in_progress: 'bg-amber-500 border-amber-500 text-white ring-2 ring-amber-200', completed: 'bg-emerald-500 border-emerald-500 text-white ring-2 ring-emerald-200', payment: 'bg-purple-500 border-purple-500 text-white ring-2 ring-purple-200', closed: 'bg-green-600 border-green-600 text-white ring-2 ring-green-200' };
-            return map[status] || 'bg-primary-600 border-primary-600 text-white ring-2 ring-primary-200';
-        },
-        stepReached(current, step) {
-            const order = ['received', 'in_progress', 'completed', 'payment', 'closed'];
-            return order.indexOf(current) >= order.indexOf(step);
+        statusCountActiveClass(status) {
+            const map = {
+                received: 'bg-blue-700 text-white',
+                in_progress: 'bg-amber-600 text-white',
+                completed: 'bg-emerald-700 text-white',
+                payment: 'bg-purple-700 text-white',
+                closed: 'bg-green-800 text-white',
+                cancelled: 'bg-red-700 text-white',
+            };
+            return map[status] || 'bg-slate-800 text-white';
         },
         kanbanHeaderClass(status) {
             const map = { received: 'bg-blue-500 text-white', in_progress: 'bg-amber-500 text-white', completed: 'bg-emerald-500 text-white', payment: 'bg-purple-500 text-white', closed: 'bg-green-700 text-white', cancelled: 'bg-red-500 text-white' };
             return map[status] || 'bg-gray-500 text-white';
         },
         kanbanItems(status) { return this.items.filter(i => i.status === status && i.record_type !== 'void'); },
+
+        deviceLabel(repair) {
+            return [repair.device_brand, repair.device_model].filter(Boolean).join(' ') || 'Device not set';
+        },
+        amountMeta(repair) {
+            if (repair.record_type === 'void') return 'Voided record';
+            if (repair.status === 'cancelled' && Number(repair.total_refunded || 0) > 0) {
+                return 'Refunded: ₹' + Number(repair.total_refunded).toFixed(2);
+            }
+            if (Number(repair.balance_due || 0) > 0) {
+                return 'Due: ₹' + Number(repair.balance_due).toFixed(2);
+            }
+            return Number(repair.grand_total || repair.estimated_cost || 0) > 0 ? 'Paid' : 'Pending';
+        },
 
         formatDate(d) { if (!d) return ''; return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); },
     };

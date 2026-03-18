@@ -1,27 +1,37 @@
 @extends('layouts.app')
 @section('page-title', 'Expenses')
-@section('content-class', 'flex flex-col')
+@section('content-class', 'workspace-content')
 
 @section('content')
-<div x-data="expensesPage()" x-init="load()" class="page-list">
-    <div class="flex items-center justify-between gap-2 mb-4">
-        <div class="flex items-center gap-2">
-            <select x-model="filter.category_id" @change="load()" class="form-select-custom text-sm" style="min-width:140px">
+<div x-data="expensesPage()" x-init="load()" class="workspace-screen">
+    <x-ui.action-bar title="Expense Tracker" description="Filters, category tools, and the ledger stay in one working view.">
+        <div class="workspace-toolbar-actions">
+            <button @click="showCat = true; loadCategories()" class="btn-secondary w-full sm:w-auto">Categories</button>
+            <a href="/expenses/create" class="btn-primary inline-flex w-full items-center justify-center sm:w-auto"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add Expense</a>
+        </div>
+    </x-ui.action-bar>
+
+    <x-ui.filter-bar>
+        <div class="workspace-filter-group">
+            <select x-model="filter.category_id" @change="load()" class="form-select-custom text-sm min-w-0 sm:min-w-[140px]">
                 <option value="">All Categories</option>
                 <template x-for="c in categories" :key="c.id"><option :value="c.id" x-text="c.name"></option></template>
             </select>
-            <input x-model="filter.date_from" @change="load()" type="date" class="form-input-custom text-sm" placeholder="From" style="width:140px">
-            <input x-model="filter.date_to" @change="load()" type="date" class="form-input-custom text-sm" placeholder="To" style="width:140px">
+            <input x-model="filter.date_from" @change="load()" type="date" class="form-input-custom text-sm w-full sm:w-[140px]" placeholder="From">
+            <input x-model="filter.date_to" @change="load()" type="date" class="form-input-custom text-sm w-full sm:w-[140px]" placeholder="To">
         </div>
-        <div class="flex items-center gap-2">
-            <button @click="showCat = true; loadCategories()" class="btn-secondary">Categories</button>
-            <a href="/expenses/create" class="btn-primary"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add Expense</a>
-        </div>
-    </div>
-    <div class="card">
-        <div class="card-body p-0">
-            <div class="table-scroll">
-                <table class="data-table">
+        <div class="workspace-filter-meta">Showing <span x-text="items.length"></span> expenses</div>
+    </x-ui.filter-bar>
+
+    <x-ui.table-card>
+        <x-slot:header>
+            <div>
+                <h3 class="text-base font-semibold text-slate-900">Expense Ledger</h3>
+                <p class="text-sm text-slate-500">Date filters and category review stay attached to the table below.</p>
+            </div>
+        </x-slot:header>
+
+        <table class="data-table">
                     <thead class="sticky top-0 z-10 bg-gray-50"><tr><th>#</th><th>Category</th><th>Description</th><th>Amount</th><th>Payment</th><th>Date</th><th>Actions</th></tr></thead>
                     <tbody>
                         <template x-for="(e, i) in items" :key="e.id">
@@ -62,9 +72,7 @@
                         </template>
                     </tbody>
                 </table>
-            </div>
-        </div>
-    </div>
+    </x-ui.table-card>
 
     <!-- Edit Expense Modal -->
     <div x-show="showModal" class="modal-overlay" x-cloak @click.self="showModal = false">
@@ -83,7 +91,7 @@
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label><textarea x-model="form.description" class="form-input-custom" rows="2"></textarea></div>
                 </div>
             </div>
-            <div class="modal-footer"><button @click="showModal = false" class="btn-secondary">Cancel</button><button @click="save()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span>Update</button></div>
+            <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end"><button @click="showModal = false" class="btn-secondary w-full sm:w-auto">Cancel</button><button @click="save()" class="btn-primary w-full sm:w-auto" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span>Update</button></div>
         </div>
     </div>
 
@@ -96,12 +104,12 @@
                     <template x-for="c in catList" :key="c.id">
                         <div class="flex items-center justify-between px-3 py-2 bg-gray-50 rounded group">
                             <template x-if="editingCat !== c.id">
-                                <div class="flex items-center justify-between w-full">
+                                <div class="flex flex-col gap-2 w-full sm:flex-row sm:items-center sm:justify-between">
                                     <div>
                                         <span class="font-medium" x-text="c.name"></span>
                                         <span class="text-xs text-gray-400 ml-2" x-text="(c.expenses_count || 0) + ' expenses'"></span>
                                     </div>
-                                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div class="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                         <button @click="editingCat = c.id; editCatName = c.name" class="text-primary-600 hover:text-primary-800 p-1" title="Edit">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                         </button>
@@ -112,19 +120,19 @@
                                 </div>
                             </template>
                             <template x-if="editingCat === c.id">
-                                <div class="flex items-center gap-2 w-full">
+                                <div class="flex flex-col gap-2 w-full sm:flex-row sm:items-center">
                                     <input x-model="editCatName" type="text" class="form-input-custom flex-1 text-sm" @keydown.enter="updateCat(c)" @keydown.escape="editingCat = null">
-                                    <button @click="updateCat(c)" class="btn-primary text-xs px-2 py-1">Save</button>
-                                    <button @click="editingCat = null" class="btn-secondary text-xs px-2 py-1">Cancel</button>
+                                    <button @click="updateCat(c)" class="btn-primary text-xs px-2 py-1 w-full sm:w-auto">Save</button>
+                                    <button @click="editingCat = null" class="btn-secondary text-xs px-2 py-1 w-full sm:w-auto">Cancel</button>
                                 </div>
                             </template>
                         </div>
                     </template>
                     <div x-show="catList.length === 0" class="text-center text-gray-400 py-4">No categories yet</div>
                 </div>
-                <div class="flex gap-2 pt-2 border-t">
+                <div class="flex flex-col gap-2 pt-2 border-t sm:flex-row">
                     <input x-model="catForm.name" type="text" class="form-input-custom flex-1" placeholder="New category name" @keydown.enter="saveCat()">
-                    <button @click="saveCat()" class="btn-primary">Add</button>
+                    <button @click="saveCat()" class="btn-primary w-full sm:w-auto">Add</button>
                 </div>
             </div>
         </div>

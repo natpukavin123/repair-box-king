@@ -1,17 +1,29 @@
 @extends('layouts.app')
 @section('page-title', 'Customers')
-@section('content-class', 'flex flex-col')
+@section('content-class', 'workspace-content')
 
 @section('content')
-<div x-data="customersPage()" x-init="init()" class="page-list">
-    <div class="flex items-center justify-between mb-4">
-        <input x-model="search" @input.debounce.300ms="load()" type="text" placeholder="Search customers..." class="form-input-custom max-w-md">
-        <a href="/customers/create" class="btn-primary ml-3"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add Customer</a>
-    </div>
-    <div class="card">
-        <div class="card-body p-0">
-            <div class="table-scroll">
-                <table class="data-table">
+<div x-data="customersPage()" x-init="init()" class="workspace-screen">
+    <x-ui.action-bar title="Customer Desk" description="Search, open, and update customers without leaving the page.">
+        <a href="/customers/create" class="btn-primary inline-flex w-full items-center justify-center sm:w-auto"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add Customer</a>
+    </x-ui.action-bar>
+
+    <x-ui.filter-bar>
+        <div class="workspace-filter-group">
+            <input x-model="search" @input.debounce.300ms="load()" type="text" placeholder="Search customers by name or mobile" class="form-input-custom workspace-search-input">
+        </div>
+        <div class="workspace-filter-meta">Showing <span x-text="items.length"></span> customers</div>
+    </x-ui.filter-bar>
+
+    <x-ui.table-card>
+        <x-slot:header>
+            <div>
+                <h3 class="text-base font-semibold text-slate-900">Customer Records</h3>
+                <p class="text-sm text-slate-500">All customer entries stay inside one working screen.</p>
+            </div>
+        </x-slot:header>
+
+        <table class="data-table">
                     <thead class="sticky top-0 z-10 bg-gray-50"><tr><th>#</th><th>Name</th><th>Mobile</th><th>Email</th><th>Loyalty Pts</th><th>Total Spent</th><th>Actions</th></tr></thead>
                     <tbody>
                         <template x-for="(c, i) in items" :key="c.id">
@@ -45,9 +57,7 @@
                         </template>
                     </tbody>
                 </table>
-            </div>
-        </div>
-    </div>
+    </x-ui.table-card>
 
     <!-- Form Modal -->
     <div x-show="showModal" class="modal-overlay" x-cloak>
@@ -61,7 +71,7 @@
                     <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Address</label><textarea x-model="form.address" class="form-input-custom" rows="2"></textarea></div>
                 </div>
             </div>
-            <div class="modal-footer"><button @click="showModal = false" class="btn-secondary">Cancel</button><button @click="save()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span>Update</button></div>
+            <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end"><button @click="showModal = false" class="btn-secondary w-full sm:w-auto">Cancel</button><button @click="save()" class="btn-primary w-full sm:w-auto" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span>Update</button></div>
         </div>
     </div>
 
@@ -70,7 +80,7 @@
         <div class="modal-container modal-xl">
             <div class="modal-header"><h3 class="text-lg font-semibold" x-text="detail?.name"></h3><button @click="showDetail = false" class="text-gray-400 hover:text-gray-600">&times;</button></div>
             <div class="modal-body">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 text-sm mb-4">
                     <div><span class="text-gray-500">Mobile:</span><br><span class="font-medium" x-text="detail?.mobile_number"></span></div>
                     <div><span class="text-gray-500">Email:</span><br><span class="font-medium" x-text="detail?.email || '-'"></span></div>
                     <div><span class="text-gray-500">Points:</span><br><span class="font-medium" x-text="detail?.loyalty_points || 0"></span></div>
@@ -78,14 +88,18 @@
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div><h4 class="font-medium text-gray-700 mb-2">Invoices</h4>
-                        <table class="data-table"><thead><tr><th>Invoice #</th><th>Amount</th><th>Date</th></tr></thead><tbody>
-                            <template x-for="inv in detail?.invoices || []" :key="inv.id"><tr><td x-text="inv.invoice_number"></td><td x-text="'₹' + Number(inv.total_amount).toFixed(2)"></td><td x-text="new Date(inv.created_at).toLocaleDateString()"></td></tr></template>
-                        </tbody></table>
+                        <div class="table-scroll">
+                            <table class="data-table"><thead><tr><th>Invoice #</th><th>Amount</th><th>Date</th></tr></thead><tbody>
+                                <template x-for="inv in detail?.invoices || []" :key="inv.id"><tr><td x-text="inv.invoice_number"></td><td x-text="'₹' + Number(inv.total_amount).toFixed(2)"></td><td x-text="new Date(inv.created_at).toLocaleDateString()"></td></tr></template>
+                            </tbody></table>
+                        </div>
                     </div>
                     <div><h4 class="font-medium text-gray-700 mb-2">Repairs</h4>
-                        <table class="data-table"><thead><tr><th>Ticket</th><th>Status</th><th>Date</th></tr></thead><tbody>
-                            <template x-for="rep in detail?.repairs || []" :key="rep.id"><tr><td x-text="rep.ticket_number"></td><td x-text="rep.status.replace('_',' ')"></td><td x-text="new Date(rep.created_at).toLocaleDateString()"></td></tr></template>
-                        </tbody></table>
+                        <div class="table-scroll">
+                            <table class="data-table"><thead><tr><th>Ticket</th><th>Status</th><th>Date</th></tr></thead><tbody>
+                                <template x-for="rep in detail?.repairs || []" :key="rep.id"><tr><td x-text="rep.ticket_number"></td><td x-text="rep.status.replace('_',' ')"></td><td x-text="new Date(rep.created_at).toLocaleDateString()"></td></tr></template>
+                            </tbody></table>
+                        </div>
                     </div>
                 </div>
             </div>

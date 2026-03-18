@@ -141,7 +141,21 @@ class RepairController extends Controller
         }
 
         $statusMeta = Repair::STATUS_META;
-        return view('modules.repairs.show', compact('repair', 'statusMeta'));
+        $technicians = \App\Models\User::select('id', 'name')->get();
+        $brands = \App\Models\Brand::where('status', 'active')->orderBy('name')->pluck('name');
+        return view('modules.repairs.show', compact('repair', 'statusMeta', 'technicians', 'brands'));
+    }
+
+    public function update(RepairRequest $request, Repair $repair)
+    {
+        if ($repair->is_locked) {
+            return response()->json(['success' => false, 'message' => 'This repair is locked and cannot be edited.'], 422);
+        }
+
+        $repair->update($request->validated());
+        $repair->load('customer', 'technician', 'statusHistory.updater', 'parts.part', 'payments', 'repairVendors.vendor', 'repairServices.vendor', 'repairServices.serviceType', 'childRepairs', 'repairReturns.items');
+
+        return response()->json(['success' => true, 'data' => $repair, 'message' => 'Repair intake details updated']);
     }
 
     public function updateStatus(Request $request, Repair $repair, RepairService $service)

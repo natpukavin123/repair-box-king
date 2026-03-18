@@ -12,22 +12,22 @@
     {{-- Date Range Filter --}}
     <div class="card mb-6">
         <div class="card-body">
-            <div class="flex flex-wrap items-end gap-4">
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">From</label><input x-model="from" type="date" class="form-input-custom"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">To</label><input x-model="to" type="date" class="form-input-custom"></div>
-                <div><button @click="fetchReport()" class="btn-primary" :disabled="loading"><span x-show="loading" class="spinner mr-1"></span> Generate</button></div>
+            <div class="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
+                <div class="w-full sm:w-auto"><label class="block text-sm font-medium text-gray-700 mb-1">From</label><input x-model="from" type="date" class="form-input-custom w-full"></div>
+                <div class="w-full sm:w-auto"><label class="block text-sm font-medium text-gray-700 mb-1">To</label><input x-model="to" type="date" class="form-input-custom w-full"></div>
+                <div class="w-full sm:w-auto"><button @click="fetchReport()" class="btn-primary w-full sm:w-auto" :disabled="loading"><span x-show="loading" class="spinner mr-1"></span> Generate</button></div>
             </div>
         </div>
     </div>
 
     {{-- Sales Report --}}
     <div x-show="type==='sales'" class="card">
-        <div class="card-header flex items-center justify-between">
+        <div class="card-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 class="text-lg font-semibold">Sales Report</h3>
-            <button x-show="salesData" @click="printReport()" class="btn-secondary text-sm"><svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg> Print</button>
+            <button x-show="salesData" @click="printReport()" class="btn-secondary text-sm w-full sm:w-auto"><svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg> Print</button>
         </div>
         <div class="card-body" x-show="salesData">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
                 <div class="bg-blue-50 rounded-lg p-4 text-center"><p class="text-sm text-blue-600">Total Sales</p><p class="text-xl font-bold text-blue-800" x-text="RepairBox.formatCurrency(salesData?.total_sales || 0)"></p></div>
                 <div class="bg-green-50 rounded-lg p-4 text-center"><p class="text-sm text-green-600">Invoices</p><p class="text-xl font-bold text-green-800" x-text="salesData?.total_invoices || 0"></p></div>
                 <div class="bg-purple-50 rounded-lg p-4 text-center"><p class="text-sm text-purple-600">Items Sold</p><p class="text-xl font-bold text-purple-800" x-text="salesData?.total_items || 0"></p></div>
@@ -49,12 +49,12 @@
 
     {{-- Profit Report --}}
     <div x-show="type==='profit'" class="card">
-        <div class="card-header flex items-center justify-between">
+        <div class="card-header flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h3 class="text-lg font-semibold">Profit Report</h3>
-            <button x-show="profitData" @click="printReport()" class="btn-secondary text-sm"><svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg> Print</button>
+            <button x-show="profitData" @click="printReport()" class="btn-secondary text-sm w-full sm:w-auto"><svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg> Print</button>
         </div>
         <div class="card-body" x-show="profitData">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
                 <div class="bg-green-50 rounded-lg p-4 text-center"><p class="text-sm text-green-600">Total Revenue</p><p class="text-xl font-bold text-green-800" x-text="RepairBox.formatCurrency(profitData?.total_revenue || 0)"></p></div>
                 <div class="bg-red-50 rounded-lg p-4 text-center"><p class="text-sm text-red-600">Total Cost</p><p class="text-xl font-bold text-red-800" x-text="RepairBox.formatCurrency(profitData?.total_cost || 0)"></p></div>
                 <div class="bg-blue-50 rounded-lg p-4 text-center"><p class="text-sm text-blue-600">Gross Profit</p><p class="text-xl font-bold text-blue-800" x-text="RepairBox.formatCurrency(profitData?.gross_profit || 0)"></p></div>

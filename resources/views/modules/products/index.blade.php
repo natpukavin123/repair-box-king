@@ -1,19 +1,29 @@
 @extends('layouts.app')
 @section('page-title', 'Products')
-@section('content-class', 'flex flex-col')
+@section('content-class', 'workspace-content')
 
 @section('content')
-<div x-data="productsPage()" x-init="init()" class="page-list">
-    <!-- Search -->
-    <div class="flex items-center justify-between mb-4">
-        <input x-model="search" @input.debounce.300ms="load()" type="text" placeholder="Search products..." class="form-input-custom max-w-md">
-        <a href="/products/create" class="btn-primary ml-3"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add Product</a>
-    </div>
+<div x-data="productsPage()" x-init="init()" class="workspace-screen">
+    <x-ui.action-bar title="Product Inventory" description="Keep search, stock review, and product updates on a single screen.">
+        <a href="/products/create" class="btn-primary inline-flex w-full items-center justify-center sm:w-auto"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add Product</a>
+    </x-ui.action-bar>
 
-    <div class="card">
-        <div class="card-body p-0">
-            <div class="table-scroll">
-                <table class="data-table">
+    <x-ui.filter-bar>
+        <div class="workspace-filter-group">
+            <input x-model="search" @input.debounce.300ms="load()" type="text" placeholder="Search products by name, SKU, or brand" class="form-input-custom workspace-search-input">
+        </div>
+        <div class="workspace-filter-meta">Showing <span x-text="items.length"></span> products</div>
+    </x-ui.filter-bar>
+
+    <x-ui.table-card>
+        <x-slot:header>
+            <div>
+                <h3 class="text-base font-semibold text-slate-900">Inventory Table</h3>
+                <p class="text-sm text-slate-500">Product list stays inside the page with its own scroll area.</p>
+            </div>
+        </x-slot:header>
+
+        <table class="data-table">
                     <thead class="sticky top-0 z-10 bg-gray-50"><tr><th>Img</th><th>#</th><th>Name</th><th>SKU</th><th>Category</th><th>Brand</th><th>MRP</th><th>Sale Price</th><th>Stock</th><th>Actions</th></tr></thead>
                     <tbody>
                         <template x-for="(item, i) in items" :key="item.id">
@@ -62,9 +72,7 @@
                         </template>
                     </tbody>
                 </table>
-            </div>
-        </div>
-    </div>
+    </x-ui.table-card>
 
     <!-- Modal -->
     <div x-show="showModal" class="modal-overlay" x-cloak>
@@ -106,7 +114,7 @@
                     {{-- Image Upload --}}
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Product Images</label>
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {{-- Main Image --}}
                             <div>
                                 <p class="text-xs text-gray-500 mb-1.5 font-medium">Main Image</p>
@@ -153,9 +161,9 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button @click="showModal = false" class="btn-secondary">Cancel</button>
-                <button @click="save()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span>Update</button>
+            <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
+                <button @click="showModal = false" class="btn-secondary w-full sm:w-auto">Cancel</button>
+                <button @click="save()" class="btn-primary w-full sm:w-auto" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span>Update</button>
             </div>
         </div>
     </div>

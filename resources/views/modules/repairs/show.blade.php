@@ -87,7 +87,11 @@
                     </span>
                 </template>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                <button x-show="!repair.is_locked" @click="openEditModal()" class="btn-secondary text-sm inline-flex items-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    Edit Intake
+                </button>
                 <a :href="'/repairs/' + repair.id + '/print'" target="_blank" class="btn-secondary text-sm inline-flex items-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                     Print
@@ -104,9 +108,41 @@
         </div>
     </div>
 
+    <div class="rounded-[28px] border border-slate-200 bg-[linear-gradient(135deg,rgba(79,70,229,0.07),rgba(14,165,233,0.04),rgba(255,255,255,0.96))] p-5 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.34)] mb-5">
+        <div class="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.26em] text-slate-500">Intake Overview</p>
+                <h3 class="mt-2 text-lg font-semibold text-slate-900">Core intake details stay visible</h3>
+                <p class="mt-1 max-w-2xl text-sm text-slate-600">Customer, device, and issue summary are shown upfront so the repair record matches the new guided intake flow.</p>
+            </div>
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 xl:min-w-[620px]">
+                <div class="rounded-2xl border border-white/70 bg-white/85 p-4 shadow-sm">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Customer</div>
+                    <div class="mt-2 text-sm font-semibold text-slate-900" x-text="repair.customer?.name || 'Walk-in'"></div>
+                    <div class="mt-1 text-xs text-slate-500" x-text="repair.customer?.mobile_number || 'No mobile'"></div>
+                </div>
+                <div class="rounded-2xl border border-white/70 bg-white/85 p-4 shadow-sm">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Device</div>
+                    <div class="mt-2 text-sm font-semibold text-slate-900" x-text="[repair.device_brand, repair.device_model].filter(Boolean).join(' ') || 'Not recorded'"></div>
+                    <div class="mt-1 text-xs text-slate-500" x-text="repair.imei || 'IMEI / Serial optional'"></div>
+                </div>
+                <div class="rounded-2xl border border-white/70 bg-white/85 p-4 shadow-sm">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Estimate</div>
+                    <div class="mt-2 text-sm font-semibold text-slate-900" x-text="'₹' + Number(repair.estimated_cost || 0).toFixed(2)"></div>
+                    <div class="mt-1 text-xs text-slate-500" x-text="repair.expected_delivery_date ? 'Due ' + formatDate(repair.expected_delivery_date) : 'No due date'"></div>
+                </div>
+                <div class="rounded-2xl border border-white/70 bg-white/85 p-4 shadow-sm">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Issue</div>
+                    <div class="mt-2 text-sm leading-6 text-slate-700 line-clamp-4" x-text="repair.problem_description || 'No description recorded'"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== PROGRESS BAR ===== -->
     <div class="bg-white rounded-xl shadow-sm border p-4 mb-5" x-show="repair.status !== 'cancelled'">
-        <div class="flex items-center justify-between max-w-2xl mx-auto">
+        <div class="mobile-scroll">
+        <div class="flex items-center justify-between max-w-2xl mx-auto min-w-[640px] sm:min-w-0">
             <template x-for="(step, idx) in progressSteps" :key="step.key">
                 <div class="flex items-center" :class="idx < progressSteps.length - 1 ? 'flex-1' : ''">
                     <div class="flex flex-col items-center">
@@ -122,6 +158,7 @@
                         :class="stepReached(repair.status, step.key) && stepReached(repair.status, progressSteps[idx+1]?.key) ? 'bg-green-500' : 'bg-gray-200'"></div>
                 </div>
             </template>
+        </div>
         </div>
     </div>
     <div x-show="repair.status === 'cancelled'" class="bg-red-50 border border-red-200 rounded-xl p-4 mb-5 flex items-center gap-3">
@@ -159,9 +196,11 @@
             </template>
 
             <!-- TABS NAVIGATION -->
-            <div class="bg-white rounded-xl shadow-sm border border-b-0 rounded-b-none p-2 flex gap-1">
+            <div class="bg-white rounded-xl shadow-sm border border-b-0 rounded-b-none p-2 mobile-scroll">
+                <div class="flex gap-1 min-w-max">
                 <button @click="activeTab = 'work'" class="px-5 py-2.5 rounded-lg text-sm font-semibold transition" :class="activeTab === 'work' ? 'bg-primary-50 text-primary-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'">Work Order</button>
                 <button @click="activeTab = 'history'" class="px-5 py-2.5 rounded-lg text-sm font-semibold transition" :class="activeTab === 'history' ? 'bg-primary-50 text-primary-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'">Status & History</button>
+                </div>
             </div>
 
             <div class="bg-white shadow-sm border border-t-0 rounded-b-xl min-h-[500px]">
@@ -172,7 +211,7 @@
             <!-- Info Cards -->
             <div class="bg-white rounded-xl shadow-sm border p-5">
                 <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Repair Details</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
                         <div class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1">Customer</div>
                         <div class="text-sm font-semibold text-gray-800" x-text="repair.customer?.name || 'Walk-in'"></div>
@@ -196,7 +235,7 @@
                     <div class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1">Problem Description</div>
                     <div class="text-sm text-gray-700 whitespace-pre-line" x-text="repair.problem_description"></div>
                 </div>
-                <div class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-4 pt-3 border-t">
+                <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pt-3 border-t">
                     <div>
                         <div class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1">Created</div>
                         <div class="text-sm text-gray-600" x-text="formatDateTime(repair.created_at)"></div>
@@ -1010,6 +1049,135 @@
         </div>
     </div>
 
+    <div x-show="showEditModal" class="modal-overlay" x-cloak>
+        <div class="modal-container modal-xl" @click.away="showEditModal = false">
+            <div class="modal-header">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">Edit Repair Intake</h3>
+                    <p class="text-sm text-slate-500 mt-1">Update the intake details without leaving the repair workflow.</p>
+                </div>
+                <button @click="showEditModal = false" class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <div class="modal-body max-h-[75vh] overflow-y-auto space-y-5">
+                <div class="rounded-3xl border border-indigo-100 bg-[linear-gradient(135deg,#eef2ff,#ffffff)] p-5">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-600 text-white">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        </div>
+                        <div>
+                            <h4 class="text-base font-semibold text-slate-900">Customer</h4>
+                            <p class="text-sm text-slate-500">Search and switch the customer if the intake was assigned to the wrong person.</p>
+                        </div>
+                    </div>
+
+                    <div x-show="editForm.customer_id" class="mb-4 inline-flex max-w-full items-center gap-2 rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm font-medium text-indigo-800">
+                        <svg class="w-4 h-4 shrink-0 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span class="truncate" x-text="editSelectedCustomer?.name + (editSelectedCustomer?.mobile_number ? ' · ' + editSelectedCustomer.mobile_number : '')"></span>
+                        <button type="button" @click="editForm.customer_id = null; editSelectedCustomer = null; editCustSearch = ''" class="text-indigo-400 hover:text-red-500 text-lg leading-none">&times;</button>
+                    </div>
+
+                    <div class="relative" @click.away="editCustOpen = false; editCustResults = []">
+                        <div class="absolute left-0 top-1/2 -translate-y-1/2 pl-3 pointer-events-none">
+                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </div>
+                        <input x-model="editCustSearch" @focus="searchEditCustomers(1)" @input.debounce.300ms="searchEditCustomers(1)" type="text" class="form-input-custom pl-9 text-sm w-full" placeholder="Search by customer name or mobile">
+                        <div x-show="editCustOpen && editCustResults.length > 0" x-cloak class="absolute z-50 mt-1 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                            <div class="max-h-64 overflow-y-auto" @scroll="handleEditCustScroll($event)">
+                                <template x-for="customer in editCustResults" :key="customer.id">
+                                    <button type="button" @click="selectEditCustomer(customer)" class="flex w-full items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 text-left hover:bg-indigo-50 transition">
+                                        <div>
+                                            <div class="text-sm font-semibold text-slate-800" x-text="customer.name"></div>
+                                            <div class="text-xs text-slate-400" x-text="customer.mobile_number || ''"></div>
+                                        </div>
+                                        <svg class="w-4 h-4 shrink-0 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                    </button>
+                                </template>
+                                <div x-show="editCustLoading" class="px-4 py-3 text-center text-xs text-slate-400">Loading…</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                    <div class="rounded-3xl border border-emerald-100 bg-[linear-gradient(135deg,#ecfdf5,#ffffff)] p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-600 text-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-semibold text-slate-900">Device identity</h4>
+                                <p class="text-sm text-slate-500">Brand and model are required for every repair now.</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Device Brand <span class="text-red-500">*</span></label>
+                                <input x-model="editForm.device_brand" list="repair-brand-list" type="text" class="form-input-custom w-full text-sm" placeholder="Samsung, Apple, Xiaomi">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">Device Model <span class="text-red-500">*</span></label>
+                                <input x-model="editForm.device_model" type="text" class="form-input-custom w-full text-sm" placeholder="Galaxy S24, iPhone 15">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-slate-700 mb-2">IMEI / Serial No.</label>
+                                <input x-model="editForm.imei" type="text" class="form-input-custom w-full text-sm" placeholder="Optional serial or IMEI reference">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-3xl border border-amber-100 bg-[linear-gradient(135deg,#fff7ed,#ffffff)] p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500 text-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-semibold text-slate-900">Issue summary</h4>
+                                <p class="text-sm text-slate-500">Keep the intake description accurate for technicians and customer updates.</p>
+                            </div>
+                        </div>
+
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Problem Description <span class="text-red-500">*</span></label>
+                        <textarea x-model="editForm.problem_description" class="form-input-custom w-full text-sm" rows="9" placeholder="Describe the issue clearly"></textarea>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Estimated Cost</label>
+                        <input x-model="editForm.estimated_cost" type="number" step="0.01" class="form-input-custom w-full text-sm" placeholder="0.00">
+                    </div>
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Expected Delivery Date</label>
+                        <input x-model="editForm.expected_delivery_date" type="date" class="form-input-custom w-full text-sm">
+                    </div>
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Technician</label>
+                        <select x-model="editForm.technician_id" class="form-select-custom w-full text-sm">
+                            <option value="">Unassigned</option>
+                            @foreach($technicians as $tech)
+                                <option value="{{ $tech->id }}">{{ $tech->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
+                <button @click="showEditModal = false" class="btn-secondary w-full sm:w-auto">Cancel</button>
+                <button @click="saveRepairDetails()" class="btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-2">
+                    <span x-show="savingEdit" class="spinner"></span>
+                    <span x-text="savingEdit ? 'Saving...' : 'Save Intake Changes'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <datalist id="repair-brand-list">
+        @foreach($brands as $brand)
+            <option value="{{ $brand }}"></option>
+        @endforeach
+    </datalist>
+
     <!-- ===== COMPLETED CONFIRMATION MODAL ===== -->
     <div x-show="showCompletedConfirm" class="modal-overlay" x-cloak>
         <div class="modal-container max-w-md" @click.away="showCompletedConfirm = false">
@@ -1057,10 +1225,16 @@ function repairDetail() {
         // Modals
         showCancel: false,
         showCompletedConfirm: false,
+        showEditModal: false,
+        savingEdit: false,
 
         // Status
         statusForm: { status: '', notes: '', cancel_reason: '', confirm: false },
         pendingTransition: null,
+
+        editForm: { customer_id: '', technician_id: '', device_brand: '', device_model: '', imei: '', problem_description: '', estimated_cost: '', expected_delivery_date: '' },
+        editSelectedCustomer: null,
+        editCustSearch: '', editCustResults: [], editCustOpen: false, editCustHasMore: false, editCustPage: 1, editCustLoading: false,
 
         // Parts
         partForm: { part_id: null, _name: '', quantity: 1, cost_price: '' },
@@ -1085,6 +1259,7 @@ function repairDetail() {
             if (this.repair.status === 'payment' && this.balanceDue() > 0) {
                 this.payForm.amount = this.balanceDue().toFixed(2);
             }
+            this.syncEditForm();
         },
 
         // Reload repair data from server
@@ -1096,6 +1271,74 @@ function repairDetail() {
                 if (this.repair.status === 'payment' && this.balanceDue() > 0) {
                     this.payForm.amount = this.balanceDue().toFixed(2);
                 }
+                this.syncEditForm();
+            }
+        },
+
+        syncEditForm() {
+            this.editForm = {
+                customer_id: this.repair.customer_id || '',
+                technician_id: this.repair.technician_id || '',
+                device_brand: this.repair.device_brand || '',
+                device_model: this.repair.device_model || '',
+                imei: this.repair.imei || '',
+                problem_description: this.repair.problem_description || '',
+                estimated_cost: this.repair.estimated_cost || '',
+                expected_delivery_date: this.repair.expected_delivery_date ? String(this.repair.expected_delivery_date).substring(0, 10) : '',
+            };
+            this.editSelectedCustomer = this.repair.customer || null;
+            this.editCustSearch = '';
+            this.editCustResults = [];
+            this.editCustOpen = false;
+        },
+
+        openEditModal() {
+            this.syncEditForm();
+            this.showEditModal = true;
+        },
+
+        async searchEditCustomers(page) {
+            page = page || 1;
+            if (page === 1) this.editCustPage = 1;
+            this.editCustLoading = true;
+            const r = await RepairBox.ajax('/customers-search?page=' + page + '&q=' + encodeURIComponent(this.editCustSearch || ''));
+            this.editCustLoading = false;
+            const rows = Array.isArray(r.data) ? r.data : [];
+            this.editCustResults = page === 1 ? rows : this.editCustResults.concat(rows);
+            this.editCustHasMore = r.has_more || false;
+            this.editCustPage = page;
+            this.editCustOpen = true;
+        },
+
+        handleEditCustScroll(event) {
+            const element = event.target;
+            if (element.scrollTop + element.clientHeight >= element.scrollHeight - 10 && this.editCustHasMore && !this.editCustLoading) {
+                this.searchEditCustomers(this.editCustPage + 1);
+            }
+        },
+
+        selectEditCustomer(customer) {
+            this.editSelectedCustomer = customer;
+            this.editForm.customer_id = customer.id;
+            this.editCustSearch = '';
+            this.editCustResults = [];
+            this.editCustOpen = false;
+        },
+
+        async saveRepairDetails() {
+            if (!this.editForm.customer_id) { RepairBox.toast('Customer is required', 'error'); return; }
+            if (!this.editForm.device_brand) { RepairBox.toast('Device brand is required', 'error'); return; }
+            if (!this.editForm.device_model) { RepairBox.toast('Device model is required', 'error'); return; }
+            if (!this.editForm.problem_description) { RepairBox.toast('Problem description is required', 'error'); return; }
+
+            this.savingEdit = true;
+            const r = await RepairBox.ajax('/repairs/' + this.repair.id, 'PUT', this.editForm);
+            this.savingEdit = false;
+
+            if (r.success !== false) {
+                RepairBox.toast('Repair intake updated', 'success');
+                this.showEditModal = false;
+                await this.reload();
             }
         },
 

@@ -1,29 +1,23 @@
 @extends('layouts.app')
 @section('page-title', 'Invoices')
-@section('content-class', 'flex flex-col')
+@section('content-class', 'workspace-content')
 
 @section('content')
-<div x-data="invoicesPage()" x-init="load()" class="page-list">
+<div x-data="invoicesPage()" x-init="load()" class="workspace-screen">
 
-    {{-- ══ HEADER ══ --}}
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-800">Invoices</h2>
-            <p class="text-sm text-gray-500 mt-0.5">Manage sales billing &amp; payments</p>
-        </div>
-        <a href="/pos" class="btn-primary inline-flex items-center gap-1.5">
+    <x-ui.action-bar title="Invoice Ledger" description="Billing, payment collection, and invoice review stay in the same contained workspace.">
+        <a href="/pos" class="btn-primary inline-flex w-full items-center justify-center gap-1.5 sm:w-auto">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
             New Invoice
         </a>
-    </div>
+    </x-ui.action-bar>
 
-    {{-- ══ FILTERS ══ --}}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4">
-        <div class="flex flex-col lg:flex-row gap-3">
+    <x-ui.filter-bar>
+        <div class="flex flex-1 flex-col gap-3 min-w-0">
+            <div class="flex flex-col lg:flex-row gap-3">
 
-            {{-- Search --}}
             <div class="relative flex-1">
                 <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -39,26 +33,25 @@
                 </button>
             </div>
 
-            {{-- Date range --}}
-            <div class="flex gap-2">
+            <div class="flex flex-col sm:flex-row gap-2 sm:w-auto w-full">
                 <div class="relative">
                     <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
                     <input x-model="filter.date_from" @change="page=1; load()" type="date"
-                        class="form-input-custom pl-9 text-sm" title="From date">
+                        class="form-input-custom pl-9 text-sm w-full" title="From date">
                 </div>
                 <div class="relative">
                     <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
                     <input x-model="filter.date_to" @change="page=1; load()" type="date"
-                        class="form-input-custom pl-9 text-sm" title="To date">
+                        class="form-input-custom pl-9 text-sm w-full" title="To date">
                 </div>
             </div>
 
-            {{-- Status pills --}}
-            <div class="flex flex-wrap gap-1.5 items-center">
+            <div class="mobile-scroll sm:overflow-visible">
+            <div class="flex gap-1.5 items-center pb-1 sm:pb-0">
                 <button @click="filter.payment_status = ''; page=1; load()"
                     class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
                     :class="filter.payment_status === '' ? 'bg-gray-800 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
@@ -91,9 +84,9 @@
                     This Month
                 </button>
             </div>
+            </div>
         </div>
 
-        {{-- Stats row --}}
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-gray-100">
             <div class="flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-2.5">
                 <div class="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0">
@@ -141,13 +134,17 @@
                 </div>
             </div>
         </div>
-    </div>
+    </x-ui.filter-bar>
 
-    {{-- ══ TABLE CARD (single direct page-list child) ══ --}}
-    <div class="card">
-        <div class="card-body p-0">
-            <div class="table-scroll">
-                <table class="data-table">
+    <x-ui.table-card>
+        <x-slot:header>
+            <div>
+                <h3 class="text-base font-semibold text-slate-900">Invoice Register</h3>
+                <p class="text-sm text-slate-500">Amounts, payment status, and actions remain attached to a fixed internal table.</p>
+            </div>
+        </x-slot:header>
+
+        <table class="data-table">
                     <thead class="sticky top-0 z-10 bg-gray-50">
                         <tr>
                             <th>Invoice #</th>
@@ -260,11 +257,9 @@
                         </template>
                     </tbody>
                 </table>
-            </div>
-
-            {{-- Pagination --}}
+        <x-slot:footer>
             <div x-show="meta && meta.last_page > 1"
-                class="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-gray-100 bg-gray-50/50">
+                class="flex flex-col sm:flex-row items-center justify-between gap-3">
                 <p class="text-xs text-gray-500"
                     x-text="meta ? 'Showing ' + ((meta.current_page-1)*meta.per_page+1) + '–' + Math.min(meta.current_page*meta.per_page, meta.total) + ' of ' + meta.total + ' invoices' : ''"></p>
                 <div class="flex items-center gap-1">
@@ -286,8 +281,8 @@
                     </button>
                 </div>
             </div>
-        </div>
-    </div>
+        </x-slot:footer>
+    </x-ui.table-card>
 
     {{-- ══ VIEW MODAL ══ --}}
     <div x-show="showView" class="modal-overlay" x-cloak @keydown.escape.window="showView = false">
@@ -306,7 +301,7 @@
                 <button @click="showView = false" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
             </div>
             <div class="modal-body space-y-4">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 text-sm">
                     <div class="bg-gray-50 rounded-lg p-3">
                         <p class="text-xs text-gray-400 mb-1">Customer</p>
                         <p class="font-semibold text-gray-800" x-text="viewData?.customer?.name || 'Walk-in'"></p>
@@ -345,6 +340,7 @@
 
                 <div>
                     <h4 class="text-sm font-semibold text-gray-700 mb-2">Items</h4>
+                    <div class="mobile-scroll">
                     <table class="data-table">
                         <thead><tr><th>Item</th><th>Type</th><th>Qty</th><th>MRP</th><th>Price</th><th>Total</th></tr></thead>
                         <tbody>
@@ -367,12 +363,14 @@
                             </template>
                         </tbody>
                     </table>
+                    </div>
                 </div>
 
                 <div>
                     <h4 class="text-sm font-semibold text-gray-700 mb-2">Payments Received</h4>
                     <div x-show="!(viewData?.payments?.length)" class="text-sm text-gray-400 italic">No payments recorded yet.</div>
-                    <table x-show="viewData?.payments?.length" class="data-table">
+                    <div x-show="viewData?.payments?.length" class="mobile-scroll">
+                    <table class="data-table">
                         <thead><tr><th>Method</th><th>Amount</th><th>Reference</th><th>Date</th></tr></thead>
                         <tbody>
                             <template x-for="p in viewData?.payments || []" :key="p.id">
@@ -394,14 +392,15 @@
                             </template>
                         </tbody>
                     </table>
+                    </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <a :href="'/invoices/' + viewData?.id + '/print'" target="_blank" class="btn-secondary text-xs flex items-center gap-1.5">
+            <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
+                <a :href="'/invoices/' + viewData?.id + '/print'" target="_blank" class="btn-secondary text-xs flex items-center justify-center gap-1.5 w-full sm:w-auto">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                     Print
                 </a>
-                <button @click="showView = false" class="btn-secondary text-xs">Close</button>
+                <button @click="showView = false" class="btn-secondary text-xs w-full sm:w-auto">Close</button>
             </div>
         </div>
     </div>
@@ -421,8 +420,7 @@
             </div>
 
             <div class="modal-body space-y-4">
-                {{-- Summary bar --}}
-                <div class="bg-primary-50 border border-primary-100 rounded-lg p-3 grid grid-cols-3 gap-3 text-center">
+                <x-ui.form-section title="Payment Summary" description="Review the invoice total, amount already paid, and current balance before confirming." gridClass="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
                     <div>
                         <p class="text-xs text-gray-500">Invoice Total</p>
                         <p class="text-base font-bold text-primary-700" x-text="'₹' + Number(payTarget?.final_amount || payTarget?.total_amount || 0).toFixed(2)"></p>
@@ -435,33 +433,23 @@
                         <p class="text-xs text-gray-500">Balance Due</p>
                         <p class="text-base font-bold text-red-600" x-text="'₹' + payBalanceDue().toFixed(2)"></p>
                     </div>
-                </div>
+                </x-ui.form-section>
 
-                {{-- Payment rows --}}
                 <template x-for="(pay, pidx) in payForm" :key="pidx">
-                    <div class="space-y-2 p-3 rounded-lg border border-gray-200 bg-gray-50">
+                    <x-ui.form-section :title="payForm.length > 1 ? 'Payment ' + (pidx + 1) : 'Payment Method'" gridClass="space-y-3">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs font-semibold text-gray-600"
-                                x-text="payForm.length > 1 ? 'Payment ' + (pidx + 1) : 'Payment Method'"></span>
                             <button x-show="payForm.length > 1" @click="payForm.splice(pidx, 1)"
                                 class="text-red-400 hover:text-red-600 text-xs">Remove</button>
                         </div>
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="text-xs text-gray-500 mb-1 block">Method</label>
-                                <select x-model="pay.payment_method" class="form-select-custom text-sm w-full">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <x-ui.select-field label="Method" x-model="pay.payment_method" class="text-sm w-full">
                                     <option value="cash">Cash</option>
                                     <option value="card">Card / Swipe</option>
                                     <option value="upi">UPI</option>
                                     <option value="bank_transfer">Bank Transfer</option>
                                     <option value="cheque">Cheque</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-500 mb-1 block">Amount (₹)</label>
-                                <input x-model.number="pay.amount" type="number" step="0.01" min="0"
-                                    class="form-input-custom text-sm w-full" placeholder="0.00">
-                            </div>
+                            </x-ui.select-field>
+                            <x-ui.input-field label="Amount (₹)" x-model.number="pay.amount" type="number" step="0.01" min="0" class="text-sm w-full" placeholder="0.00" />
                         </div>
                         <div x-show="pay.payment_method === 'upi' || pay.payment_method === 'bank_transfer' || pay.payment_method === 'cheque'">
                             <label class="text-xs text-gray-500 mb-1 block"
@@ -473,7 +461,7 @@
                             <p x-show="pay.payment_method === 'upi' && !pay.transaction_reference"
                                 class="text-[10px] text-amber-600 mt-0.5">Required for UPI payments</p>
                         </div>
-                    </div>
+                    </x-ui.form-section>
                 </template>
 
                 <button @click="payForm.push({payment_method:'cash', amount:0, transaction_reference:''})"
@@ -499,9 +487,9 @@
                 </div>
             </div>
 
-            <div class="modal-footer gap-2">
-                <button type="button" @click="showPayModal = false" class="btn-secondary text-xs">Cancel</button>
-                <button type="button" @click="submitPayment()" class="btn-primary text-xs px-6"
+            <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
+                <button type="button" @click="showPayModal = false" class="btn-secondary text-xs w-full sm:w-auto">Cancel</button>
+                <button type="button" @click="submitPayment()" class="btn-primary text-xs px-6 w-full sm:w-auto"
                     :disabled="paying || payTotalPaying() <= 0">
                     <span x-show="paying" class="spinner mr-2"></span>
                     <svg x-show="!paying" class="w-4 h-4 inline mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>

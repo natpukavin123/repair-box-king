@@ -61,7 +61,7 @@
                 <div class="space-y-4">
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label><input x-model="form.name" type="text" class="form-input-custom"></div>
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">SKU</label><input x-model="form.sku" type="text" class="form-input-custom"></div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div><label class="block text-sm font-medium text-gray-700 mb-1">Cost Price</label><input x-model="form.cost_price" type="number" step="0.01" class="form-input-custom"></div>
                         <div><label class="block text-sm font-medium text-gray-700 mb-1">Selling Price</label><input x-model="form.selling_price" type="number" step="0.01" class="form-input-custom"></div>
                     </div>

@@ -1,19 +1,29 @@
 @extends('layouts.app')
 @section('page-title', 'Roles & Permissions')
-@section('content-class', 'flex flex-col')
+@section('content-class', 'workspace-content')
 
 @section('content')
-<div x-data="rolesPage()" x-init="load()" class="page-list">
-    <div class="flex items-center justify-between mb-4">
-        <p class="text-sm text-gray-500">Manage roles and assign module-based permissions</p>
-        <button @click="openCreate()" class="btn-primary">
+<div x-data="rolesPage()" x-init="load()" class="workspace-screen">
+    <x-ui.action-bar title="Roles & Permissions" description="Keep role management and permission mapping inside the same contained admin workspace.">
+        <button @click="openCreate()" class="btn-primary w-full sm:w-auto">
             <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             New Role
         </button>
-    </div>
+    </x-ui.action-bar>
 
-    <!-- Roles Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-4">
+    <x-ui.filter-bar>
+        <div class="workspace-filter-meta">Showing <span x-text="items.length"></span> roles</div>
+    </x-ui.filter-bar>
+
+    <x-ui.table-card>
+        <x-slot:header>
+            <div>
+                <h3 class="text-base font-semibold text-slate-900">Role Matrix</h3>
+                <p class="text-sm text-slate-500">Each role card stays in a fixed internal canvas instead of pushing the full page longer.</p>
+            </div>
+        </x-slot:header>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-4 sm:p-5">
         <template x-for="role in items" :key="role.id">
             <div class="card hover:shadow-md transition-shadow duration-200 cursor-pointer" @click="openEdit(role)">
                 <div class="card-body">
@@ -47,16 +57,15 @@
         </template>
     </div>
 
-    <!-- Loading Skeletons -->
     <template x-if="loading">
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-5 pt-0">
             <template x-for="i in 4" :key="'sk'+i">
                 <div class="card"><div class="card-body"><div class="flex items-center gap-3"><div class="skeleton w-10 h-10 rounded-xl"></div><div><div class="skeleton h-4 w-24 mb-2"></div><div class="skeleton h-3 w-32"></div></div></div><div class="flex gap-4 mt-4 pt-3 border-t border-gray-100"><div class="skeleton h-3 w-20"></div><div class="skeleton h-3 w-24"></div></div></div></div>
             </template>
         </div>
     </template>
+    </x-ui.table-card>
 
-    <!-- Create/Edit Modal -->
     <div x-show="showModal" class="modal-overlay" x-cloak @keydown.escape.window="showModal = false">
         <div class="modal-container modal-xl" @click.stop>
             <div class="modal-header">
@@ -67,46 +76,36 @@
                 <button @click="showModal = false" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
             </div>
             <div class="modal-body max-h-[70vh] overflow-y-auto">
-                <!-- Role Details -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div>
-                        <label class="form-label">Role Name *</label>
-                        <input x-model="form.name" type="text" class="form-input-custom" placeholder="e.g. Manager">
-                    </div>
-                    <div>
-                        <label class="form-label">Description</label>
-                        <input x-model="form.description" type="text" class="form-input-custom" placeholder="Brief description of this role">
-                    </div>
-                </div>
+                <x-ui.form-section title="Role Details" description="Define the role name and a short explanation for staff.">
+                    <x-ui.input-field label="Role Name" x-model="form.name" placeholder="e.g. Manager" required />
+                    <x-ui.input-field label="Description" x-model="form.description" placeholder="Brief description of this role" />
+                </x-ui.form-section>
 
-                <!-- Module Permissions -->
-                <div class="mb-4">
-                    <div class="flex items-center justify-between mb-3">
+                <x-ui.form-section title="Module Permissions" description="Choose which actions this role is allowed to perform." gridClass="space-y-4" class="mt-5">
+                    <div class="flex flex-col gap-3 mb-3 sm:flex-row sm:items-center sm:justify-between">
                         <h4 class="font-semibold text-gray-800 flex items-center gap-2">
                             <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                             Module Permissions
                         </h4>
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-wrap items-center gap-2">
                             <button @click="selectAllPermissions()" class="text-xs text-primary-600 hover:text-primary-800 font-medium px-2 py-1 rounded hover:bg-primary-50 transition">Select All</button>
                             <span class="text-gray-300">|</span>
                             <button @click="deselectAllPermissions()" class="text-xs text-gray-500 hover:text-gray-700 font-medium px-2 py-1 rounded hover:bg-gray-100 transition">Deselect All</button>
                         </div>
                     </div>
 
-                    <!-- Permission Count -->
-                    <div class="bg-gray-50 rounded-lg px-4 py-2 mb-4 flex items-center justify-between">
+                    <div class="bg-gray-50 rounded-lg px-4 py-2 mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <span class="text-sm text-gray-600">
                             <span class="font-semibold text-primary-600" x-text="form.permissions.length"></span> of
                             <span class="font-semibold" x-text="totalPermissions"></span> permissions selected
                         </span>
-                        <div class="w-32 bg-gray-200 rounded-full h-2">
+                        <div class="w-full sm:w-32 bg-gray-200 rounded-full h-2">
                             <div class="bg-primary-600 h-2 rounded-full transition-all duration-300"
                                  :style="'width: ' + (totalPermissions > 0 ? (form.permissions.length / totalPermissions * 100) : 0) + '%'"></div>
                         </div>
                     </div>
 
-                    <!-- Module Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-3">
                         <template x-for="group in permissionGroups" :key="group.module">
                             <div class="border border-gray-200 rounded-xl overflow-hidden hover:border-primary-300 transition-colors"
                                  :class="isModuleFullySelected(group) ? 'border-primary-300 bg-primary-50/30' : ''">
@@ -123,7 +122,7 @@
                                           x-text="getModuleSelectedCount(group) + '/' + group.permissions.length"></span>
                                 </div>
                                 <!-- Permission Checkboxes -->
-                                <div class="px-4 py-3 grid grid-cols-2 gap-2">
+                                <div class="px-4 py-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <template x-for="perm in group.permissions" :key="perm.id">
                                         <label class="flex items-center gap-2 cursor-pointer group/perm py-1 px-2 rounded-lg hover:bg-gray-50 transition-colors">
                                             <input type="checkbox"
@@ -139,14 +138,14 @@
                             </div>
                         </template>
                     </div>
-                </div>
+                </x-ui.form-section>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
                 <template x-if="editing && !isSystemRole">
-                    <button @click="remove()" class="btn-danger mr-auto" :disabled="saving">Delete Role</button>
+                    <button @click="remove()" class="btn-danger w-full sm:mr-auto sm:w-auto" :disabled="saving">Delete Role</button>
                 </template>
-                <button @click="showModal = false" class="btn-secondary">Cancel</button>
-                <button @click="save()" class="btn-primary" :disabled="saving || !form.name">
+                <button @click="showModal = false" class="btn-secondary w-full sm:w-auto">Cancel</button>
+                <button @click="save()" class="btn-primary w-full sm:w-auto" :disabled="saving || !form.name">
                     <span x-show="saving" class="spinner mr-1" style="width:16px;height:16px;border-width:2px"></span>
                     <span x-text="editing ? 'Update Role' : 'Create Role'"></span>
                 </button>

@@ -52,7 +52,7 @@
             <!-- Customer & Reason -->
             <div class="card">
                 <div class="card-body">
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Customer</p>
                             <p class="font-medium text-gray-800">{{ $creditNote->customer?->name ?? 'Walk-in' }}</p>

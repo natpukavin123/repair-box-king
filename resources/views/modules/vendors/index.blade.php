@@ -1,17 +1,29 @@
 @extends('layouts.app')
 @section('page-title', 'Vendors')
-@section('content-class', 'flex flex-col')
+@section('content-class', 'workspace-content')
 
 @section('content')
-<div x-data="vendorsPage()" x-init="init()" class="page-list">
-    <div class="flex items-center justify-between mb-4">
-        <input x-model="search" @input.debounce.400ms="load()" type="text" class="form-input-custom max-w-sm" placeholder="Search vendors...">
-        <a href="/vendors/create" class="btn-primary ml-3"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add Vendor</a>
-    </div>
-    <div class="card">
-        <div class="card-body p-0">
-            <div class="table-scroll">
-                <table class="data-table">
+<div x-data="vendorsPage()" x-init="init()" class="workspace-screen">
+    <x-ui.action-bar title="Vendor Management" description="Frequently used vendor lookups and edits stay in a fixed single-page layout.">
+        <a href="/vendors/create" class="btn-primary inline-flex w-full items-center justify-center sm:w-auto"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add Vendor</a>
+    </x-ui.action-bar>
+
+    <x-ui.filter-bar>
+        <div class="workspace-filter-group">
+            <input x-model="search" @input.debounce.400ms="load()" type="text" class="form-input-custom workspace-search-input" placeholder="Search vendors by name, phone, or skill">
+        </div>
+        <div class="workspace-filter-meta">Page <span x-text="page"></span> of <span x-text="lastPage"></span></div>
+    </x-ui.filter-bar>
+
+    <x-ui.table-card>
+        <x-slot:header>
+            <div>
+                <h3 class="text-base font-semibold text-slate-900">Vendor List</h3>
+                <p class="text-sm text-slate-500">Vendor records remain inside the table area with internal scrolling.</p>
+            </div>
+        </x-slot:header>
+
+        <table class="data-table">
                     <thead class="sticky top-0 z-10 bg-gray-50"><tr><th>#</th><th>Name</th><th>Phone</th><th>Specialization</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody>
                         <template x-for="(v, i) in items" :key="v.id">
@@ -41,15 +53,13 @@
                         </template>
                     </tbody>
                 </table>
-            </div>
-        </div>
-    </div>
+    </x-ui.table-card>
 
     {{-- Pagination --}}
-    <div x-show="lastPage > 1" class="flex items-center justify-center gap-2 mt-4">
-        <button @click="page--; load()" :disabled="page <= 1" class="btn-secondary text-sm">&laquo; Prev</button>
+    <div x-show="lastPage > 1" class="flex flex-col items-stretch justify-center gap-2 mt-4 sm:flex-row sm:items-center">
+        <button @click="page--; load()" :disabled="page <= 1" class="btn-secondary text-sm w-full sm:w-auto">&laquo; Prev</button>
         <span class="text-sm text-gray-600" x-text="'Page ' + page + ' of ' + lastPage"></span>
-        <button @click="page++; load()" :disabled="page >= lastPage" class="btn-secondary text-sm">Next &raquo;</button>
+        <button @click="page++; load()" :disabled="page >= lastPage" class="btn-secondary text-sm w-full sm:w-auto">Next &raquo;</button>
     </div>
 
     {{-- Modal --}}
@@ -67,7 +77,7 @@
                     </div>
                 </template>
             </div>
-            <div class="modal-footer"><button @click="showModal = false" class="btn-secondary">Cancel</button><button @click="save()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span>Update</button></div>
+            <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end"><button @click="showModal = false" class="btn-secondary w-full sm:w-auto">Cancel</button><button @click="save()" class="btn-primary w-full sm:w-auto" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span>Update</button></div>
         </div>
     </div>
 </div>

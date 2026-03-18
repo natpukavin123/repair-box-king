@@ -3,32 +3,29 @@
 
 @section('content')
 <div x-data="createServicePage()" class="max-w-3xl mx-auto">
-    <div class="flex items-center justify-between mb-5">
+    <div class="flex flex-col gap-3 mb-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h2 class="text-2xl font-bold text-gray-800">New Service</h2>
             <p class="text-sm text-gray-500 mt-0.5">Record a new service entry</p>
         </div>
-        <a href="/services" class="btn-secondary inline-flex items-center gap-1.5">
+        <a href="/services" class="btn-secondary inline-flex w-full items-center justify-center gap-1.5 sm:w-auto">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
             Back
         </a>
     </div>
 
     <div class="card">
-        <div class="card-body">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Service Type *</label>
-                    <select x-model="form.service_type_id" class="form-select-custom">
-                        <option value="">Select</option>
-                        @foreach($serviceTypes as $t)
-                            <option value="{{ $t->id }}">{{ $t->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
-                    <div class="flex gap-2">
+        <div class="card-body space-y-5">
+            <x-ui.form-section title="Service Booking" description="Primary service fields follow the same reusable pattern as the rest of the app.">
+                <x-ui.select-field label="Service Type" x-model="form.service_type_id" required>
+                    <option value="">Select</option>
+                    @foreach($serviceTypes as $t)
+                        <option value="{{ $t->id }}">{{ $t->name }}</option>
+                    @endforeach
+                </x-ui.select-field>
+                <div class="workspace-field md:col-span-2">
+                    <label class="form-label">Customer <span class="text-red-500">*</span></label>
+                    <div class="flex flex-col gap-2 sm:flex-row">
                         <div class="relative flex-1" @click.away="custOpen = false">
                             <input x-model="custSearch" @focus="findCust(1)" @input.debounce.300ms="findCust(1)" type="text" class="form-input-custom" placeholder="Search customer...">
                             <div x-show="custOpen && custResults.length > 0" x-cloak class="absolute left-0 right-0 mt-1 border rounded-lg bg-white shadow-lg overflow-hidden" style="z-index:50">
@@ -40,35 +37,32 @@
                                 </div>
                             </div>
                         </div>
-                        <button type="button" @click="showAddCust = true; newCust = {name:'', mobile_number:'', email:'', address:''}" class="btn-primary text-sm px-3 whitespace-nowrap">+ New</button>
+                        <button type="button" @click="showAddCust = true; newCust = {name:'', mobile_number:'', email:'', address:''}" class="btn-primary text-sm px-3 whitespace-nowrap w-full sm:w-auto">+ New</button>
                     </div>
                     <div x-show="custOpen && !custLoading && custResults.length === 0" class="text-xs text-gray-400 mt-1">No customers found.</div>
                     <div x-show="selCust" class="mt-1"><span class="badge badge-primary" x-text="selCust?.name"></span> <button @click="selCust = null; form.customer_id = null" class="text-red-400 text-xs">&times;</button></div>
                 </div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Customer Charge *</label><input x-model="form.customer_charge" type="number" step="0.01" class="form-input-custom"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Vendor Cost</label><input x-model="form.vendor_cost" type="number" step="0.01" class="form-input-custom"></div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
-                    <select x-model="form.payment_method" class="form-select-custom">
-                        <option value="cash">Cash</option>
-                        <option value="card">Card</option>
-                        <option value="upi">UPI</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                    <select x-model="form.status" class="form-select-custom">
-                        <option value="completed">Completed</option>
-                        <option value="pending">Pending</option>
-                        <option value="cancelled">Cancelled</option>
-                    </select>
-                </div>
-                <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Description</label><textarea x-model="form.description" class="form-input-custom" rows="2"></textarea></div>
-            </div>
+                <x-ui.input-field label="Customer Charge" x-model="form.customer_charge" type="number" step="0.01" required />
+                <x-ui.input-field label="Vendor Cost" x-model="form.vendor_cost" type="number" step="0.01" />
+                <x-ui.select-field label="Payment Method" x-model="form.payment_method">
+                    <option value="cash">Cash</option>
+                    <option value="card">Card</option>
+                    <option value="upi">UPI</option>
+                </x-ui.select-field>
+                <x-ui.select-field label="Status" x-model="form.status">
+                    <option value="completed">Completed</option>
+                    <option value="pending">Pending</option>
+                    <option value="cancelled">Cancelled</option>
+                </x-ui.select-field>
+            </x-ui.form-section>
+
+            <x-ui.form-section title="Description" description="Optional service note for follow-up or billing reference." gridClass="grid grid-cols-1 gap-4">
+                <x-ui.textarea-field label="Description" x-model="form.description" rows="3" />
+            </x-ui.form-section>
         </div>
-        <div class="card-footer flex justify-end gap-3">
-            <a href="/services" class="btn-secondary">Cancel</a>
-            <button @click="save()" class="btn-primary inline-flex items-center gap-2" :disabled="saving">
+        <div class="card-footer flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <a href="/services" class="btn-secondary w-full text-center sm:w-auto">Cancel</a>
+            <button @click="save()" class="btn-primary inline-flex w-full items-center justify-center gap-2 sm:w-auto" :disabled="saving">
                 <span x-show="saving" class="spinner"></span>
                 Create Service
             </button>
@@ -80,14 +74,21 @@
         <div class="modal-container max-w-md">
             <div class="modal-header"><h3 class="text-lg font-semibold">Add Customer</h3><button @click="showAddCust = false" class="text-gray-400 hover:text-gray-600">&times;</button></div>
             <div class="modal-body">
-                <div class="space-y-3">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label><input x-model="newCust.name" type="text" class="form-input-custom" required></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Mobile * <span class="text-xs text-gray-500">(10 digits)</span></label><input x-model="newCust.mobile_number" type="text" class="form-input-custom" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required @keydown="if(!/[0-9]/.test($event.key) && !['Backspace','Delete','Tab','ArrowLeft','ArrowRight'].includes($event.key)) $event.preventDefault()"><p x-show="newCust.mobile_number && !/^\d{10}$/.test(newCust.mobile_number)" class="text-xs text-red-500 mt-1">Mobile must be exactly 10 digits</p></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input x-model="newCust.email" type="email" class="form-input-custom"><p x-show="newCust.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCust.email)" class="text-xs text-red-500 mt-1">Please enter a valid email</p></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Address</label><input x-model="newCust.address" type="text" class="form-input-custom"></div>
-                </div>
+                <x-ui.form-section title="Customer Details" description="Create and select a customer without leaving the service form.">
+                    <x-ui.input-field label="Name" x-model="newCust.name" required />
+                    <div class="workspace-field">
+                        <label class="form-label">Mobile <span class="text-red-500">*</span> <span class="text-xs text-gray-500">(10 digits)</span></label>
+                        <input x-model="newCust.mobile_number" type="text" class="form-input-custom" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required @keydown="if(!/[0-9]/.test($event.key) && !['Backspace','Delete','Tab','ArrowLeft','ArrowRight'].includes($event.key)) $event.preventDefault()">
+                        <p x-show="newCust.mobile_number && !/^\d{10}$/.test(newCust.mobile_number)" class="workspace-field-hint text-red-500">Mobile must be exactly 10 digits</p>
+                    </div>
+                    <div class="workspace-field">
+                        <x-ui.input-field label="Email" x-model="newCust.email" type="email" />
+                        <p x-show="newCust.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCust.email)" class="workspace-field-hint text-red-500">Please enter a valid email</p>
+                    </div>
+                    <x-ui.input-field label="Address" x-model="newCust.address" />
+                </x-ui.form-section>
             </div>
-            <div class="modal-footer"><button @click="showAddCust = false" class="btn-secondary">Cancel</button><button @click="saveNewCust()" class="btn-primary" :disabled="!newCust.name.trim() || !/^\d{10}$/.test(newCust.mobile_number) || (newCust.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCust.email))">Save & Select</button></div>
+            <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end"><button @click="showAddCust = false" class="btn-secondary w-full sm:w-auto">Cancel</button><button @click="saveNewCust()" class="btn-primary w-full sm:w-auto" :disabled="!newCust.name.trim() || !/^\d{10}$/.test(newCust.mobile_number) || (newCust.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCust.email))">Save & Select</button></div>
         </div>
     </div>
 </div>

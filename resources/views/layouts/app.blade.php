@@ -1,10 +1,34 @@
+@php
+    $allowedThemes = ['atelier', 'graphite', 'solstice'];
+    $allowedMotion = ['enhanced', 'reduced', 'none'];
+
+    $uiTheme = \App\Models\Setting::getValue('ui_theme', 'atelier');
+    $uiMotion = \App\Models\Setting::getValue('ui_motion', 'enhanced');
+
+    if (! in_array($uiTheme, $allowedThemes, true)) {
+        $uiTheme = 'atelier';
+    }
+
+    if (! in_array($uiMotion, $allowedMotion, true)) {
+        $uiMotion = 'enhanced';
+    }
+
+    $themeNames = [
+        'atelier' => 'Atelier Glass',
+        'graphite' => 'Graphite Luxe',
+        'solstice' => 'Solstice Warm',
+    ];
+@endphp
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-gray-100">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'RepairBox') - Mobile Shop Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <style>
@@ -42,7 +66,15 @@
         }
     </style>
 </head>
-<body class="h-full" x-data="{ mobileMenuOpen: false }">
+<body class="h-full app-shell" data-theme="{{ $uiTheme }}" data-motion="{{ $uiMotion }}" x-data="{ mobileMenuOpen: false }">
+
+<div class="app-backdrop" aria-hidden="true">
+    <span class="app-orb app-orb-one"></span>
+    <span class="app-orb app-orb-two"></span>
+    <span class="app-orb app-orb-three"></span>
+</div>
+
+<div class="app-frame">
 
 <div class="page-loader" id="pageLoader">
     <div class="loader-circle"></div>
@@ -58,31 +90,34 @@
         ['name' => 'Recharge', 'route' => '/recharges', 'match' => 'recharges*', 'icon' => 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z'],
         ['name' => 'Expenses', 'route' => '/expenses', 'match' => 'expenses*', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'],
         ['name' => 'Invoices', 'route' => '/invoices', 'match' => 'invoices*', 'icon' => 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'],
-        ['name' => 'PO', 'route' => '/po', 'match' => 'po*', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
+        ['name' => 'PO', 'route' => '/po', 'match' => ['po', 'po/*'], 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
     ];
 @endphp
 
 <!-- Top Navigation Bar -->
 <nav class="topnav no-print">
-    <div class="flex items-center justify-between px-4 h-14">
+    <div class="topnav-inner">
         <!-- Left: Logo + Shop Name -->
-        <a href="/dashboard" class="flex items-center gap-2.5 flex-shrink-0">
+        <a href="/dashboard" class="brand-link">
             @if($shopIcon)
-                <div class="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center bg-white border border-gray-200">
+                <div class="brand-logo">
                     <img src="{{ asset('storage/' . $shopIcon) }}" alt="Logo" class="w-full h-full object-contain">
                 </div>
             @else
-                <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+                <div class="brand-logo brand-logo-fallback">
                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                     </svg>
                 </div>
             @endif
-            <span class="font-bold text-gray-800 text-sm hidden sm:block">{{ Str::limit($shopName, 14) }}</span>
+            <div class="hidden sm:block">
+                <div class="brand-name">{{ Str::limit($shopName, 20) }}</div>
+                <div class="brand-subtitle">Business control center</div>
+            </div>
         </a>
 
         <!-- Center: Module Links (desktop) -->
-        <div class="hidden md:flex items-center gap-1">
+        <div class="topnav-links-shell hidden md:flex">
             @foreach($navItems as $item)
                 <a href="{{ $item['route'] }}" class="topnav-link {{ request()->is($item['match']) ? 'active' : '' }}">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/></svg>
@@ -92,37 +127,40 @@
         </div>
 
         <!-- Right: Settings + User + Logout -->
-        <div class="flex items-center gap-2">
-            <a href="/settings" class="topnav-link {{ request()->is('settings*') ? 'active' : '' }}" title="Settings">
+        <div class="flex items-center gap-2 sm:gap-3">
+            <a href="/settings" class="topnav-link topnav-link-compact {{ request()->is('settings*') ? 'active' : '' }}" title="Settings">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 <span class="hidden lg:inline">Settings</span>
             </a>
 
-            <div class="hidden sm:flex items-center gap-2 pl-2 border-l border-gray-200">
-                <div class="w-7 h-7 bg-primary-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+            <div class="user-chip hidden sm:flex">
+                <div class="user-chip-avatar">
                     {{ substr(auth()->user()->name ?? 'U', 0, 1) }}
                 </div>
-                <span class="text-xs font-medium text-gray-700 hidden lg:block">{{ auth()->user()->name ?? 'User' }}</span>
+                <div class="hidden lg:block">
+                    <div class="user-chip-label">Signed in</div>
+                    <div class="user-chip-name">{{ auth()->user()->name ?? 'User' }}</div>
+                </div>
             </div>
 
             <form method="POST" action="/logout">
                 @csrf
-                <button type="submit" class="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-100 transition-colors" title="Logout">
+                <button type="submit" class="icon-action icon-action-danger" title="Logout">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                 </button>
             </form>
 
             <!-- Mobile hamburger -->
-            <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-1.5 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100">
+            <button @click="mobileMenuOpen = !mobileMenuOpen" class="icon-action md:hidden" :class="mobileMenuOpen ? 'is-active' : ''">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
         </div>
     </div>
 
     <!-- Mobile dropdown menu -->
-    <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-1" @click.away="mobileMenuOpen = false" class="md:hidden border-t border-gray-200 bg-white px-3 pb-3">
+    <div x-show="mobileMenuOpen" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-1" @click.away="mobileMenuOpen = false" class="topnav-mobile-panel md:hidden">
         @foreach($navItems as $item)
-            <a href="{{ $item['route'] }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium {{ request()->is($item['match']) ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50' }}">
+            <a href="{{ $item['route'] }}" class="mobile-nav-link {{ request()->is($item['match']) ? 'active' : '' }}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/></svg>
                 {{ $item['name'] }}
             </a>
@@ -131,18 +169,35 @@
 </nav>
 
 <!-- Main Content -->
-<div class="flex flex-col" style="min-height: calc(100vh - 56px);">
+<div class="app-main-shell">
     <!-- Page Header -->
-    <header class="bg-white border-b border-gray-200 no-print">
-        <div class="flex items-center justify-between px-4 sm:px-6 py-3">
-            <h2 class="text-lg font-semibold text-gray-800">@yield('page-title', 'Dashboard')</h2>
+    <header class="page-header no-print">
+        <div class="page-header-inner">
+            <div>
+                <p class="page-kicker">Operations workspace</p>
+                <h2 class="page-title">@yield('page-title', 'Dashboard')</h2>
+            </div>
+            <div class="page-header-meta hidden lg:flex">
+                <div class="page-meta-chip">
+                    <div class="page-meta-label">Theme</div>
+                    <div class="page-meta-value">{{ $themeNames[$uiTheme] ?? 'Atelier Glass' }}</div>
+                </div>
+                <div class="page-meta-chip">
+                    <div class="page-meta-label">Today</div>
+                    <div class="page-meta-value">{{ now()->format('d M Y') }}</div>
+                </div>
+            </div>
         </div>
     </header>
 
     <!-- Page Content -->
-    <main class="flex-1 overflow-y-auto p-4 sm:p-6 @yield('content-class')">
-        @yield('content')
+    <main class="page-main @yield('content-class')">
+        <div class="content-shell">
+            @yield('content')
+        </div>
     </main>
+</div>
+
 </div>
 
 <script>

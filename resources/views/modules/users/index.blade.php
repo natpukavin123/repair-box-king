@@ -1,16 +1,26 @@
 @extends('layouts.app')
 @section('page-title', 'Users')
-@section('content-class', 'flex flex-col')
+@section('content-class', 'workspace-content')
 
 @section('content')
-<div x-data="usersPage()" x-init="load()" class="page-list">
-    <div class="flex items-center justify-end mb-4">
-        <a href="/users/create" class="btn-primary"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add User</a>
-    </div>
-    <div class="card">
-        <div class="card-body p-0">
-            <div class="table-scroll">
-                <table class="data-table">
+<div x-data="usersPage()" x-init="load()" class="workspace-screen">
+    <x-ui.action-bar title="Team Access" description="Manage user accounts, roles, and status from a contained single-screen table view.">
+        <a href="/users/create" class="btn-primary inline-flex w-full items-center justify-center sm:w-auto"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add User</a>
+    </x-ui.action-bar>
+
+    <x-ui.filter-bar>
+        <div class="workspace-filter-meta">Showing <span x-text="items.length"></span> users</div>
+    </x-ui.filter-bar>
+
+    <x-ui.table-card>
+        <x-slot:header>
+            <div>
+                <h3 class="text-base font-semibold text-slate-900">User Accounts</h3>
+                <p class="text-sm text-slate-500">Roles and account status remain visible inside the same fixed workspace.</p>
+            </div>
+        </x-slot:header>
+
+        <table class="data-table">
                     <thead class="sticky top-0 z-10 bg-gray-50"><tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody>
                         <template x-for="(u, i) in items" :key="u.id">
@@ -41,9 +51,7 @@
                         </template>
                     </tbody>
                 </table>
-            </div>
-        </div>
-    </div>
+    </x-ui.table-card>
 
     <div x-show="showModal" class="modal-overlay" x-cloak>
         <div class="modal-container">
@@ -62,7 +70,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer"><button @click="showModal = false" class="btn-secondary">Cancel</button><button @click="save()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span>Update</button></div>
+            <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end"><button @click="showModal = false" class="btn-secondary w-full sm:w-auto">Cancel</button><button @click="save()" class="btn-primary w-full sm:w-auto" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span>Update</button></div>
         </div>
     </div>
 </div>

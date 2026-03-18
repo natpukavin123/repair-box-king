@@ -109,7 +109,7 @@
         {{-- Right: Recharge History --}}
         <div :class="selCust ? 'lg:col-span-2' : 'lg:col-span-3'">
             {{-- Stats Cards (when customer selected) --}}
-            <div x-show="selCust" x-cloak class="grid grid-cols-2 gap-3 mb-4">
+            <div x-show="selCust" x-cloak class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                 <div class="card">
                     <div class="card-body py-3 px-4 text-center">
                         <div class="text-2xl font-bold text-primary-600" x-text="custStats.totalRecharges"></div>

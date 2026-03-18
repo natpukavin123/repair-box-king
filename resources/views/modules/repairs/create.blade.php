@@ -2,24 +2,14 @@
 @section('page-title', 'Create Repair')
 
 @section('content')
-<div x-data="createRepairPage()" class="max-w-7xl mx-auto">
+<div x-data="createRepairPage()" class="max-w-4xl mx-auto">
 
-    {{-- ===== HEADER ===== --}}
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
-        <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                 style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                </svg>
-            </div>
-            <div>
-                <h2 class="text-2xl font-bold text-gray-800">Create New Repair</h2>
-                <p class="text-sm text-gray-500">Fill in the details to create a repair ticket</p>
-            </div>
+    <div class="flex flex-col gap-3 mb-5 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+            <h2 class="text-2xl font-bold text-slate-900">Create New Repair</h2>
+            <p class="mt-1 text-sm text-slate-500">Fill only the needed details first. Optional details can be added in the last step.</p>
         </div>
-        <a href="/repairs" class="btn-secondary inline-flex items-center gap-1.5 text-sm">
+        <a href="/repairs" class="btn-secondary inline-flex w-full items-center justify-center gap-1.5 text-sm sm:w-auto">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
             </svg>
@@ -27,351 +17,245 @@
         </a>
     </div>
 
-    {{-- ===== MAIN GRID ===== --}}
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+    <div class="mb-5 rounded-2xl border border-slate-200 bg-white p-3 sm:p-4">
+        <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <template x-for="step in steps" :key="step.id">
+                <button type="button"
+                    @click="goToStep(step.id)"
+                    class="rounded-xl border px-4 py-3 text-left transition"
+                    :class="currentStep === step.id ? 'border-primary-600 bg-primary-600 text-white shadow-sm' : (isStepComplete(step.id) ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-50 text-slate-700')">
+                    <div class="text-xs font-semibold" x-text="'Step ' + step.id"></div>
+                    <div class="mt-1 text-sm font-semibold" x-text="step.title"></div>
+                </button>
+            </template>
+        </div>
+    </div>
 
-        {{-- LEFT: Customer + Device --}}
-        <div class="xl:col-span-2 space-y-5">
+    <div class="rounded-3xl border border-slate-200 bg-white shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] overflow-hidden">
+        <div class="border-b border-slate-200 bg-white px-6 py-4">
+            <h3 class="text-base font-semibold text-slate-900" x-text="currentStepMeta.title"></h3>
+            <p class="mt-1 text-sm text-slate-500" x-text="currentStepMeta.description"></p>
+        </div>
 
-            {{-- ── CUSTOMER CARD ── --}}
-            <div class="bg-white rounded-2xl shadow-sm border relative z-10">
-                <div class="px-6 py-4 border-b flex items-center gap-3"
-                     style="background:linear-gradient(135deg,#a29bbf,#bdbdbd);">
-                    <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center flex-shrink-0">
-                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-sm text-gray-900 uppercase tracking-wider">Customer</h3>
-                        <p class="text-xs text-gray-500">Search or add a new customer</p>
-                    </div>
-                </div>
-                <div class="p-6">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        Customer <span class="text-red-500">*</span>
-                    </label>
-
-                    {{-- Selected chip --}}
-                    <div x-show="form.customer_id" class="mb-3 flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium border border-indigo-200 bg-indigo-50 text-indigo-800 w-fit">
-                        <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        <span x-text="selectedCust?.name + (selectedCust?.mobile_number ? ' · ' + selectedCust.mobile_number : '')"></span>
-                        <button @click="form.customer_id = null; selectedCust = null; custSearch = ''; $nextTick(() => $refs.custInput.focus())"
-                            class="ml-1 text-indigo-400 hover:text-red-500 transition text-lg leading-none">&times;</button>
-                    </div>
-
-                    <div class="flex gap-2" x-show="!form.customer_id">
-                        {{-- Search box --}}
-                        <div class="relative flex-1" @click.away="custOpen = false; custResults = []">
-                            <div class="absolute left-0 top-1/2 transform -translate-y-1/2 pl-3 flex items-center pointer-events-none">
-                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        <div class="p-6 space-y-6">
+                <section x-show="currentStep === 1" x-cloak class="space-y-6">
+                    <div class="rounded-2xl border border-slate-200 bg-white p-5">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-white">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                                 </svg>
                             </div>
-                            <input
-                                x-ref="custInput"
-                                x-model="custSearch"
-                                @focus="searchCustomers(1)"
-                                @input.debounce.300ms="searchCustomers(1)"
-                                type="text"
-                                class="form-input-custom pl-9 text-sm w-full"
-                                placeholder="Search by name or mobile…"
-                                :disabled="!!form.customer_id"
-                            >
-                            {{-- Dropdown --}}
-                            <div x-show="custOpen && Array.isArray(custResults) && custResults.length > 0"
-                                 class="absolute z-50 w-full bg-white border border-gray-200 rounded-xl shadow-xl mt-1 overflow-hidden"
-                                 style="max-height:260px;">
-                                <div class="overflow-y-auto" style="max-height:260px;" @scroll="handleCustScroll($event)">
-                                    <template x-for="c in (Array.isArray(custResults) ? custResults : [])" :key="c.id">
-                                        <button @click="selectCustomer(c)"
-                                            class="w-full text-left px-4 py-3 hover:bg-indigo-50 border-b last:border-0 transition flex items-center justify-between gap-3">
-                                            <div>
-                                                <div class="text-sm font-semibold text-gray-800" x-text="c.name"></div>
-                                                <div class="text-xs text-gray-400 mt-0.5" x-text="c.mobile_number || ''"></div>
-                                            </div>
-                                            <svg class="w-4 h-4 text-indigo-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                            </svg>
-                                        </button>
-                                    </template>
-                                    <div x-show="custLoading" class="px-4 py-3 text-xs text-gray-400 text-center flex items-center justify-center gap-2">
-                                        <svg class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                                        </svg>
-                                        Loading…
+                            <div>
+                                <h4 class="text-base font-semibold text-slate-900">Choose the customer</h4>
+                                <p class="text-sm text-slate-500">This is required so the ticket can be tracked and notified correctly.</p>
+                            </div>
+                        </div>
+
+                        <div x-show="form.customer_id" class="mb-4 inline-flex max-w-full items-center gap-2 rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
+                            <svg class="w-4 h-4 shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span class="truncate" x-text="selectedCust?.name + (selectedCust?.mobile_number ? ' · ' + selectedCust.mobile_number : '')"></span>
+                            <button type="button" @click="clearSelectedCustomer()" class="text-slate-400 hover:text-red-500 text-lg leading-none">&times;</button>
+                        </div>
+
+                        <div x-show="!form.customer_id" class="flex flex-col gap-3 sm:flex-row">
+                            <div class="relative flex-1" @click.away="custOpen = false; custResults = []">
+                                <div class="absolute left-0 top-1/2 -translate-y-1/2 pl-3 pointer-events-none">
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                    </svg>
+                                </div>
+                                <input x-ref="custInput"
+                                    x-model="custSearch"
+                                    @focus="searchCustomers(1)"
+                                    @input.debounce.300ms="searchCustomers(1)"
+                                    type="text"
+                                    class="form-input-custom pl-10 text-base w-full min-h-[3.5rem]"
+                                    placeholder="Search customer by name or mobile number">
+                                <div x-show="custOpen && custResults.length > 0" x-cloak class="absolute z-50 mt-1 w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+                                    <div class="max-h-64 overflow-y-auto" @scroll="handleCustScroll($event)">
+                                        <template x-for="c in custResults" :key="c.id">
+                                            <button type="button" @click="selectCustomer(c)" class="flex w-full items-center justify-between gap-3 border-b border-slate-100 px-4 py-4 text-left hover:bg-slate-50 transition">
+                                                <div>
+                                                    <div class="text-base font-semibold text-slate-800" x-text="c.name"></div>
+                                                    <div class="text-sm text-slate-500" x-text="c.mobile_number || ''"></div>
+                                                </div>
+                                                <svg class="w-4 h-4 shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                                </svg>
+                                            </button>
+                                        </template>
+                                        <div x-show="custLoading" class="px-4 py-3 text-center text-xs text-slate-400">Loading…</div>
+                                        <div x-show="!custLoading && custResults.length === 0 && custSearch.length > 0" class="px-4 py-3 text-center text-xs text-slate-400">No customers found</div>
                                     </div>
-                                    <div x-show="!custLoading && custResults.length === 0 && custSearch.length > 0"
-                                         class="px-4 py-3 text-xs text-gray-400 text-center">
-                                        No customers found
-                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" @click="showAddCust = true; newCust = { name: '', mobile_number: '', email: '', address: '' }" class="btn-secondary inline-flex w-full items-center justify-center gap-1.5 min-h-[3.5rem] px-5 sm:w-auto">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                                </svg>
+                                New Customer
+                            </button>
+                        </div>
+
+                        <p class="mt-3 text-xs text-slate-500">Search the customer or add a new one if not found.</p>
+                    </div>
+                </section>
+
+                <section x-show="currentStep === 2" x-cloak class="space-y-6">
+                    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                        <div class="rounded-2xl border border-slate-200 bg-white p-5">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-base font-semibold text-slate-900">Identify the device</h4>
+                                    <p class="text-sm text-slate-500">Enter the basic device details.</p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Device Brand <span class="text-red-500">*</span></label>
+                                    <input x-model="form.device_brand" list="repair-create-brand-list" type="text" class="form-input-custom w-full text-sm" placeholder="Samsung, Apple, Xiaomi" autocomplete="off">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Device Model <span class="text-red-500">*</span></label>
+                                    <input x-model="form.device_model" type="text" class="form-input-custom w-full text-sm" placeholder="Galaxy S24, iPhone 15, Redmi Note 13">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">IMEI / Serial No.</label>
+                                    <input x-model="form.imei" type="text" class="form-input-custom w-full text-sm" placeholder="Optional serial or IMEI reference">
                                 </div>
                             </div>
                         </div>
 
-                        {{-- Add new customer button --}}
-                        <button type="button"
-                            @click="showAddCust = true; newCust = {name:'', mobile_number:'', email:'', address:''}"
-                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold border border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition whitespace-nowrap">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-                            </svg>
-                            New Customer
-                        </button>
-                    </div>
-                </div>
-            </div>
+                        <div class="rounded-2xl border border-slate-200 bg-white p-5">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500 text-white">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4 class="text-base font-semibold text-slate-900">Describe the issue</h4>
+                                    <p class="text-sm text-slate-500">Write the complaint in simple words.</p>
+                                </div>
+                            </div>
 
-            {{-- ── DEVICE CARD ── --}}
-            <div class="bg-white rounded-2xl shadow-sm border">
-                <div class="px-6 py-4 border-b flex items-center gap-3"
-                     style="background:linear-gradient(135deg,#d1fae5,#dbeafe);">
-                    <div class="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center flex-shrink-0">
-                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-sm text-gray-900 uppercase tracking-wider">Device Information</h3>
-                        <p class="text-xs text-gray-500">Brand, model and serial number</p>
-                    </div>
-                </div>
-                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {{-- Brand --}}
-                    <div x-data="{
-                            brandOpen: false,
-                            brandSearch: '',
-                            get filteredBrands() {
-                                const q = this.brandSearch.toLowerCase();
-                                return this.brandList.filter(b => b.toLowerCase().includes(q));
-                            }
-                         }"
-                         x-init="$watch('form.device_brand', v => brandSearch = v)"
-                         @click.away="brandOpen = false"
-                         class="relative">
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            <span class="flex items-center gap-1.5">
-                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
-                                Device Brand
-                            </span>
-                        </label>
-                        <input x-model="form.device_brand"
-                            @focus="brandOpen = true; brandSearch = form.device_brand"
-                            @input="brandOpen = true; brandSearch = form.device_brand"
-                            type="text"
-                            class="form-input-custom text-sm w-full"
-                            placeholder="e.g. Samsung, Apple, Xiaomi"
-                            autocomplete="off">
-                        <div x-show="brandOpen && filteredBrands.length > 0" x-cloak
-                             class="absolute z-20 w-full bg-white border rounded-xl shadow-lg mt-1 max-h-44 overflow-y-auto">
-                            <template x-for="b in filteredBrands" :key="b">
-                                <button type="button" @click="form.device_brand = b; brandOpen = false"
-                                    class="w-full text-left px-4 py-2.5 hover:bg-emerald-50 text-sm border-b last:border-0 transition font-medium text-gray-700" x-text="b"></button>
-                            </template>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2">Problem Description <span class="text-red-500">*</span></label>
+                            <textarea x-model="form.problem_description" class="form-input-custom w-full text-sm" rows="10" placeholder="Describe the issue clearly: no power, display broken, charging issue, speaker not working, water damage, etc."></textarea>
                         </div>
                     </div>
+                </section>
 
-                    {{-- Model --}}
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            <span class="flex items-center gap-1.5">
-                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
-                                Device Model
-                            </span>
-                        </label>
-                        <input x-model="form.device_model" type="text" class="form-input-custom text-sm w-full" placeholder="e.g. Galaxy S24, iPhone 15">
-                    </div>
+                <section x-show="currentStep === 3" x-cloak class="space-y-6">
+                    <div class="rounded-2xl border border-slate-200 bg-white overflow-hidden">
+                        <button type="button" @click="optionalOpen = !optionalOpen" class="flex w-full items-center justify-between gap-4 px-5 py-4 text-left hover:bg-slate-50 transition">
+                            <div>
+                                <div class="text-sm font-semibold text-slate-900">Optional Details</div>
+                                <div class="mt-1 text-xs text-slate-500">Technician, estimate, delivery date, and advance payment.</div>
+                            </div>
+                            <svg class="w-5 h-5 text-slate-400 transition-transform" :class="optionalOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
 
-                    {{-- IMEI --}}
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            <span class="flex items-center gap-1.5">
-                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
-                                IMEI / Serial No.
-                            </span>
-                        </label>
-                        <input x-model="form.imei" type="text" class="form-input-custom text-sm w-full" placeholder="Device IMEI or serial number">
+                        <div x-show="optionalOpen" x-cloak class="border-t border-slate-200 p-5">
+                            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Expected Delivery Date</label>
+                                    <input x-model="form.expected_delivery_date" type="date" class="form-input-custom w-full text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Technician</label>
+                                    <select x-model="form.technician_id" class="form-select-custom w-full text-sm">
+                                        <option value="">Unassigned</option>
+                                        @foreach($technicians as $tech)
+                                            <option value="{{ $tech->id }}">{{ $tech->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Estimated Cost</label>
+                                    <input x-model="form.estimated_cost" type="number" step="0.01" class="form-input-custom w-full text-sm" placeholder="0.00">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Advance Amount</label>
+                                    <input x-model="form.advance_amount" type="number" step="0.01" class="form-input-custom w-full text-sm" placeholder="0.00">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Payment Method</label>
+                                    <select x-model="form.advance_method" class="form-select-custom w-full text-sm">
+                                        <option value="cash">Cash</option>
+                                        <option value="card">Card</option>
+                                        <option value="upi">UPI</option>
+                                        <option value="bank_transfer">Bank Transfer</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Reference / Transaction ID</label>
+                                    <input x-model="form.advance_reference" type="text" class="form-input-custom w-full text-sm" placeholder="Optional">
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                </section>
 
-                    {{-- Estimated Cost --}}
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            <span class="flex items-center gap-1.5">
-                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                Estimated Cost (₹)
-                            </span>
-                        </label>
-                        <input x-model="form.estimated_cost" type="number" step="0.01" class="form-input-custom text-sm w-full" placeholder="0.00">
-                    </div>
-
-                    {{-- Problem Description --}}
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            <span class="flex items-center gap-1.5">
-                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                Problem Description
-                            </span>
-                        </label>
-                        <textarea x-model="form.problem_description"
-                            class="form-input-custom text-sm w-full"
-                            rows="3"
-                            placeholder="Describe the issue in detail…"></textarea>
-                    </div>
+                <div class="rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-3 text-sm text-slate-600">
+                    Required: customer, device brand, device model, and problem description.
                 </div>
-            </div>
-
         </div>
 
-        {{-- RIGHT: Scheduling + Advance + Submit --}}
-        <div class="space-y-5">
-
-            {{-- ── SCHEDULING CARD ── --}}
-            <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
-                <div class="px-5 py-4 border-b flex items-center gap-3"
-                     style="background:linear-gradient(135deg,#fef3c7,#fde68a);">
-                    <div class="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center flex-shrink-0">
-                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-sm text-gray-900 uppercase tracking-wider">Scheduling</h3>
-                        <p class="text-xs text-gray-500">Technician & delivery date</p>
-                    </div>
-                </div>
-                <div class="p-5 space-y-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Expected Delivery Date</label>
-                        <input x-model="form.expected_delivery_date" type="date" class="form-input-custom text-sm w-full">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Technician</label>
-                        <select x-model="form.technician_id" class="form-select-custom text-sm w-full">
-                            <option value="">— Unassigned —</option>
-                            @foreach($technicians as $tech)
-                                <option value="{{ $tech->id }}">{{ $tech->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            {{-- ── ADVANCE PAYMENT CARD ── --}}
-            <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
-                <div class="px-5 py-4 border-b flex items-center gap-3"
-                     style="background:linear-gradient(135deg,#d1fae5,#a7f3d0);">
-                    <div class="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center flex-shrink-0">
-                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-sm text-gray-900 uppercase tracking-wider">Advance Payment</h3>
-                        <p class="text-xs text-gray-500">Optional — collected upfront</p>
-                    </div>
-                </div>
-                <div class="p-5 space-y-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Amount (₹)</label>
-                        <input x-model="form.advance_amount" type="number" step="0.01" class="form-input-custom text-sm w-full" placeholder="0.00">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Payment Method</label>
-                        <select x-model="form.advance_method" class="form-select-custom text-sm w-full">
-                            <option value="cash">Cash</option>
-                            <option value="card">Card</option>
-                            <option value="upi">UPI</option>
-                            <option value="bank_transfer">Bank Transfer</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1.5">Reference / Transaction ID</label>
-                        <input x-model="form.advance_reference" type="text" class="form-input-custom text-sm w-full" placeholder="Optional">
-                    </div>
-                </div>
-            </div>
-
-            {{-- ── CREATE BUTTON ── --}}
-            <div class="bg-white rounded-2xl shadow-sm border p-5">
-                <p class="text-xs text-gray-500 mb-4 text-center">Review all details before submitting</p>
-                <button @click="save()"
-                    :disabled="saving"
-                    class="w-full inline-flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-200"
-                    :style="{
-                        background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
-                        boxShadow: '0 4px 14px rgba(99,102,241,0.35)',
-                        color: '#ffffff',
-                        opacity: saving ? '0.7' : '1',
-                        cursor: saving ? 'not-allowed' : 'pointer'
-                    }">
-                    <template x-if="saving">
-                        <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                        </svg>
-                    </template>
-                    <template x-if="!saving">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                        </svg>
-                    </template>
-                    <span x-text="saving ? 'Creating…' : 'Create Repair Ticket'"></span>
+            <div class="border-t border-slate-200 bg-white px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <button type="button" @click="previousStep()" class="btn-secondary w-full sm:w-auto" :disabled="currentStep === 1">Previous</button>
+            <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
+                <a href="/repairs" class="btn-secondary w-full sm:w-auto text-center">Cancel</a>
+                <button type="button" x-show="currentStep < steps.length" @click="nextStep()" class="btn-primary w-full sm:w-auto">Continue</button>
+                <button type="button" x-show="currentStep === steps.length" @click="save()" :disabled="saving" class="btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-2">
+                    <span x-show="saving" class="spinner"></span>
+                    <span x-text="saving ? 'Creating...' : 'Create Repair Ticket'"></span>
                 </button>
-                <a href="/repairs"
-                   class="mt-3 block text-center text-sm text-gray-400 hover:text-gray-600 transition">
-                    Cancel &amp; go back
-                </a>
             </div>
+        </div>
+    </div>
 
-        </div>{{-- end right --}}
-    </div>{{-- end main grid --}}
-
-    {{-- ===== ADD CUSTOMER MODAL ===== --}}
     <div x-show="showAddCust" class="modal-overlay" x-cloak>
         <div class="modal-container max-w-md" @click.away="showAddCust = false">
             <div class="modal-header">
-                <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-                    </svg>
-                    Add New Customer
-                </h3>
-                <button @click="showAddCust = false" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+                <h3 class="text-lg font-bold text-slate-900">Add New Customer</h3>
+                <button @click="showAddCust = false" class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
             </div>
             <div class="modal-body space-y-3">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Full Name <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Full Name <span class="text-red-500">*</span></label>
                     <input x-model="newCust.name" type="text" class="form-input-custom" placeholder="John Doe">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Mobile Number <span class="text-red-500">*</span></label>
-                    <input x-model="newCust.mobile_number" type="text" class="form-input-custom" placeholder="+91 9876543210">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Mobile Number <span class="text-red-500">*</span></label>
+                    <input x-model="newCust.mobile_number" type="text" class="form-input-custom" placeholder="9876543210">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
                     <input x-model="newCust.email" type="email" class="form-input-custom" placeholder="Optional">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Address</label>
                     <input x-model="newCust.address" type="text" class="form-input-custom" placeholder="Optional">
                 </div>
             </div>
-            <div class="modal-footer">
-                <button @click="showAddCust = false" class="btn-secondary">Cancel</button>
-                <button @click="saveNewCust()" class="btn-primary inline-flex items-center gap-2">
+            <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
+                <button @click="showAddCust = false" class="btn-secondary w-full sm:w-auto">Cancel</button>
+                <button @click="saveNewCust()" class="btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
-                    Save &amp; Select
+                    Save & Select
                 </button>
             </div>
         </div>
@@ -386,8 +270,19 @@ function createRepairPage() {
     return {
         saving: false,
         showAddCust: false,
+        currentStep: 1,
+        optionalOpen: false,
 
-        // Customer search state
+        steps: [
+            { id: 1, title: 'Customer', description: 'Select the customer for this repair ticket.' },
+            { id: 2, title: 'Device & Issue', description: 'Enter the device details and the customer complaint.' },
+            { id: 3, title: 'Optional Details', description: 'Add technician, estimate, delivery date, or advance if needed.' },
+        ],
+
+        get currentStepMeta() {
+            return this.steps.find((step) => step.id === this.currentStep) || this.steps[0];
+        },
+
         custSearch: '',
         custResults: [],
         custOpen: false,
@@ -413,60 +308,111 @@ function createRepairPage() {
             advance_reference: '',
         },
 
-        // ── CUSTOMER SEARCH (paginated, lazy) ──
-        async searchCustomers(page) {
-            page = page || 1;
-            if (page === 1) { this.custPage = 1; }
-            this.custLoading = true;
-            const url = '/customers-search?page=' + page + '&q=' + encodeURIComponent(this.custSearch || '');
-            const r = await RepairBox.ajax(url);
-            this.custLoading = false;
-            const rows = Array.isArray(r.data) ? r.data : [];
-            this.custResults = page === 1 ? rows : (Array.isArray(this.custResults) ? this.custResults : []).concat(rows);
-            this.custHasMore = r.has_more || false;
-            this.custPage = page;
-            if (this.custResults.length > 0) this.custOpen = true;
+        isStepComplete(step) {
+            if (step === 1) return !!this.form.customer_id;
+            if (step === 2) return !!this.form.device_brand.trim() && !!this.form.device_model.trim() && !!this.form.problem_description.trim();
+            return this.isStepComplete(1) && this.isStepComplete(2);
         },
 
-        handleCustScroll(e) {
-            const el = e.target;
-            if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10 && this.custHasMore && !this.custLoading) {
+        goToStep(step) {
+            if (step <= this.currentStep || (step === 2 && this.isStepComplete(1)) || (step === 3 && this.isStepComplete(1) && this.isStepComplete(2))) {
+                this.currentStep = step;
+            }
+        },
+
+        previousStep() {
+            if (this.currentStep > 1) this.currentStep -= 1;
+        },
+
+        nextStep() {
+            if (this.currentStep === 1 && !this.form.customer_id) {
+                RepairBox.toast('Please select a customer first', 'error');
+                return;
+            }
+            if (this.currentStep === 2) {
+                if (!this.form.device_brand.trim()) { RepairBox.toast('Device brand is required', 'error'); return; }
+                if (!this.form.device_model.trim()) { RepairBox.toast('Device model is required', 'error'); return; }
+                if (!this.form.problem_description.trim()) { RepairBox.toast('Problem description is required', 'error'); return; }
+            }
+            if (this.currentStep < this.steps.length) {
+                this.currentStep += 1;
+                if (this.currentStep === 3) {
+                    this.optionalOpen = false;
+                }
+            }
+        },
+
+        clearSelectedCustomer() {
+            this.form.customer_id = null;
+            this.selectedCust = null;
+            this.custSearch = '';
+            this.$nextTick(() => this.$refs.custInput?.focus());
+        },
+
+        async searchCustomers(page) {
+            page = page || 1;
+            if (page === 1) this.custPage = 1;
+            this.custLoading = true;
+            const r = await RepairBox.ajax('/customers-search?page=' + page + '&q=' + encodeURIComponent(this.custSearch || ''));
+            this.custLoading = false;
+            const rows = Array.isArray(r.data) ? r.data : [];
+            this.custResults = page === 1 ? rows : this.custResults.concat(rows);
+            this.custHasMore = r.has_more || false;
+            this.custPage = page;
+            this.custOpen = true;
+        },
+
+        handleCustScroll(event) {
+            const element = event.target;
+            if (element.scrollTop + element.clientHeight >= element.scrollHeight - 10 && this.custHasMore && !this.custLoading) {
                 this.searchCustomers(this.custPage + 1);
             }
         },
 
-        selectCustomer(c) {
-            this.selectedCust = c;
-            this.form.customer_id = c.id;
+        selectCustomer(customer) {
+            this.selectedCust = customer;
+            this.form.customer_id = customer.id;
+            this.custSearch = '';
             this.custResults = [];
             this.custOpen = false;
-            this.custSearch = '';
         },
 
         async saveNewCust() {
-            if (!this.newCust.name || !this.newCust.mobile_number) {
+            if (!this.newCust.name.trim() || !this.newCust.mobile_number.trim()) {
                 RepairBox.toast('Name and mobile are required', 'error');
                 return;
             }
+
             const r = await RepairBox.ajax('/customers', 'POST', this.newCust);
             if (r.success !== false && r.data) {
                 this.selectCustomer(r.data);
                 this.showAddCust = false;
-                RepairBox.toast('Customer added & selected', 'success');
+                RepairBox.toast('Customer added and selected', 'success');
             }
         },
 
         async save() {
-            if (!this.form.customer_id) { RepairBox.toast('Please select a customer', 'error'); return; }
+            if (!this.form.customer_id) { RepairBox.toast('Please select a customer', 'error'); this.currentStep = 1; return; }
+            if (!this.form.device_brand.trim()) { RepairBox.toast('Device brand is required', 'error'); this.currentStep = 2; return; }
+            if (!this.form.device_model.trim()) { RepairBox.toast('Device model is required', 'error'); this.currentStep = 2; return; }
+            if (!this.form.problem_description.trim()) { RepairBox.toast('Problem description is required', 'error'); this.currentStep = 2; return; }
+
             this.saving = true;
             const r = await RepairBox.ajax('/repairs', 'POST', this.form);
             this.saving = false;
+
             if (r.success !== false) {
                 RepairBox.toast('Repair created: ' + r.data.ticket_number, 'success');
                 window.location.href = '/repairs/' + r.data.id;
             }
-        },
+        }
     };
 }
 </script>
+
+<datalist id="repair-create-brand-list">
+    @foreach($brands as $brand)
+        <option value="{{ $brand }}"></option>
+    @endforeach
+</datalist>
 @endpush

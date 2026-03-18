@@ -12,7 +12,7 @@
             <div class="card" style="overflow:visible">
                 <div class="card-body py-3" style="overflow:visible">
                     <label class="text-xs font-medium text-gray-500 mb-1 block">Customer</label>
-                    <div x-show="!selectedCustomer" class="flex gap-2">
+                    <div x-show="!selectedCustomer" class="flex flex-col sm:flex-row gap-2">
                         <div class="relative flex-1" @click.away="custOpen = false">
                             <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                             <input x-model="custSearch" @focus="findCustomers(1)" @input.debounce.300ms="findCustomers(1)" type="text"
@@ -40,7 +40,7 @@
                             </div>
                         </div>
                         <button type="button" @click="showNewCust = true; newCust = {name:'', mobile_number:'', email:'', address:''}"
-                            class="btn-secondary text-sm px-3 whitespace-nowrap">
+                            class="btn-secondary text-sm px-3 whitespace-nowrap w-full sm:w-auto">
                             <svg class="w-4 h-4 inline mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
                             New
                         </button>
@@ -118,8 +118,8 @@
             </div>
 
             {{-- Search + Date range --}}
-            <div class="flex flex-wrap items-end gap-2">
-                <div class="relative flex-1" style="min-width:180px">
+            <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-end gap-2">
+                <div class="relative flex-1 min-w-0 sm:min-w-[180px]">
                     <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     <input x-model="filters.search" @input.debounce.400ms="page=1; load()" type="text"
                         class="form-input-custom pl-10 text-sm" placeholder="Search requests...">
@@ -127,15 +127,15 @@
                 <div>
                     <label class="text-xs font-medium text-gray-500 mb-0.5 block">From Date</label>
                     <input type="date" x-model="filters.date_from" @change="page=1; load()"
-                        class="form-input-custom text-sm" style="width:140px">
+                        class="form-input-custom text-sm w-full sm:w-[140px]">
                 </div>
                 <div>
                     <label class="text-xs font-medium text-gray-500 mb-0.5 block">To Date</label>
                     <input type="date" x-model="filters.date_to" @change="page=1; load()"
-                        class="form-input-custom text-sm" style="width:140px">
+                        class="form-input-custom text-sm w-full sm:w-[140px]">
                 </div>
                 <button x-show="filters.date_from || filters.date_to || filters.search" @click="clearFilters()"
-                    class="btn-secondary text-sm px-3 h-[38px]" title="Clear filters">
+                    class="btn-secondary text-sm px-3 h-[38px] w-full sm:w-auto" title="Clear filters">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
@@ -258,7 +258,7 @@
                         <label class="block text-xs font-medium text-gray-500 mb-1">Requested Items</label>
                         <div class="text-sm text-gray-800 whitespace-pre-wrap bg-white border rounded-lg px-4 py-3" x-text="viewing?.requested_items"></div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-0.5">Required By</label>
                             <p class="text-sm text-gray-800" x-text="viewing?.required_by ? fmtDate(viewing.required_by) : 'Not set'"></p>

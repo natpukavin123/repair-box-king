@@ -13,10 +13,10 @@
         <div class="lg:col-span-2 flex flex-col">
 
             {{-- Search bar + type selector --}}
-            <div class="mb-2 flex gap-2 items-center">
+            <div class="mb-3 flex flex-col sm:flex-row gap-2 sm:items-center">
                 <input x-model="searchQuery" @input.debounce.250ms="searchProducts()" type="text"
                     placeholder="Search by name, SKU, barcode..." class="form-input-custom flex-1" autofocus>
-                <div class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1">
+                <div class="inline-flex w-full sm:w-auto rounded-lg border border-gray-200 bg-gray-50 p-1 overflow-x-auto">
                     <button type="button"
                         @click="itemType = 'product'; searchProducts()"
                         :class="itemType === 'product' ? 'bg-white text-primary-700 shadow-sm border-primary-200' : 'text-gray-600 hover:text-gray-800'"
@@ -39,7 +39,7 @@
             </div>
 
             {{-- Filter bar (products only) --}}
-            <div x-show="itemType === 'product'" class="mb-2 flex flex-wrap gap-2 items-center">
+            <div x-show="itemType === 'product'" class="mb-3 flex flex-wrap gap-2 items-center">
 
                 {{-- Category multi-select --}}
                 <div class="relative" @click.away="catOpen = false">
@@ -145,7 +145,7 @@
 
             {{-- Product grid --}}
             <div x-show="itemType === 'product'"
-                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2.5 overflow-y-auto flex-1 max-h-[60vh] pb-1 pr-1 content-start auto-rows-max">
+                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2.5 overflow-y-auto flex-1 max-h-[50vh] lg:max-h-[60vh] pb-1 pr-1 content-start auto-rows-max">
                 <template x-for="p in searchResults" :key="p.id">
                     <button @click="addProduct(p)"
                         class="group relative bg-white rounded-lg text-left shadow-sm hover:shadow-lg border border-gray-100 hover:border-primary-300 transition-all duration-200 overflow-hidden flex flex-col cursor-pointer">
@@ -188,7 +188,7 @@
 
             {{-- Service grid --}}
             <div x-show="itemType === 'service'"
-                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2.5 overflow-y-auto flex-1 max-h-[60vh] pb-1 pr-1 content-start auto-rows-max">
+                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2.5 overflow-y-auto flex-1 max-h-[50vh] lg:max-h-[60vh] pb-1 pr-1 content-start auto-rows-max">
                 <template x-for="s in filteredServices" :key="s.id">
                     <button @click="openServiceModal(s)"
                         class="group relative bg-white rounded-lg text-left shadow-sm hover:shadow-lg border border-gray-100 hover:border-indigo-300 transition-all duration-200 overflow-hidden flex flex-col cursor-pointer">
@@ -242,12 +242,12 @@
         </div>
 
         {{-- RIGHT: Cart & Customer --}}
-        <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-3 order-first lg:order-none">
 
             {{-- Customer selector --}}
             <div class="card" style="overflow:visible">
                 <div class="card-body py-3" style="overflow:visible">
-                    <div class="flex gap-2 items-end">
+                    <div class="flex flex-col sm:flex-row gap-2 sm:items-end">
                         <div class="flex-1 relative" @click.away="custOpen = false">
                             <label class="text-xs font-medium text-gray-600">Customer</label>
                             <input x-model="customerSearch" @focus="findCustomers(1)" @input.debounce.300ms="findCustomers(1)" type="text"
@@ -263,7 +263,7 @@
                             </div>
                         </div>
                         <button type="button" @click="showAddCustomer = true; newCustomer = {name:'',mobile_number:'',email:'',address:''}"
-                            class="btn-primary text-sm px-3 py-2 whitespace-nowrap">+ New</button>
+                            class="btn-primary text-sm px-3 py-2 whitespace-nowrap w-full sm:w-auto">+ New</button>
                     </div>
                     <div x-show="custOpen && !custLoading && customerResults.length === 0"
                         class="text-xs text-gray-400 mt-1">No customers found - click <strong>+ New</strong> to add.</div>
@@ -285,7 +285,7 @@
                         class="text-xs text-red-400 hover:text-red-600">Clear</button>
                 </div>
 
-                <div class="flex-1 overflow-y-auto max-h-[38vh]">
+                <div class="flex-1 overflow-y-auto max-h-[34vh] lg:max-h-[38vh]">
                     <template x-for="(item, idx) in cart" :key="idx">
                         <div class="px-3 py-2 border-b last:border-0 hover:bg-gray-50/50 transition-colors">
                             <div class="flex items-start gap-2">
@@ -407,7 +407,7 @@
                                 class="text-red-400 hover:text-red-600 text-xs">Remove</button>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <div>
                                 <label class="text-xs text-gray-500 mb-1 block">Method</label>
                                 <select x-model="pay.payment_method" class="form-select-custom text-sm w-full">
@@ -511,7 +511,7 @@
                 </div>
 
                 {{-- Qty / Unit / Price --}}
-                <div class="grid grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Quantity</label>
                         <input x-model.number="svcModal.qty" type="number" min="1" step="1"

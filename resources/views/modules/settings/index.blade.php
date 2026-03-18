@@ -153,7 +153,85 @@
     {{-- General Settings --}}
     <div x-show="tab==='general'" class="card">
         <div class="card-header"><h3 class="text-lg font-semibold">General Settings</h3></div>
-        <div class="card-body">
+        <div class="card-body space-y-8">
+            <div class="rounded-[28px] border border-white/60 bg-white/80 p-5 shadow-[0_20px_60px_-28px_rgba(15,23,42,0.35)] backdrop-blur">
+                <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Appearance</p>
+                        <h4 class="mt-2 text-xl font-semibold text-slate-900">Theme Studio</h4>
+                        <p class="mt-1 max-w-2xl text-sm text-slate-500">Control the overall app mood, top-bar polish, and motion style. Changes preview immediately and are saved for all pages.</p>
+                    </div>
+                    <div class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600">
+                        <span class="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                        Live preview enabled
+                    </div>
+                </div>
+
+                <div class="mt-5 grid gap-4 xl:grid-cols-3">
+                    <template x-for="theme in appearanceThemes" :key="theme.id">
+                        <button
+                            type="button"
+                            @click="settings.ui_theme = theme.id; applyAppearancePreview()"
+                            class="group rounded-[24px] border p-4 text-left transition duration-300"
+                            :class="settings.ui_theme === theme.id ? 'border-slate-900 bg-slate-950 text-white shadow-[0_24px_70px_-30px_rgba(15,23,42,0.8)]' : 'border-slate-200 bg-white text-slate-900 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]'"
+                        >
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    <div class="text-sm font-semibold" x-text="theme.name"></div>
+                                    <div class="mt-1 text-xs" :class="settings.ui_theme === theme.id ? 'text-white/70' : 'text-slate-500'" x-text="theme.description"></div>
+                                </div>
+                                <div class="rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em]"
+                                     :class="settings.ui_theme === theme.id ? 'bg-white/10 text-white' : 'bg-slate-100 text-slate-500'">Theme</div>
+                            </div>
+
+                            <div class="mt-5 rounded-[20px] p-4" :style="theme.preview">
+                                <div class="flex items-center justify-between rounded-2xl border border-white/20 bg-white/10 px-3 py-3 backdrop-blur-sm">
+                                    <div>
+                                        <div class="text-[11px] uppercase tracking-[0.24em] text-white/70">Preview</div>
+                                        <div class="mt-1 text-sm font-semibold text-white">Dashboard Shell</div>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <span class="h-3 w-3 rounded-full bg-white/80"></span>
+                                        <span class="h-3 w-3 rounded-full bg-white/45"></span>
+                                        <span class="h-3 w-3 rounded-full bg-white/25"></span>
+                                    </div>
+                                </div>
+                                <div class="mt-4 grid grid-cols-3 gap-2">
+                                    <span class="h-16 rounded-2xl border border-white/10 bg-white/15"></span>
+                                    <span class="h-16 rounded-2xl border border-white/10 bg-black/10"></span>
+                                    <span class="h-16 rounded-2xl border border-white/10 bg-white/10"></span>
+                                </div>
+                            </div>
+                        </button>
+                    </template>
+                </div>
+
+                <div class="mt-5 grid gap-4 md:grid-cols-2">
+                    <div>
+                        <label class="form-label">Motion Style</label>
+                        <select x-model="settings.ui_motion" @change="applyAppearancePreview()" class="form-select-custom">
+                            <option value="enhanced">Enhanced</option>
+                            <option value="reduced">Reduced</option>
+                            <option value="none">Off</option>
+                        </select>
+                        <p class="mt-2 text-xs text-slate-500">Enhanced adds page transitions and hover movement. Reduced keeps the app calmer. Off removes decorative motion.</p>
+                    </div>
+                    <div class="rounded-[22px] border border-slate-200 bg-slate-50/80 p-4">
+                        <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Current Selection</p>
+                        <div class="mt-3 flex items-center justify-between rounded-2xl bg-white px-4 py-3 shadow-sm">
+                            <div>
+                                <div class="text-sm font-semibold text-slate-900" x-text="selectedTheme.name"></div>
+                                <div class="text-xs text-slate-500" x-text="selectedTheme.description"></div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">Motion</div>
+                                <div class="mt-1 text-sm font-semibold text-slate-700" x-text="formatMotionLabel(settings.ui_motion)"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <template x-for="key in settingKeys" :key="key">
                     <div>
@@ -702,7 +780,7 @@
                 {{-- Image Upload --}}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Service Images</label>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <p class="text-xs text-gray-500 mb-1.5 font-medium">Main Image</p>
                             <div class="border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-all"
@@ -841,6 +919,26 @@ function settingsPage() {
     return {
         tab: 'general', saving: false, iconFile: null, previewIcon: '',
         settings: {}, settingKeys: ['shop_name','shop_address','shop_phone','shop_email','shop_slogan','currency_symbol','invoice_prefix','repair_prefix','low_stock_threshold'],
+        appearanceThemes: [
+            {
+                id: 'atelier',
+                name: 'Atelier Glass',
+                description: 'Bright editorial workspace with refined glass panels.',
+                preview: 'background:linear-gradient(145deg,#0f172a 0%,#2563eb 42%,#8b5cf6 100%)'
+            },
+            {
+                id: 'graphite',
+                name: 'Graphite Luxe',
+                description: 'Smoky neutrals, brass accents, and executive contrast.',
+                preview: 'background:linear-gradient(145deg,#111827 0%,#334155 48%,#f59e0b 100%)'
+            },
+            {
+                id: 'solstice',
+                name: 'Solstice Warm',
+                description: 'Warm daylight palette with copper and sandstone tones.',
+                preview: 'background:linear-gradient(145deg,#7c2d12 0%,#ea580c 38%,#facc15 100%)'
+            }
+        ],
         notificationSettingKeys: ['notify_email_received','notify_email_completed','notify_whatsapp_received','notify_whatsapp_completed','whatsapp_api_url','whatsapp_api_token','whatsapp_from_number','whatsapp_template_received','whatsapp_template_completed'],
         serviceTypes: [], showStModal: false, stEditing: null, stForm: {},
         stImageFile: null, stImagePreview: null, stThumbFile: null, stThumbPreview: null,
@@ -865,7 +963,10 @@ function settingsPage() {
                 RepairBox.ajax('/recharge-providers'), RepairBox.ajax('/email-templates'),
                 RepairBox.ajax('/backups')
             ]);
-            if(s.data) this.settings = s.data; if(st.data) this.serviceTypes = st.data;
+            if (s.data) this.settings = { ui_theme: 'atelier', ui_motion: 'enhanced', ...s.data };
+            else this.settings = { ui_theme: 'atelier', ui_motion: 'enhanced' };
+            this.applyAppearancePreview();
+            if(st.data) this.serviceTypes = st.data;
             if(rp.data) this.rechargeProviders = rp.data; if(et.data) this.emailTemplates = et.data;
             if(b.data) this.backups = b.data;
         },
@@ -905,6 +1006,26 @@ function settingsPage() {
             this.testResult = { success: r.success !== false, message: r.message || (r.success !== false ? 'Sent successfully!' : 'Failed to send.') };
         },
         formatLabel(key) { return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); },
+        formatMotionLabel(value) {
+            return ({ enhanced: 'Enhanced', reduced: 'Reduced', none: 'Off' })[value] || 'Enhanced';
+        },
+        get selectedTheme() {
+            return this.appearanceThemes.find(theme => theme.id === this.settings.ui_theme) || this.appearanceThemes[0];
+        },
+        applyAppearancePreview() {
+            const root = document.documentElement;
+            const body = document.body;
+            const theme = this.settings.ui_theme || 'atelier';
+            const motion = this.settings.ui_motion || 'enhanced';
+
+            root.dataset.theme = theme;
+            root.dataset.motion = motion;
+
+            if (body) {
+                body.dataset.theme = theme;
+                body.dataset.motion = motion;
+            }
+        },
         getIconUrl() {
             const icon = this.settings.shop_icon;
             if (!icon) return '';

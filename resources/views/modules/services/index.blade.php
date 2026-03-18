@@ -1,16 +1,26 @@
 @extends('layouts.app')
 @section('page-title', 'Services')
-@section('content-class', 'flex flex-col')
+@section('content-class', 'workspace-content')
 
 @section('content')
-<div x-data="servicesPage()" x-init="load()" class="page-list">
-    <div class="flex items-center justify-end mb-4">
-        <a href="/services/create" class="btn-primary"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> New Service</a>
-    </div>
-    <div class="card">
-        <div class="card-body p-0">
-            <div class="table-scroll">
-                <table class="data-table">
+<div x-data="servicesPage()" x-init="load()" class="workspace-screen">
+    <x-ui.action-bar title="Service Ledger" description="Track completed and pending services in the same contained work area used across the app.">
+        <a href="/services/create" class="btn-primary inline-flex w-full items-center justify-center sm:w-auto"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> New Service</a>
+    </x-ui.action-bar>
+
+    <x-ui.filter-bar>
+        <div class="workspace-filter-meta">Showing <span x-text="items.length"></span> services</div>
+    </x-ui.filter-bar>
+
+    <x-ui.table-card>
+        <x-slot:header>
+            <div>
+                <h3 class="text-base font-semibold text-slate-900">Service Entries</h3>
+                <p class="text-sm text-slate-500">Charges, vendor cost, and profit stay attached to the table below.</p>
+            </div>
+        </x-slot:header>
+
+        <table class="data-table">
                     <thead class="sticky top-0 z-10 bg-gray-50"><tr><th>#</th><th>Type</th><th>Customer</th><th>Description</th><th>Charge</th><th>Vendor Cost</th><th>Profit</th><th>Date</th><th>Actions</th></tr></thead>
                     <tbody>
                         <template x-for="(s, i) in items" :key="s.id">
@@ -47,9 +57,7 @@
                         </template>
                     </tbody>
                 </table>
-            </div>
-        </div>
-    </div>
+    </x-ui.table-card>
 
     <div x-show="showModal" class="modal-overlay" x-cloak @click.self="if(!showAddCust) showModal = false">
         <div class="modal-container modal-lg">
@@ -61,7 +69,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Customer *</label>
-                        <div class="flex gap-2">
+                        <div class="flex flex-col gap-2 sm:flex-row">
                             <div class="relative flex-1" @click.away="custOpen = false">
                                 <input x-model="custSearch" @focus="findCust(1)" @input.debounce.300ms="findCust(1)" type="text" class="form-input-custom" placeholder="Search customer...">
                                 <div x-show="custOpen && custResults.length > 0" x-cloak class="absolute left-0 right-0 mt-1 border rounded-lg bg-white shadow-lg overflow-hidden" style="z-index:50">
@@ -71,7 +79,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <button type="button" @click="showAddCust = true; newCust = {name:'', mobile_number:'', email:'', address:''}" class="btn-primary text-sm px-3 whitespace-nowrap">+ New</button>
+                            <button type="button" @click="showAddCust = true; newCust = {name:'', mobile_number:'', email:'', address:''}" class="btn-primary text-sm px-3 whitespace-nowrap w-full sm:w-auto">+ New</button>
                         </div>
                         <div x-show="custOpen && !custLoading && custResults.length === 0" class="text-xs text-gray-400 mt-1">No customers found. Click <strong>+ New</strong> to add.</div>
                         <div x-show="selCust" class="mt-1"><span class="badge badge-primary" x-text="selCust?.name"></span> <button @click="selCust = null; form.customer_id = null" class="text-red-400 text-xs">&times;</button></div>
@@ -87,7 +95,7 @@
                     <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Description</label><textarea x-model="form.description" class="form-input-custom" rows="2"></textarea></div>
                 </div>
             </div>
-            <div class="modal-footer"><button @click="showModal = false" class="btn-secondary">Cancel</button><button @click="save()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span>Update</button></div>
+            <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end"><button @click="showModal = false" class="btn-secondary w-full sm:w-auto">Cancel</button><button @click="save()" class="btn-primary w-full sm:w-auto" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span>Update</button></div>
         </div>
     </div>
 
@@ -103,7 +111,7 @@
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Address</label><input x-model="newCust.address" type="text" class="form-input-custom"></div>
                 </div>
             </div>
-            <div class="modal-footer"><button type="button" @click="showAddCust = false" class="btn-secondary">Cancel</button><button type="button" @click.prevent="saveNewCust()" class="btn-primary" :disabled="!newCust.name.trim() || !/^\d{10}$/.test(newCust.mobile_number) || (newCust.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCust.email))">Save & Select</button></div>
+            <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end"><button type="button" @click="showAddCust = false" class="btn-secondary w-full sm:w-auto">Cancel</button><button type="button" @click.prevent="saveNewCust()" class="btn-primary w-full sm:w-auto" :disabled="!newCust.name.trim() || !/^\d{10}$/.test(newCust.mobile_number) || (newCust.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCust.email))">Save & Select</button></div>
         </div>
     </div>
 </div>
