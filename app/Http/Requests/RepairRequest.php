@@ -18,7 +18,6 @@ class RepairRequest extends FormRequest
             'problem_description' => 'required|string',
             'estimated_cost' => 'nullable|numeric|min:0',
             'expected_delivery_date' => 'nullable|date',
-            'technician_id' => 'nullable|exists:users,id',
         ];
     }
 }

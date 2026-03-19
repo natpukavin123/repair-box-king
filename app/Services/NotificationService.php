@@ -15,7 +15,7 @@ class NotificationService
 
     public function sendRepairReceived(Repair $repair): void
     {
-        $repair->loadMissing('customer', 'technician');
+        $repair->loadMissing('customer');
         $vars = $this->buildVars($repair);
 
         if (Setting::getValue('notify_email_received', '1') === '1') {
@@ -30,7 +30,7 @@ class NotificationService
 
     public function sendRepairCompleted(Repair $repair): void
     {
-        $repair->loadMissing('customer', 'technician');
+        $repair->loadMissing('customer');
         $vars = $this->buildVars($repair);
 
         if (Setting::getValue('notify_email_completed', '1') === '1') {
@@ -176,7 +176,6 @@ class NotificationService
             'expected_delivery_date' => $repair->expected_delivery_date
                 ? $repair->expected_delivery_date->format('d M Y')
                 : 'TBD',
-            'technician_name'     => $repair->technician?->name ?? 'Our Technician',
             'status'              => ucfirst(str_replace('_', ' ', $repair->status ?? '')),
             'shop_name'           => $shopName,
             'shop_phone'          => $shopPhone,

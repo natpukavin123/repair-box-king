@@ -23,7 +23,6 @@ class RepairService
                 'problem_description' => $data['problem_description'] ?? null,
                 'estimated_cost' => $data['estimated_cost'] ?? 0,
                 'expected_delivery_date' => $data['expected_delivery_date'] ?? null,
-                'technician_id' => $data['technician_id'] ?? null,
                 'status' => 'received',
             ]);
 
@@ -47,7 +46,7 @@ class RepairService
 
             ActivityLog::log('create', 'repairs', $repair->id, "Created repair {$repair->ticket_number}");
 
-            return $repair->load('customer', 'technician', 'payments');
+            return $repair->load('customer', 'payments');
         });
 
         // Fire received notification outside the transaction so a mail failure won't rollback
@@ -101,7 +100,7 @@ class RepairService
 
             ActivityLog::log('update', 'repairs', $repair->id, "Updated repair {$repair->ticket_number} to {$status}");
 
-            return $repair->fresh('customer', 'technician', 'statusHistory.updater', 'parts.part', 'payments');
+            return $repair->fresh('customer', 'statusHistory.updater', 'parts.part', 'payments');
         });
 
         // Fire completed notification outside the transaction so a mail failure won't rollback
@@ -213,7 +212,7 @@ class RepairService
 
             ActivityLog::log('create', 'repairs', $dup->id, "Created duplicate of {$repair->ticket_number}");
 
-            return $dup->load('customer', 'technician');
+            return $dup->load('customer');
         });
     }
 }

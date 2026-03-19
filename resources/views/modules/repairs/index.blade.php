@@ -22,7 +22,7 @@
         </div>
     </x-ui.action-bar>
 
-    <x-ui.filter-bar class="flex-col items-stretch gap-3">
+    <x-ui.filter-bar class="flex-col items-stretch gap-3" style="position: relative; z-index: 50;">
         <div class="w-full space-y-4">
             <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                 <div class="relative min-w-0 flex-1 xl:max-w-none">
@@ -39,48 +39,43 @@
                         <span x-text="showAdvancedFilters ? 'Hide filters' : 'More filters'"></span>
                     </button>
 
-                    <button x-show="searchQuery || selectedStatuses.length || techFilter || dateFrom || dateTo || paymentFilter" type="button" @click="resetFilters()" class="inline-flex h-11 items-center justify-center rounded-xl px-2 text-sm font-medium text-red-600 transition hover:text-red-700">
-                        Clear all
+                    <button x-show="searchQuery || selectedStatuses.length || dateFrom || dateTo || paymentFilter" type="button" @click="resetFilters()" class="inline-flex h-11 items-center justify-center rounded-xl px-3 text-sm font-medium text-red-600 transition hover:bg-red-50 hover:text-red-700">
+                        Reset filters
                     </button>
                 </div>
             </div>
 
-            <div class="overflow-x-auto border-t border-slate-200 pt-3 pb-1">
-                <div class="flex min-w-max items-center gap-2">
-                    <button type="button" @click="clearStatusSelection()"
-                        class="min-w-[8.5rem] rounded-xl border px-3 py-2.5 text-left transition-colors"
-                        :class="selectedStatuses.length === 0 ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'">
-                        <div class="text-[11px] font-semibold uppercase tracking-[0.16em]" :class="selectedStatuses.length === 0 ? 'text-white/70' : 'text-slate-400'">All Repairs</div>
-                        <div class="mt-1.5 flex items-center justify-between gap-2">
-                            <span class="text-sm font-semibold">Everything</span>
-                            <span class="text-base font-bold leading-none" x-text="items.length"></span>
-                        </div>
+            <div class="relative mt-1 w-fit" x-data="{ statusOpen: false }" @click.away="statusOpen = false">
+                <button type="button" @click="statusOpen = !statusOpen" class="form-input-custom inline-flex h-11 w-[18rem] items-center justify-between gap-3 px-4 text-sm sm:w-[20rem]">
+                    <span class="truncate" x-text="statusSummaryLabel()"></span>
+                    <div class="flex items-center gap-2">
+                        <span x-show="selectedStatuses.length" class="inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-primary-600 px-1.5 text-[10px] font-bold text-white" x-text="selectedStatuses.length"></span>
+                        <svg class="h-4 w-4 text-slate-400 transition-transform" :class="statusOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </div>
+                </button>
+                <div x-show="statusOpen" x-transition.opacity.duration.150ms class="absolute left-0 top-full mt-1.5 w-full min-w-[16rem] rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl" style="z-index: 9999;" x-cloak>
+                    <button type="button" @click="clearStatusSelection()" class="flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-left text-sm transition-colors" :class="selectedStatuses.length === 0 ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-50'">
+                        <span class="font-medium">All Statuses</span>
+                        <span class="text-xs font-bold" x-text="items.length"></span>
                     </button>
-
                     <template x-for="option in statusFilterOptions" :key="option.key">
-                        <button type="button" @click="toggleStatusSelection(option.key)"
-                            class="min-w-[7.75rem] rounded-xl border px-3 py-2.5 text-left transition-colors"
-                            :class="isStatusSelected(option.key) ? option.activeCardClass : option.inactiveCardClass">
-                            <div class="text-[11px] font-semibold uppercase tracking-[0.16em]" :class="isStatusSelected(option.key) ? option.activeEyebrowClass : 'text-slate-400'">Status</div>
-                            <div class="mt-1.5 flex items-center justify-between gap-2">
-                                <span class="text-sm font-semibold" x-text="option.label"></span>
-                                <span class="text-base font-bold leading-none" x-text="statusCount(option.key)"></span>
-                            </div>
+                        <button type="button" @click="toggleStatusSelection(option.key)" class="flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-left text-sm transition-colors" :class="isStatusSelected(option.key) ? option.activeCardClass : 'text-slate-700 hover:bg-slate-50'">
+                            <span class="flex items-center gap-2 font-medium">
+                                <span class="inline-block h-2 w-2 rounded-full" :class="statusDotClass(option.key)"></span>
+                                <span x-text="option.label"></span>
+                            </span>
+                            <span class="text-xs font-bold" x-text="statusCount(option.key)"></span>
                         </button>
                     </template>
+                    <div x-show="selectedStatuses.length" class="mt-1 border-t border-slate-100 pt-1">
+                        <button type="button" @click="clearStatusSelection(); statusOpen = false" class="flex w-full items-center justify-center rounded-xl px-3.5 py-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-50">
+                            Clear statuses
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-        <div x-show="showAdvancedFilters" x-collapse class="grid w-full self-stretch grid-cols-1 gap-3 border-t border-slate-200 pt-3 sm:grid-cols-2 md:grid-cols-4">
-            <div>
-                <label class="text-xs font-medium text-gray-500 mb-1 block">Technician</label>
-                <select x-model="techFilter" @change="load()" class="form-select-custom text-sm w-full">
-                    <option value="">All Technicians</option>
-                    @foreach($technicians as $tech)
-                        <option value="{{ $tech->id }}">{{ $tech->name }}</option>
-                    @endforeach
-                </select>
-            </div>
+        <div x-show="showAdvancedFilters" x-collapse class="grid w-full self-stretch grid-cols-1 gap-3 border-t border-slate-200 pt-3 sm:grid-cols-3">
             <div>
                 <label class="text-xs font-medium text-gray-500 mb-1 block">From Date</label>
                 <input x-model="dateFrom" @change="load()" type="date" class="form-input-custom text-sm w-full">
@@ -97,12 +92,6 @@
                     <option value="unpaid">Unpaid</option>
                 </select>
             </div>
-        </div>
-        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
-            <button x-show="searchQuery || selectedStatuses.length || techFilter || dateFrom || dateTo || paymentFilter" @click="resetFilters()" class="text-xs text-red-600 hover:text-red-800 font-medium inline-flex items-center gap-1 sm:hidden">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                Clear All
-            </button>
         </div>
     </x-ui.filter-bar>
 
@@ -267,7 +256,6 @@ function repairsPage() {
 
         searchQuery: '',
         selectedStatuses: [],
-        techFilter: '',
         dateFrom: '',
         dateTo: '',
         paymentFilter: '',
@@ -318,12 +306,11 @@ function repairsPage() {
             const p = new URLSearchParams(window.location.search);
             if (p.has('search')) this.searchQuery = p.get('search');
             if (p.has('status')) this.selectedStatuses = p.get('status').split(',').filter(Boolean);
-            if (p.has('technician')) this.techFilter = p.get('technician');
             if (p.has('from')) this.dateFrom = p.get('from');
             if (p.has('to')) this.dateTo = p.get('to');
             if (p.has('payment')) this.paymentFilter = p.get('payment');
             if (p.has('view')) this.viewMode = p.get('view');
-            if (this.techFilter || this.dateFrom || this.dateTo || this.paymentFilter) this.showAdvancedFilters = true;
+            if (this.dateFrom || this.dateTo || this.paymentFilter) this.showAdvancedFilters = true;
             await this.load();
         },
 
@@ -331,7 +318,6 @@ function repairsPage() {
             const params = new URLSearchParams();
             if (this.searchQuery) params.set('search', this.searchQuery);
             if (this.selectedStatuses.length) params.set('status', this.selectedStatuses.join(','));
-            if (this.techFilter) params.set('technician', this.techFilter);
             if (this.dateFrom) params.set('from', this.dateFrom);
             if (this.dateTo) params.set('to', this.dateTo);
             if (this.paymentFilter) params.set('payment', this.paymentFilter);
@@ -344,7 +330,6 @@ function repairsPage() {
             this.loading = true;
             const params = new URLSearchParams();
             if (this.searchQuery) params.set('search', this.searchQuery);
-            if (this.techFilter) params.set('technician_id', this.techFilter);
             if (this.dateFrom) params.set('date_from', this.dateFrom);
             if (this.dateTo) params.set('date_to', this.dateTo);
             if (this.paymentFilter) params.set('payment_status', this.paymentFilter);
@@ -374,7 +359,6 @@ function repairsPage() {
         resetFilters() {
             this.searchQuery = '';
             this.selectedStatuses = [];
-            this.techFilter = '';
             this.dateFrom = '';
             this.dateTo = '';
             this.paymentFilter = '';
@@ -383,6 +367,17 @@ function repairsPage() {
         },
         isStatusSelected(status) {
             return this.selectedStatuses.includes(status);
+        },
+        statusSummaryLabel() {
+            if (this.selectedStatuses.length === 0) {
+                return 'All Statuses (' + this.items.length + ')';
+            }
+
+            if (this.selectedStatuses.length === 1) {
+                return this.statusLabel(this.selectedStatuses[0]);
+            }
+
+            return this.selectedStatuses.length + ' statuses selected';
         },
 
         // Status helpers
@@ -415,6 +410,10 @@ function repairsPage() {
                 cancelled: 'border-red-100 bg-red-50/70 text-red-700 hover:border-red-200',
             };
             return map[status] || 'border-slate-200 bg-white text-slate-700 hover:border-slate-300';
+        },
+        statusDotClass(status) {
+            const map = { received: 'bg-blue-500', in_progress: 'bg-amber-500', completed: 'bg-emerald-500', payment: 'bg-purple-500', closed: 'bg-green-600', cancelled: 'bg-red-500' };
+            return map[status] || 'bg-slate-400';
         },
         statusCountActiveClass(status) {
             const map = {

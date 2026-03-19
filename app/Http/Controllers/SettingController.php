@@ -299,7 +299,7 @@ class SettingController extends Controller
             'channel' => 'required|in:email,whatsapp,both',
         ]);
 
-        $repair = \App\Models\Repair::with('customer', 'technician')
+        $repair = \App\Models\Repair::with('customer')
             ->where('ticket_number', $data['ticket'])
             ->first();
 

@@ -244,10 +244,6 @@
                         <div class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1">Expected Delivery</div>
                         <div class="text-sm text-gray-600" x-text="formatDate(repair.expected_delivery_date)"></div>
                     </div>
-                    <div x-show="repair.technician">
-                        <div class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1">Technician</div>
-                        <div class="text-sm text-gray-600" x-text="repair.technician?.name || '-'"></div>
-                    </div>
                     <div x-show="repair.completed_at">
                         <div class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1">Completed At</div>
                         <div class="text-sm text-gray-600" x-text="formatDateTime(repair.completed_at)"></div>
@@ -1109,7 +1105,7 @@
                             </div>
                             <div>
                                 <h4 class="text-base font-semibold text-slate-900">Issue summary</h4>
-                                <p class="text-sm text-slate-500">Keep the intake description accurate for technicians and customer updates.</p>
+                                <p class="text-sm text-slate-500">Keep the intake description accurate for customer updates.</p>
                             </div>
                         </div>
 
@@ -1118,7 +1114,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
+                <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
                     <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Estimated Cost</label>
                         <input x-model="editForm.estimated_cost" type="number" step="0.01" class="form-input-custom w-full text-sm" placeholder="0.00">
@@ -1126,15 +1122,6 @@
                     <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
                         <label class="block text-sm font-semibold text-slate-700 mb-2">Expected Delivery Date</label>
                         <input x-model="editForm.expected_delivery_date" type="date" class="form-input-custom w-full text-sm">
-                    </div>
-                    <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Technician</label>
-                        <select x-model="editForm.technician_id" class="form-select-custom w-full text-sm">
-                            <option value="">Unassigned</option>
-                            @foreach($technicians as $tech)
-                                <option value="{{ $tech->id }}">{{ $tech->name }}</option>
-                            @endforeach
-                        </select>
                     </div>
                 </div>
             </div>
@@ -1208,7 +1195,7 @@ function repairDetail() {
         statusForm: { status: '', notes: '', cancel_reason: '', confirm: false },
         pendingTransition: null,
 
-        editForm: { customer_id: '', technician_id: '', device_brand: '', device_model: '', imei: '', problem_description: '', estimated_cost: '', expected_delivery_date: '' },
+        editForm: { customer_id: '', device_brand: '', device_model: '', imei: '', problem_description: '', estimated_cost: '', expected_delivery_date: '' },
         editSelectedCustomer: null,
         editCustSearch: '', editCustResults: [], editCustOpen: false, editCustHasMore: false, editCustPage: 1, editCustLoading: false,
 
@@ -1254,7 +1241,6 @@ function repairDetail() {
         syncEditForm() {
             this.editForm = {
                 customer_id: this.repair.customer_id || '',
-                technician_id: this.repair.technician_id || '',
                 device_brand: this.repair.device_brand || '',
                 device_model: this.repair.device_model || '',
                 imei: this.repair.imei || '',

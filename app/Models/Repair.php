@@ -47,7 +47,7 @@ class Repair extends Model
     protected $fillable = [
         'ticket_number', 'tracking_id', 'customer_id', 'device_brand',
         'device_model', 'imei', 'problem_description', 'estimated_cost',
-        'service_charge', 'expected_delivery_date', 'technician_id', 'status',
+        'service_charge', 'expected_delivery_date', 'status',
         'is_locked', 'parent_id', 'record_type', 'cancel_reason',
         'completed_at', 'closed_at',
     ];
@@ -64,11 +64,6 @@ class Repair extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class);
-    }
-
-    public function technician()
-    {
-        return $this->belongsTo(User::class, 'technician_id');
     }
 
     public function statusHistory()

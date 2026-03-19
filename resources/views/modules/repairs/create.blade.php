@@ -159,7 +159,7 @@
                         <button type="button" @click="optionalOpen = !optionalOpen" class="flex w-full items-center justify-between gap-4 px-5 py-4 text-left hover:bg-slate-50 transition">
                             <div>
                                 <div class="text-sm font-semibold text-slate-900">Optional Details</div>
-                                <div class="mt-1 text-xs text-slate-500">Technician, estimate, delivery date, and advance payment.</div>
+                                <div class="mt-1 text-xs text-slate-500">Estimate, delivery date, and advance payment.</div>
                             </div>
                             <svg class="w-5 h-5 text-slate-400 transition-transform" :class="optionalOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -171,15 +171,6 @@
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-2">Expected Delivery Date</label>
                                     <input x-model="form.expected_delivery_date" type="date" class="form-input-custom w-full text-sm">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-2">Technician</label>
-                                    <select x-model="form.technician_id" class="form-select-custom w-full text-sm">
-                                        <option value="">Unassigned</option>
-                                        @foreach($technicians as $tech)
-                                            <option value="{{ $tech->id }}">{{ $tech->name }}</option>
-                                        @endforeach
-                                    </select>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-2">Estimated Cost</label>
@@ -287,7 +278,7 @@ function createRepairPage() {
         steps: [
             { id: 1, title: 'Customer', description: 'Select the customer for this repair ticket.' },
             { id: 2, title: 'Device & Issue', description: 'Enter the device details and the customer complaint.' },
-            { id: 3, title: 'Optional Details', description: 'Add technician, estimate, delivery date, or advance if needed.' },
+            { id: 3, title: 'Optional Details', description: 'Add estimate, delivery date, or advance if needed.' },
         ],
 
         get currentStepMeta() {
@@ -307,7 +298,6 @@ function createRepairPage() {
 
         form: {
             customer_id: null,
-            technician_id: '',
             device_brand: '',
             device_model: '',
             imei: '',

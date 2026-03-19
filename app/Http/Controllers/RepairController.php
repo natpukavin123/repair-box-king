@@ -13,7 +13,7 @@ class RepairController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            $query = Repair::with('customer', 'technician', 'parts.part', 'payments', 'repairServices')
+            $query = Repair::with('customer', 'parts.part', 'payments', 'repairServices')
                 ->when(request('search'), function ($q, $s) {
                     $q->where(function ($q2) use ($s) {
                         $q2->where('ticket_number', 'like', "%{$s}%")
@@ -25,7 +25,6 @@ class RepairController extends Controller
                     });
                 })
                 ->when(request('status'), fn($q, $s) => $q->where('status', $s))
-                ->when(request('technician_id'), fn($q, $id) => $q->where('technician_id', $id))
                 ->when(request('date_from'), fn($q, $d) => $q->whereDate('created_at', '>=', $d))
                 ->when(request('date_to'), fn($q, $d) => $q->whereDate('created_at', '<=', $d))
                 ->when(request('payment_status'), function($q, $ps) {
@@ -74,16 +73,14 @@ class RepairController extends Controller
             return response()->json($data);
         }
 
-        $technicians = \App\Models\User::select('id', 'name')->get();
         $statusMeta = Repair::STATUS_META;
-        return view('modules.repairs.index', compact('technicians', 'statusMeta'));
+        return view('modules.repairs.index', compact('statusMeta'));
     }
 
     public function create()
     {
-        $technicians = \App\Models\User::select('id', 'name')->get();
         $brands = \App\Models\Brand::where('status', 'active')->orderBy('name')->pluck('name');
-        return view('modules.repairs.create', compact('technicians', 'brands'));
+        return view('modules.repairs.create', compact('brands'));
     }
 
     public function store(RepairRequest $request, RepairService $service)
@@ -100,7 +97,7 @@ class RepairController extends Controller
 
     public function show(Repair $repair)
     {
-        $repair->load('customer', 'technician', 'statusHistory.updater', 'parts.part', 'payments', 'repairVendors.vendor', 'repairServices.vendor', 'repairServices.serviceType', 'childRepairs', 'repairReturns.items');
+        $repair->load('customer', 'statusHistory.updater', 'parts.part', 'payments', 'repairVendors.vendor', 'repairServices.vendor', 'repairServices.serviceType', 'childRepairs', 'repairReturns.items');
         $repair->is_fully_paid = $repair->is_fully_paid;
         $repair->grand_total = $repair->grand_total;
         $repair->total_paid = $repair->total_paid;
@@ -141,9 +138,8 @@ class RepairController extends Controller
         }
 
         $statusMeta = Repair::STATUS_META;
-        $technicians = \App\Models\User::select('id', 'name')->get();
         $brands = \App\Models\Brand::where('status', 'active')->orderBy('name')->pluck('name');
-        return view('modules.repairs.show', compact('repair', 'statusMeta', 'technicians', 'brands'));
+        return view('modules.repairs.show', compact('repair', 'statusMeta', 'brands'));
     }
 
     public function update(RepairRequest $request, Repair $repair)
@@ -153,7 +149,7 @@ class RepairController extends Controller
         }
 
         $repair->update($request->validated());
-        $repair->load('customer', 'technician', 'statusHistory.updater', 'parts.part', 'payments', 'repairVendors.vendor', 'repairServices.vendor', 'repairServices.serviceType', 'childRepairs', 'repairReturns.items');
+        $repair->load('customer', 'statusHistory.updater', 'parts.part', 'payments', 'repairVendors.vendor', 'repairServices.vendor', 'repairServices.serviceType', 'childRepairs', 'repairReturns.items');
 
         return response()->json(['success' => true, 'data' => $repair, 'message' => 'Repair intake details updated']);
     }
@@ -412,19 +408,19 @@ class RepairController extends Controller
 
     public function print(Repair $repair)
     {
-        $repair->load('customer', 'technician', 'parts.part', 'payments', 'repairServices', 'statusHistory');
+        $repair->load('customer', 'parts.part', 'payments', 'repairServices', 'statusHistory');
         return view('modules.repairs.print', compact('repair'));
     }
 
     public function invoice(Repair $repair)
     {
-        $repair->load('customer', 'technician', 'parts.part', 'payments', 'repairServices', 'repairReturns.items');
+        $repair->load('customer', 'parts.part', 'payments', 'repairServices', 'repairReturns.items');
         return view('modules.repairs.invoice', compact('repair'));
     }
 
     public function costBreakdown(Repair $repair)
     {
-        $repair->load('customer', 'technician', 'parts.part', 'payments', 'repairServices.vendor', 'repairServices.serviceType');
+        $repair->load('customer', 'parts.part', 'payments', 'repairServices.vendor', 'repairServices.serviceType');
         return view('modules.repairs.cost-breakdown', compact('repair'));
     }
 }
