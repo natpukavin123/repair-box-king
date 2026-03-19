@@ -3,8 +3,15 @@
 
 @section('content')
 <div x-data="activityLogsPage()" x-init="load()">
+    <div class="page-header-inline">
+        <div class="page-header-inline-copy">
+            <h2 class="page-header-inline-title">Activity Logs</h2>
+            <p class="page-header-inline-description">Review system activity with module-level filtering in a tighter audit view.</p>
+        </div>
+    </div>
+
     {{-- Filters --}}
-    <div class="flex flex-wrap items-end gap-4 mb-6">
+    <div class="secondary-tabs items-end mb-6">
         <div><label class="block text-sm font-medium text-gray-700 mb-1">Module</label>
             <select x-model="filterModule" @change="page=1;load()" class="form-select-custom">
                 <option value="">All Modules</option>

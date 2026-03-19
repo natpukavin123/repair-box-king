@@ -1,148 +1,249 @@
 @extends('layouts.app')
 @section('page-title', 'Purchase Orders')
+@section('content-class', 'workspace-content')
 
 @section('content')
-<div x-data="poPage()" x-init="init()" class="h-full">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
+<style>
+    .po-workspace {
+        gap: 0.7rem;
+    }
 
-        {{-- ===== LEFT: New PO Request Form ===== --}}
-        <div class="lg:col-span-1 flex flex-col gap-3">
+    .po-workspace .po-toolbar,
+    .po-workspace .po-filterbar {
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: 1.2rem;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(244, 247, 255, 0.88));
+        box-shadow: 0 18px 42px -34px rgba(15, 23, 42, 0.34);
+        backdrop-filter: blur(16px);
+    }
 
-            {{-- Customer Search (POS-style) --}}
-            <div class="card" style="overflow:visible">
-                <div class="card-body py-3" style="overflow:visible">
-                    <label class="text-xs font-medium text-gray-500 mb-1 block">Customer</label>
-                    <div x-show="!selectedCustomer" class="flex flex-col sm:flex-row gap-2">
-                        <div class="relative flex-1" @click.away="custOpen = false">
-                            <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                            <input x-model="custSearch" @focus="findCustomers(1)" @input.debounce.300ms="findCustomers(1)" type="text"
-                                class="form-input-custom pl-10 text-sm" placeholder="Search by name or mobile...">
-                            {{-- Search Results Dropdown --}}
-                            <div x-show="custOpen && custResults.length > 0" x-cloak
-                                class="absolute left-0 right-0 mt-1 border rounded-lg bg-white shadow-lg overflow-hidden" style="z-index:50">
-                                <div class="max-h-48 overflow-y-auto" @scroll="handleCustScroll($event)">
-                                    <template x-for="c in custResults" :key="c.id">
-                                        <button @click="selectCustomer(c)"
-                                            class="w-full text-left px-4 py-2.5 hover:bg-primary-50 text-sm border-b last:border-b-0 flex items-center gap-3 transition-colors">
-                                            <div class="w-8 h-8 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center text-xs font-bold"
-                                                x-text="c.name.charAt(0).toUpperCase()"></div>
-                                            <div>
-                                                <div class="font-medium text-gray-800" x-text="c.name"></div>
-                                                <div class="text-xs text-gray-400" x-text="c.mobile_number"></div>
-                                            </div>
-                                        </button>
-                                    </template>
-                                    <div x-show="custLoading" class="px-4 py-2.5 text-xs text-gray-400 text-center flex items-center justify-center gap-2">
-                                        <svg class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                                        Loading…
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="button" @click="openNewCustModal()"
-                            class="btn-secondary text-sm px-3 whitespace-nowrap w-full sm:w-auto">
-                            <svg class="w-4 h-4 inline mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
-                            New
-                        </button>
-                    </div>
-                    <div x-show="!selectedCustomer && custOpen && !custLoading && custResults.length === 0"
-                        class="text-xs text-gray-400 mt-1">No customers found — click <strong>New</strong> to add manually.</div>
+    .po-workspace .po-toolbar {
+        padding: 0.55rem;
+    }
 
-                    {{-- Selected Customer Badge --}}
-                    <div x-show="selectedCustomer" x-cloak class="mt-2 flex items-center gap-2 bg-primary-50 border border-primary-200 rounded-lg px-3 py-2">
-                        <div class="w-8 h-8 bg-primary-500 text-white rounded-full flex items-center justify-center text-xs font-bold"
-                            x-text="selectedCustomer?.name?.charAt(0).toUpperCase()"></div>
-                        <div class="flex-1 min-w-0">
-                            <div class="text-sm font-semibold text-gray-800 truncate" x-text="selectedCustomer?.name"></div>
-                            <div class="text-xs text-gray-500" x-text="selectedCustomer?.mobile_number"></div>
-                        </div>
-                        <button @click="clearCustomer()" class="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
+    .po-workspace .po-filterbar {
+        padding: 0.45rem;
+        gap: 0.45rem;
+    }
 
-            {{-- PO Request Details --}}
-            <div class="card flex-1 flex flex-col">
-                <div class="card-header bg-primary-50 border-b border-primary-100 py-2">
-                    <h3 class="text-base font-semibold text-primary-800 flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                        New PO Request
-                    </h3>
-                </div>
-                <div class="card-body flex-1 flex flex-col">
-                    <div class="space-y-3 flex-1">
-                        <div>
-                            <label class="text-xs font-medium text-gray-600">Requested Products / Parts *</label>
-                            <textarea x-model="form.requested_items" rows="5" class="form-input-custom text-sm mt-0.5"
-                                placeholder="e.g. iPhone 14 display&#10;Samsung A14 battery × 2&#10;Type-C fast charger"></textarea>
-                        </div>
-                        <div>
-                            <label class="text-xs font-medium text-gray-600">Required By</label>
-                            <input type="date" x-model="form.required_by" class="form-input-custom text-sm mt-0.5">
-                        </div>
-                        <div>
-                            <label class="text-xs font-medium text-gray-600">Notes</label>
-                            <textarea x-model="form.notes" rows="2" class="form-input-custom text-sm mt-0.5"
-                                placeholder="Budget, color, any extra detail..."></textarea>
-                        </div>
-                    </div>
-                    <button @click="save()" class="btn-primary w-full py-3 text-base font-semibold mt-4" :disabled="saving">
-                        <span x-show="saving" class="spinner mr-2"></span>
-                        <svg x-show="!saving" class="w-4 h-4 inline mr-1.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        Save PO Request
-                    </button>
-                </div>
-            </div>
-        </div>
+    .po-workspace .po-search-input,
+    .po-workspace .po-form-input,
+    .po-workspace .po-filter-control {
+        min-height: 2.7rem;
+        border-radius: 0.95rem;
+        border-color: rgba(148, 163, 184, 0.22);
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 12px 28px -24px rgba(15, 23, 42, 0.28);
+    }
 
-        {{-- ===== RIGHT: PO Request List ===== --}}
-        <div class="lg:col-span-2 flex flex-col gap-3">
+    .po-workspace .po-search-input {
+        padding-top: 0.72rem;
+        padding-bottom: 0.72rem;
+    }
 
-            {{-- Status summary pills --}}
-            <div class="flex flex-wrap gap-2">
-                <button @click="setStatus('')"
-                    class="px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all"
-                    :class="!filters.status ? 'border-gray-700 bg-gray-800 text-white' : 'border-gray-200 text-gray-500 hover:border-gray-300 bg-white'">
-                    All <span class="ml-1 opacity-70" x-text="allCounts.all"></span>
-                </button>
-                <template x-for="s in statusList" :key="s.key">
-                    <button @click="setStatus(filters.status === s.key ? '' : s.key)"
-                        class="px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all"
-                        :class="filters.status === s.key ? s.activeCls : 'border-gray-200 text-gray-500 hover:border-gray-300 bg-white'">
-                        <span x-text="s.label"></span>
-                        <span class="ml-1 opacity-70" x-text="allCounts[s.key]"></span>
-                    </button>
-                </template>
-            </div>
+    .po-workspace .po-filter-control {
+        height: 2.5rem;
+        min-height: 2.5rem;
+        padding-top: 0.55rem;
+        padding-bottom: 0.55rem;
+    }
 
-            {{-- Search + Date range --}}
-            <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-end gap-2">
-                <div class="relative flex-1 min-w-0 sm:min-w-[180px]">
-                    <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    .po-workspace .po-panel {
+        border-radius: 1.35rem;
+        border-color: rgba(148, 163, 184, 0.16);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(250, 252, 255, 0.82));
+        box-shadow: 0 26px 60px -42px rgba(15, 23, 42, 0.38);
+    }
+
+    .po-workspace .po-panel .card-header {
+        padding: 0.9rem 1rem;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(241, 245, 255, 0.48));
+    }
+
+    .po-workspace .po-panel .card-body {
+        padding: 1rem;
+    }
+
+    .po-workspace .po-table-shell {
+        padding: 0.35rem 0.4rem 0.15rem;
+    }
+
+    .po-workspace .po-table-shell .data-table thead {
+        background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(238, 242, 255, 0.9));
+    }
+
+    .po-workspace .po-table-shell .data-table th {
+        padding: 0.75rem 0.9rem;
+        font-size: 0.65rem;
+        letter-spacing: 0.14em;
+    }
+
+    .po-workspace .po-table-shell .data-table td {
+        padding: 0.8rem 0.9rem;
+        font-size: 0.88rem;
+    }
+
+    .po-workspace .po-table-shell .data-table tbody tr {
+        border-top-color: rgba(226, 232, 240, 0.92);
+    }
+
+    .po-workspace .po-table-shell .data-table tbody tr:hover {
+        background: rgba(37, 99, 235, 0.04);
+    }
+
+    .po-workspace .po-form-scroll > div {
+        padding: 0.95rem 1rem;
+    }
+
+    .po-workspace .po-status-menu {
+        border-radius: 1rem;
+        padding: 0.35rem;
+    }
+
+    @media (max-width: 1023px) {
+        .po-workspace {
+            gap: 0.6rem;
+        }
+
+        .po-workspace .po-toolbar,
+        .po-workspace .po-filterbar {
+            padding: 0.45rem;
+        }
+
+        .po-workspace .po-panel .card-header,
+        .po-workspace .po-panel .card-body,
+        .po-workspace .po-form-scroll > div {
+            padding-left: 0.85rem;
+            padding-right: 0.85rem;
+        }
+
+        .po-workspace .po-table-shell .data-table th,
+        .po-workspace .po-table-shell .data-table td {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .po-workspace {
+            gap: 0.5rem;
+        }
+
+        .po-workspace .po-toolbar,
+        .po-workspace .po-filterbar {
+            padding: 0.35rem;
+            border-radius: 1rem;
+        }
+
+        .po-workspace .po-search-input,
+        .po-workspace .po-form-input,
+        .po-workspace .po-filter-control {
+            min-height: 2.5rem;
+            border-radius: 0.82rem;
+        }
+
+        .po-workspace .po-filter-control {
+            min-height: 2.3rem;
+            height: 2.3rem;
+        }
+
+        .po-workspace .po-panel {
+            border-radius: 1.1rem;
+        }
+
+        .po-workspace .po-panel .card-header,
+        .po-workspace .po-panel .card-body,
+        .po-workspace .po-form-scroll > div {
+            padding-left: 0.72rem;
+            padding-right: 0.72rem;
+        }
+
+        .po-workspace .po-table-shell .data-table th,
+        .po-workspace .po-table-shell .data-table td {
+            padding-left: 0.68rem;
+            padding-right: 0.68rem;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .po-workspace .po-table-shell .data-table th {
+            padding: 0.65rem 0.8rem;
+        }
+
+        .po-workspace .po-table-shell .data-table td {
+            padding: 0.68rem 0.8rem;
+        }
+    }
+</style>
+
+<div x-data="poPage()" x-init="init()" class="workspace-screen po-workspace w-full lg:overflow-hidden">
+    <div class="grid w-full lg:flex-1 lg:min-h-0 grid-cols-1 gap-2 lg:overflow-hidden lg:grid-cols-3 lg:grid-rows-1">
+
+        {{-- ===== LEFT: PO Request List (table) ===== --}}
+        <div class="flex lg:min-h-0 flex-col lg:overflow-hidden lg:col-span-2">
+
+            {{-- Search toolbar --}}
+            <div class="po-toolbar mb-1 flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
+                <div class="relative flex-1">
+                    <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     <input x-model="filters.search" @input.debounce.400ms="page=1; load()" type="text"
-                        class="form-input-custom pl-10 text-sm" placeholder="Search requests...">
+                        class="form-input-custom po-search-input pl-10 pr-10 w-full text-sm" placeholder="Search PO requests, customer...">
+                    <button x-show="filters.search" @click="filters.search = ''; page=1; load()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
                 </div>
-                <div>
-                    <label class="text-xs font-medium text-gray-500 mb-0.5 block">From Date</label>
-                    <input type="date" x-model="filters.date_from" @change="page=1; load()"
-                        class="form-input-custom text-sm w-full sm:w-[140px]">
+            </div>
+
+            {{-- Filter bar --}}
+            <div class="po-filterbar mb-1 flex shrink-0 flex-wrap items-center gap-1.5">
+                {{-- Status dropdown --}}
+                <div class="relative" x-data="{ statusOpen: false }" @click.away="statusOpen = false">
+                    <button type="button" @click="statusOpen = !statusOpen"
+                        :class="filters.status ? 'border-primary-400 bg-primary-50 text-primary-700' : 'border-gray-300 bg-white text-gray-700'"
+                        class="po-filter-control flex items-center gap-1.5 text-sm pl-3 pr-2 rounded-lg border shadow-sm hover:shadow transition-all cursor-pointer">
+                        <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18"/></svg>
+                        <span x-text="filters.status ? statusLabel(filters.status) : 'All Statuses'"></span>
+                        <span x-show="filters.status" class="ml-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">1</span>
+                        <svg class="w-3 h-3 ml-0.5 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div x-show="statusOpen" x-cloak x-transition.origin.top.left
+                        class="po-status-menu absolute top-full left-0 mt-1 w-64 z-50 border border-gray-200 bg-white shadow-xl">
+                        <button type="button" @click="setStatus(''); statusOpen = false" class="flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-left text-sm transition-colors" :class="!filters.status ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-50'">
+                            <span class="font-medium">All Statuses</span>
+                            <span class="text-xs font-bold" x-text="allCounts.all"></span>
+                        </button>
+                        <template x-for="s in statusList" :key="s.key">
+                            <button type="button" @click="setStatus(filters.status === s.key ? '' : s.key); statusOpen = false" class="flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-left text-sm transition-colors" :class="filters.status === s.key ? s.activeCls : 'text-slate-700 hover:bg-slate-50'">
+                                <span class="flex items-center gap-2 font-medium">
+                                    <span class="inline-block h-2 w-2 rounded-full" :class="s.dotCls"></span>
+                                    <span x-text="s.label"></span>
+                                </span>
+                                <span class="text-xs font-bold" x-text="allCounts[s.key]"></span>
+                            </button>
+                        </template>
+                    </div>
                 </div>
-                <div>
-                    <label class="text-xs font-medium text-gray-500 mb-0.5 block">To Date</label>
-                    <input type="date" x-model="filters.date_to" @change="page=1; load()"
-                        class="form-input-custom text-sm w-full sm:w-[140px]">
-                </div>
-                <button x-show="filters.date_from || filters.date_to || filters.search" @click="clearFilters()"
-                    class="btn-secondary text-sm px-3 h-[38px] w-full sm:w-auto" title="Clear filters">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+
+                {{-- Date From --}}
+                <input x-model="filters.date_from" @change="page=1; load()" type="date"
+                    class="po-filter-control text-sm pl-3 pr-2 rounded-lg border border-gray-300 bg-white shadow-sm hover:shadow transition-all cursor-pointer" title="From date">
+
+                {{-- Date To --}}
+                <input x-model="filters.date_to" @change="page=1; load()" type="date"
+                    class="po-filter-control text-sm pl-3 pr-2 rounded-lg border border-gray-300 bg-white shadow-sm hover:shadow transition-all cursor-pointer" title="To date">
+
+                {{-- Clear all filters --}}
+                <button x-show="filters.search || filters.status || filters.date_from || filters.date_to"
+                    @click="clearFilters()"
+                    class="po-filter-control flex items-center gap-1 text-xs text-red-600 hover:text-red-700 font-semibold px-3 rounded-lg border border-red-200 hover:bg-red-50 transition-colors cursor-pointer">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    Clear
                 </button>
             </div>
 
-            {{-- List --}}
-            <div class="card flex-1 flex flex-col relative">
-                {{-- Overlay loader (shown on subsequent loads, not first) --}}
+            {{-- Table --}}
+            <div class="card po-panel relative flex min-h-0 flex-1 flex-col" style="z-index:0;">
+                {{-- Overlay loader --}}
                 <div x-show="loading && !firstLoad" x-cloak x-transition.opacity
                     class="absolute inset-0 bg-white/70 flex items-center justify-center rounded-xl" style="z-index:10">
                     <div class="flex flex-col items-center gap-2">
@@ -151,80 +252,185 @@
                     </div>
                 </div>
 
-                <div class="card-header py-2 flex items-center justify-between">
+                <div class="card-header flex shrink-0 items-center justify-between py-1.5">
                     <h3 class="font-semibold text-gray-800 text-sm">
                         PO Requests (<span x-text="total"></span>)
                     </h3>
                     <button @click="load()" class="text-xs text-primary-600 hover:text-primary-800 font-medium">Refresh</button>
                 </div>
 
-                <div class="flex-1 overflow-y-auto" style="max-height:calc(100vh - 260px)">
-                    {{-- Items --}}
-                    <template x-for="(item, index) in items" :key="item.id">
-                        <div class="px-4 py-3 border-b last:border-0 hover:bg-gray-50/50 transition-colors cursor-pointer"
-                            :class="viewing?.id === item.id ? 'bg-primary-50/50 border-l-2 border-l-primary-500' : ''"
-                            @click="viewDetail(item)">
-                            <div class="flex items-start gap-3">
-                                {{-- Avatar --}}
-                                <div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                                    :class="item.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : item.status === 'cancelled' ? 'bg-red-100 text-red-500' : 'bg-primary-100 text-primary-700'"
-                                    x-text="(item.customer_name || item.customer?.name || '?').charAt(0).toUpperCase()"></div>
-
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-2 mb-0.5">
-                                        <span class="font-medium text-sm text-gray-900 truncate" x-text="item.customer_name || item.customer?.name || 'Walk-in'"></span>
-                                        <span class="badge text-[10px]" :class="statusBadge(item.status)" x-text="statusLabel(item.status)"></span>
-                                    </div>
-                                    <p class="text-xs text-gray-500 truncate" x-text="item.requested_items"></p>
-                                    <div class="flex items-center gap-3 mt-1">
-                                        <span class="text-[10px] text-gray-400" x-text="fmtDate(item.created_at)"></span>
+                <div class="po-table-shell min-h-0 flex-1 overflow-hidden">
+                    <div class="h-full overflow-y-auto overscroll-contain">
+                    <table class="data-table w-full">
+                        <thead class="sticky top-0 z-10">
+                            <tr class="bg-gray-50">
+                                <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">ID</th>
+                                <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Customer</th>
+                                <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Requested Items</th>
+                                <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Status</th>
+                                <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Due Date</th>
+                                <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <template x-for="item in items" :key="item.id">
+                                <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="viewDetail(item)">
+                                    <td class="px-3 py-2">
+                                        <span class="font-semibold text-primary-600 text-sm" x-text="'#' + item.id"></span>
+                                    </td>
+                                    <td class="px-3 py-2">
+                                        <div class="font-medium text-gray-800 text-sm leading-tight" x-text="item.customer_name || item.customer?.name || 'Walk-in'"></div>
+                                        <div class="text-[11px] leading-tight text-gray-400" x-text="item.customer_phone || item.customer?.mobile_number || ''"></div>
+                                    </td>
+                                    <td class="px-3 py-2">
+                                        <p class="text-sm text-gray-700 truncate max-w-[220px]" x-text="item.requested_items"></p>
+                                    </td>
+                                    <td class="px-3 py-2">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold" :class="statusBadge(item.status)" x-text="statusLabel(item.status)"></span>
+                                    </td>
+                                    <td class="px-3 py-2">
+                                        <div class="text-sm leading-tight" x-text="fmtDate(item.created_at)"></div>
                                         <template x-if="item.required_by">
-                                            <span class="text-[10px] inline-flex items-center gap-0.5"
-                                                :class="isOverdue(item.required_by) && item.status !== 'completed' && item.status !== 'cancelled' ? 'text-red-500 font-semibold' : 'text-gray-400'">
-                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                                <span x-text="'Due: ' + fmtDate(item.required_by)"></span>
-                                            </span>
+                                            <div class="text-[11px] leading-tight mt-0.5"
+                                                :class="isOverdue(item.required_by) && item.status !== 'completed' && item.status !== 'cancelled' ? 'text-red-500 font-semibold' : 'text-gray-400'"
+                                                x-text="'Due: ' + fmtDate(item.required_by)"></div>
                                         </template>
-                                    </div>
-                                </div>
-
-                                {{-- Right arrow --}}
-                                <svg class="w-4 h-4 text-gray-300 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                            </div>
-                        </div>
-                    </template>
-
-                    {{-- First-load skeletons (only when no items yet) --}}
-                    <template x-if="loading && firstLoad">
-                        <div>
-                            <template x-for="i in 6" :key="'sk'+i">
-                                <div class="px-4 py-3 border-b flex items-start gap-3">
-                                    <div class="skeleton w-9 h-9 rounded-full flex-shrink-0"></div>
-                                    <div class="flex-1">
-                                        <div class="skeleton h-3.5 w-32 mb-2"></div>
-                                        <div class="skeleton h-3 w-48 mb-1.5"></div>
-                                        <div class="skeleton h-2.5 w-20"></div>
-                                    </div>
-                                </div>
+                                    </td>
+                                    <td class="px-3 py-2 text-center" @click.stop>
+                                        <div class="inline-flex items-center gap-1">
+                                            <button @click="viewDetail(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition" title="View">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
                             </template>
-                        </div>
-                    </template>
-
-                    {{-- Empty --}}
-                    <div x-show="!loading && items.length === 0" class="text-center py-16">
-                        <svg class="w-12 h-12 text-gray-200 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                        <p class="text-sm text-gray-400">No PO requests found</p>
-                        <p class="text-xs text-gray-300 mt-1">Create one using the form on the left</p>
+                            <tr x-show="items.length === 0 && !loading">
+                                <td colspan="6" class="text-center py-12">
+                                    <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                    <p class="text-gray-400 font-medium">No PO requests found</p>
+                                    <p class="text-gray-300 text-sm mt-1">Create one using the form on the right</p>
+                                </td>
+                            </tr>
+                            <template x-if="loading && firstLoad">
+                                <template x-for="i in 8" :key="'sk'+i">
+                                    <tr>
+                                        <td class="px-3 py-2"><div class="skeleton h-3 w-12"></div></td>
+                                        <td class="px-3 py-2"><div class="skeleton h-3 w-28"></div></td>
+                                        <td class="px-3 py-2"><div class="skeleton h-3 w-36"></div></td>
+                                        <td class="px-3 py-2"><div class="skeleton h-3 w-20 rounded-full"></div></td>
+                                        <td class="px-3 py-2"><div class="skeleton h-3 w-20"></div></td>
+                                        <td class="px-3 py-2"><div class="skeleton h-3 w-10"></div></td>
+                                    </tr>
+                                </template>
+                            </template>
+                        </tbody>
+                    </table>
                     </div>
                 </div>
 
                 {{-- Pagination --}}
-                <div x-show="lastPage > 1" class="border-t px-4 py-2 flex items-center justify-between bg-gray-50/50 text-xs">
-                    <button @click="page--; load()" :disabled="page <= 1"
-                        class="text-primary-600 hover:text-primary-800 disabled:text-gray-300 font-medium">&laquo; Prev</button>
-                    <span class="text-gray-500" x-text="'Page ' + page + ' of ' + lastPage"></span>
-                    <button @click="page++; load()" :disabled="page >= lastPage"
-                        class="text-primary-600 hover:text-primary-800 disabled:text-gray-300 font-medium">Next &raquo;</button>
+                <div x-show="lastPage > 1" class="flex shrink-0 items-center justify-between border-t px-4 py-2 text-sm">
+                    <span class="text-gray-500">
+                        Page <span x-text="page"></span> of <span x-text="lastPage"></span>
+                    </span>
+                    <div class="flex items-center gap-1">
+                        <button @click="page--; load()" :disabled="page <= 1"
+                            class="px-2.5 py-1 text-sm border rounded-lg hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed">Prev</button>
+                        <button @click="page++; load()" :disabled="page >= lastPage"
+                            class="px-2.5 py-1 text-sm border rounded-lg hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed">Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- ===== RIGHT: New PO Request Form ===== --}}
+        <div class="relative order-first flex lg:min-h-0 flex-col gap-1.5 lg:overflow-hidden lg:order-none" :style="custOpen ? 'z-index:95;' : 'z-index:0;'">
+
+            {{-- Customer selector --}}
+            <div class="card po-panel relative shrink-0" :style="custOpen ? 'overflow:visible; z-index:110;' : 'overflow:visible; z-index:10;'">
+                <div class="card-body py-2.5" style="overflow:visible">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <label class="text-xs font-medium text-gray-600">Customer</label>
+                            <p class="mt-0.5 text-[11px] leading-tight text-gray-400" x-show="!selectedCustomer">Search and attach a customer to the PO request.</p>
+                            <p class="mt-0.5 text-[11px] leading-tight text-emerald-600" x-show="selectedCustomer">Customer selected for this PO.</p>
+                        </div>
+                        <button type="button" @click="openNewCustModal()"
+                            class="btn-primary text-sm px-3 py-1.5 whitespace-nowrap w-auto">+ New</button>
+                    </div>
+
+                    <div x-show="!selectedCustomer" x-cloak class="mt-2 flex flex-col gap-1.5 sm:flex-row sm:items-end">
+                        <div class="flex-1 relative" @click.away="custOpen = false">
+                            <input x-model="custSearch" @focus="findCustomers(1)" @input.debounce.300ms="findCustomers(1)" type="text"
+                                class="form-input-custom po-search-input min-h-[2.4rem] py-2 text-sm" placeholder="Search by name / phone...">
+                            <div x-show="custOpen && custResults.length > 0" x-cloak class="absolute left-0 right-0 mt-1 overflow-hidden rounded-lg border bg-white shadow-lg" style="z-index:160;">
+                                <div class="max-h-48 overflow-y-auto" @scroll="handleCustScroll($event)">
+                                    <template x-for="c in custResults" :key="c.id">
+                                        <button @click="selectCustomer(c)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b last:border-0">
+                                            <div class="font-medium text-gray-800" x-text="c.name"></div>
+                                            <div class="text-xs text-gray-400" x-text="c.mobile_number || 'No mobile'"></div>
+                                        </button>
+                                    </template>
+                                    <div x-show="custLoading" class="px-3 py-2 text-xs text-gray-400 text-center">Loading…</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div x-show="custOpen && !custLoading && custResults.length === 0 && !selectedCustomer"
+                        class="mt-1.5 text-[11px] leading-tight text-gray-400">No customers found - click <strong>+ New</strong> to add.</div>
+
+                    <div x-show="selectedCustomer" x-cloak class="mt-2 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-3">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <div class="text-sm font-semibold text-emerald-900 truncate" x-text="selectedCustomer?.name"></div>
+                                <div class="mt-0.5 text-[11px] leading-tight text-emerald-700" x-text="selectedCustomer?.mobile_number || 'No mobile'"></div>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <button type="button" @click="clearCustomer(); $nextTick(() => findCustomers(1))" class="inline-flex items-center rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100">Change</button>
+                                <button type="button" @click="clearCustomer()" class="inline-flex items-center rounded-lg px-2 py-1.5 text-xs font-semibold text-red-500 transition hover:bg-red-50 hover:text-red-600">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- PO Request Details Form --}}
+            <div class="card po-panel relative flex min-h-0 flex-1 flex-col" style="z-index:0;">
+                <div class="card-header flex shrink-0 items-center justify-between py-1.5">
+                    <h3 class="font-semibold text-gray-800 text-sm">
+                        <svg class="w-4 h-4 inline mr-1 -mt-0.5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        New PO Request
+                    </h3>
+                    <button x-show="form.requested_items || form.notes || form.required_by" @click="resetForm()" class="text-xs text-red-400 hover:text-red-600">Clear</button>
+                </div>
+
+                <div class="po-form-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                    <div class="px-4 py-2 space-y-2">
+                        <div>
+                            <label class="text-xs font-medium text-gray-600 mb-1 block">Requested Products / Parts *</label>
+                            <textarea x-model="form.requested_items" rows="5" class="form-input-custom po-form-input text-sm"
+                                placeholder="e.g. iPhone 14 display&#10;Samsung A14 battery × 2&#10;Type-C fast charger"></textarea>
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-gray-600 mb-1 block">Required By</label>
+                            <input type="date" x-model="form.required_by" class="form-input-custom po-form-input text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-gray-600 mb-1 block">Notes</label>
+                            <textarea x-model="form.notes" rows="2" class="form-input-custom po-form-input text-sm"
+                                placeholder="Budget, color, any extra detail..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="shrink-0 border-t px-4 py-3">
+                    <button @click="save()" class="btn-primary w-full py-3 text-base font-semibold" :disabled="saving">
+                        <span x-show="saving" class="spinner mr-2"></span>
+                        <svg x-show="!saving" class="w-4 h-4 inline mr-1.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        Save PO Request
+                    </button>
                 </div>
             </div>
         </div>
@@ -366,11 +572,11 @@ function poPage() {
         customerSubmitError: '',
 
         statusList: [
-            { key: 'open',      label: 'Open',      activeCls: 'border-blue-500 bg-blue-50 text-blue-700' },
-            { key: 'ordered',   label: 'Ordered',   activeCls: 'border-amber-500 bg-amber-50 text-amber-700' },
-            { key: 'received',  label: 'Received',  activeCls: 'border-purple-500 bg-purple-50 text-purple-700' },
-            { key: 'completed', label: 'Completed', activeCls: 'border-emerald-500 bg-emerald-50 text-emerald-700' },
-            { key: 'cancelled', label: 'Cancelled', activeCls: 'border-red-500 bg-red-50 text-red-700' },
+            { key: 'open',      label: 'Open',      activeCls: 'bg-blue-50 text-blue-700',    dotCls: 'bg-blue-500' },
+            { key: 'ordered',   label: 'Ordered',   activeCls: 'bg-amber-50 text-amber-700',  dotCls: 'bg-amber-500' },
+            { key: 'received',  label: 'Received',  activeCls: 'bg-purple-50 text-purple-700', dotCls: 'bg-purple-500' },
+            { key: 'completed', label: 'Completed', activeCls: 'bg-emerald-50 text-emerald-700', dotCls: 'bg-emerald-500' },
+            { key: 'cancelled', label: 'Cancelled', activeCls: 'bg-red-50 text-red-700',      dotCls: 'bg-red-500' },
         ],
 
         async init() {
@@ -408,10 +614,17 @@ function poPage() {
 
         clearFilters() {
             this.filters.search = '';
+            this.filters.status = '';
             this.filters.date_from = '';
             this.filters.date_to = '';
             this.page = 1;
             this.load();
+        },
+
+        resetForm() {
+            this.form = { customer_id: '', customer_name: '', customer_phone: '', requested_items: '', required_by: '', notes: '' };
+            this.selectedCustomer = null;
+            this.custSearch = '';
         },
 
         // === Customer Search (paginated, show on focus) ===
@@ -567,10 +780,7 @@ function poPage() {
             if (r.success === false) return;
 
             RepairBox.toast(r.message || 'PO request saved', 'success');
-            // Reset form
-            this.form = { customer_id: '', customer_name: '', customer_phone: '', requested_items: '', required_by: '', notes: '' };
-            this.selectedCustomer = null;
-            this.custSearch = '';
+            this.resetForm();
             this.closeNewCustModal();
             this.page = 1;
             await this.load();

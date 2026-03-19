@@ -3,45 +3,250 @@
 @section('content-class', 'workspace-content')
 
 @section('content')
-<div x-data="repairsPage()" x-init="init()" class="workspace-screen w-full lg:overflow-hidden">
+<style>
+    .repairs-workspace {
+        gap: 0.7rem;
+    }
+
+    .repairs-workspace .repair-toolbar,
+    .repairs-workspace .repair-filterbar {
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: 1.2rem;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(244, 247, 255, 0.88));
+        box-shadow: 0 18px 42px -34px rgba(15, 23, 42, 0.34);
+        backdrop-filter: blur(16px);
+    }
+
+    .repairs-workspace .repair-toolbar {
+        padding: 0.55rem;
+    }
+
+    .repairs-workspace .repair-filterbar {
+        padding: 0.45rem;
+        gap: 0.45rem;
+    }
+
+    .repairs-workspace .repair-search-input,
+    .repairs-workspace .repair-form-input,
+    .repairs-workspace .repair-form-select,
+    .repairs-workspace .repair-filter-control {
+        min-height: 2.7rem;
+        border-radius: 0.95rem;
+        border-color: rgba(148, 163, 184, 0.22);
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 12px 28px -24px rgba(15, 23, 42, 0.28);
+    }
+
+    .repairs-workspace .repair-search-input {
+        padding-top: 0.72rem;
+        padding-bottom: 0.72rem;
+    }
+
+    .repairs-workspace .repair-filter-control {
+        height: 2.5rem;
+        min-height: 2.5rem;
+        padding-top: 0.55rem;
+        padding-bottom: 0.55rem;
+    }
+
+    .repairs-workspace .repair-toggle-group {
+        padding: 0.22rem;
+        border-radius: 0.95rem;
+        border-color: rgba(148, 163, 184, 0.18);
+        background: rgba(241, 245, 249, 0.88);
+    }
+
+    .repairs-workspace .repair-toggle-button {
+        min-width: 2.5rem;
+        min-height: 2.5rem;
+        border-radius: 0.78rem;
+    }
+
+    .repairs-workspace .repair-panel {
+        border-radius: 1.35rem;
+        border-color: rgba(148, 163, 184, 0.16);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(250, 252, 255, 0.82));
+        box-shadow: 0 26px 60px -42px rgba(15, 23, 42, 0.38);
+    }
+
+    .repairs-workspace .repair-panel .card-header {
+        padding: 0.9rem 1rem;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(241, 245, 255, 0.48));
+    }
+
+    .repairs-workspace .repair-panel .card-body {
+        padding: 1rem;
+    }
+
+    .repairs-workspace .repair-table-shell {
+        padding: 0.35rem 0.4rem 0.15rem;
+    }
+
+    .repairs-workspace .repair-table-shell .data-table thead {
+        background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(238, 242, 255, 0.9));
+    }
+
+    .repairs-workspace .repair-table-shell .data-table th {
+        padding: 0.75rem 0.9rem;
+        font-size: 0.65rem;
+        letter-spacing: 0.14em;
+    }
+
+    .repairs-workspace .repair-table-shell .data-table td {
+        padding: 0.8rem 0.9rem;
+        font-size: 0.88rem;
+    }
+
+    .repairs-workspace .repair-table-shell .data-table tbody tr {
+        border-top-color: rgba(226, 232, 240, 0.92);
+    }
+
+    .repairs-workspace .repair-table-shell .data-table tbody tr:hover {
+        background: rgba(37, 99, 235, 0.04);
+    }
+
+    .repairs-workspace .repair-form-scroll > div {
+        padding: 0.95rem 1rem;
+    }
+
+    .repairs-workspace .repair-summary,
+    .repairs-workspace .repair-actionbar {
+        padding-top: 0.9rem;
+        padding-bottom: 0.9rem;
+    }
+
+    .repairs-workspace .repair-kanban-body {
+        padding: 0.8rem 1rem 0.9rem;
+    }
+
+    .repairs-workspace .repair-status-menu {
+        border-radius: 1rem;
+        padding: 0.35rem;
+    }
+
+    @media (max-width: 1023px) {
+        .repairs-workspace {
+            gap: 0.6rem;
+        }
+
+        .repairs-workspace .repair-toolbar,
+        .repairs-workspace .repair-filterbar {
+            padding: 0.45rem;
+        }
+
+        .repairs-workspace .repair-panel .card-header,
+        .repairs-workspace .repair-panel .card-body,
+        .repairs-workspace .repair-form-scroll > div,
+        .repairs-workspace .repair-summary,
+        .repairs-workspace .repair-actionbar,
+        .repairs-workspace .repair-kanban-body {
+            padding-left: 0.85rem;
+            padding-right: 0.85rem;
+        }
+
+        .repairs-workspace .repair-table-shell .data-table th,
+        .repairs-workspace .repair-table-shell .data-table td {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .repairs-workspace {
+            gap: 0.5rem;
+        }
+
+        .repairs-workspace .repair-toolbar,
+        .repairs-workspace .repair-filterbar {
+            padding: 0.35rem;
+            border-radius: 1rem;
+        }
+
+        .repairs-workspace .repair-search-input,
+        .repairs-workspace .repair-form-input,
+        .repairs-workspace .repair-form-select,
+        .repairs-workspace .repair-filter-control {
+            min-height: 2.5rem;
+            border-radius: 0.82rem;
+        }
+
+        .repairs-workspace .repair-filter-control,
+        .repairs-workspace .repair-toggle-button {
+            min-height: 2.3rem;
+            height: 2.3rem;
+        }
+
+        .repairs-workspace .repair-panel {
+            border-radius: 1.1rem;
+        }
+
+        .repairs-workspace .repair-panel .card-header,
+        .repairs-workspace .repair-panel .card-body,
+        .repairs-workspace .repair-form-scroll > div,
+        .repairs-workspace .repair-summary,
+        .repairs-workspace .repair-actionbar,
+        .repairs-workspace .repair-kanban-body {
+            padding-left: 0.72rem;
+            padding-right: 0.72rem;
+        }
+
+        .repairs-workspace .repair-table-shell .data-table th,
+        .repairs-workspace .repair-table-shell .data-table td {
+            padding-left: 0.68rem;
+            padding-right: 0.68rem;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .repairs-workspace .repair-table-shell .data-table th {
+            padding: 0.65rem 0.8rem;
+        }
+
+        .repairs-workspace .repair-table-shell .data-table td {
+            padding: 0.68rem 0.8rem;
+        }
+    }
+</style>
+
+<div x-data="repairsPage()" x-init="init()" class="workspace-screen repairs-workspace w-full lg:overflow-hidden">
     <div class="grid w-full lg:flex-1 lg:min-h-0 grid-cols-1 gap-2 lg:overflow-hidden lg:grid-cols-3 lg:grid-rows-1">
 
         {{-- LEFT: Repair Queue --}}
         <div class="flex lg:min-h-0 flex-col lg:overflow-hidden lg:col-span-2">
 
             {{-- Search + view toggle --}}
-            <div class="mb-1 flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
+            <div class="repair-toolbar mb-1 flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
                 <div class="relative flex-1">
                     <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    <input x-model="searchQuery" @input.debounce.400ms="load()" type="text" class="form-input-custom pl-10 pr-10 w-full min-h-[2.5rem] py-2 text-sm" placeholder="Search ticket, customer, device, IMEI..." autofocus>
+                    <input x-model="searchQuery" @input.debounce.400ms="load()" type="text" class="form-input-custom repair-search-input pl-10 pr-10 w-full text-sm" placeholder="Search ticket, customer, device, IMEI..." autofocus>
                     <button x-show="searchQuery" @click="searchQuery = ''; load()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
-                <div class="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1 w-full sm:w-auto">
-                    <button @click="viewMode = 'table'; updateUrl()" class="px-3 py-1 text-sm font-medium rounded-md border border-transparent transition-all" :class="viewMode === 'table' ? 'bg-white text-primary-700 shadow-sm border-primary-200' : 'text-gray-600 hover:text-gray-800'" title="Table View">
+                <div class="repair-toggle-group inline-flex w-full border p-1 sm:w-auto">
+                    <button @click="viewMode = 'table'; updateUrl()" class="repair-toggle-button px-3 py-1 text-sm font-medium border border-transparent transition-all" :class="viewMode === 'table' ? 'bg-white text-primary-700 shadow-sm border-primary-200' : 'text-gray-600 hover:text-gray-800'" title="Table View">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
                     </button>
-                    <button @click="viewMode = 'kanban'; updateUrl()" class="px-3 py-1 text-sm font-medium rounded-md border border-transparent transition-all" :class="viewMode === 'kanban' ? 'bg-white text-primary-700 shadow-sm border-primary-200' : 'text-gray-600 hover:text-gray-800'" title="Kanban Board">
+                    <button @click="viewMode = 'kanban'; updateUrl()" class="repair-toggle-button px-3 py-1 text-sm font-medium border border-transparent transition-all" :class="viewMode === 'kanban' ? 'bg-white text-primary-700 shadow-sm border-primary-200' : 'text-gray-600 hover:text-gray-800'" title="Kanban Board">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
                     </button>
                 </div>
             </div>
 
             {{-- Filter bar --}}
-            <div class="mb-1 flex shrink-0 flex-wrap items-center gap-1.5">
+            <div class="repair-filterbar mb-1 flex shrink-0 flex-wrap items-center gap-1.5">
                 {{-- Status dropdown --}}
                 <div class="relative" x-data="{ statusOpen: false }" @click.away="statusOpen = false">
                     <button type="button" @click="statusOpen = !statusOpen"
                         :class="selectedStatuses.length ? 'border-primary-400 bg-primary-50 text-primary-700' : 'border-gray-300 bg-white text-gray-700'"
-                        class="flex items-center gap-1.5 text-sm h-8 pl-3 pr-2 rounded-lg border shadow-sm hover:shadow transition-all cursor-pointer">
+                        class="repair-filter-control flex items-center gap-1.5 text-sm pl-3 pr-2 rounded-lg border shadow-sm hover:shadow transition-all cursor-pointer">
                         <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18"/></svg>
                         <span x-text="statusSummaryLabel()"></span>
                         <span x-show="selectedStatuses.length" class="ml-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1" x-text="selectedStatuses.length"></span>
                         <svg class="w-3 h-3 ml-0.5 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </button>
                     <div x-show="statusOpen" x-cloak x-transition.origin.top.left
-                        class="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl w-64 z-50 p-1.5">
+                        class="repair-status-menu absolute top-full left-0 mt-1 w-64 z-50 border border-gray-200 bg-white shadow-xl">
                         <button type="button" @click="clearStatusSelection()" class="flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-left text-sm transition-colors" :class="selectedStatuses.length === 0 ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-50'">
                             <span class="font-medium">All Statuses</span>
                             <span class="text-xs font-bold" x-text="items.length"></span>
@@ -62,13 +267,13 @@
                 </div>
 
                 {{-- Date From --}}
-                <input x-model="dateFrom" @change="load()" type="date" class="text-sm h-8 pl-3 pr-2 rounded-lg border border-gray-300 bg-white shadow-sm hover:shadow transition-all cursor-pointer" title="From date">
+                <input x-model="dateFrom" @change="load()" type="date" class="repair-filter-control text-sm pl-3 pr-2 rounded-lg border border-gray-300 bg-white shadow-sm hover:shadow transition-all cursor-pointer" title="From date">
 
                 {{-- Date To --}}
-                <input x-model="dateTo" @change="load()" type="date" class="text-sm h-8 pl-3 pr-2 rounded-lg border border-gray-300 bg-white shadow-sm hover:shadow transition-all cursor-pointer" title="To date">
+                <input x-model="dateTo" @change="load()" type="date" class="repair-filter-control text-sm pl-3 pr-2 rounded-lg border border-gray-300 bg-white shadow-sm hover:shadow transition-all cursor-pointer" title="To date">
 
                 {{-- Payment filter --}}
-                <select x-model="paymentFilter" @change="load()" class="text-sm h-8 pl-3 pr-8 rounded-lg border border-gray-300 bg-white shadow-sm hover:shadow transition-all cursor-pointer">
+                <select x-model="paymentFilter" @change="load()" class="repair-filter-control text-sm pl-3 pr-8 rounded-lg border border-gray-300 bg-white shadow-sm hover:shadow transition-all cursor-pointer">
                     <option value="">All Payments</option>
                     <option value="paid">Paid</option>
                     <option value="unpaid">Unpaid</option>
@@ -77,21 +282,21 @@
                 {{-- Clear all filters --}}
                 <button x-show="searchQuery || selectedStatuses.length || dateFrom || dateTo || paymentFilter"
                     @click="resetFilters()"
-                    class="flex items-center gap-1 text-xs text-red-600 hover:text-red-700 font-semibold px-3 h-8 rounded-lg border border-red-200 hover:bg-red-50 transition-colors cursor-pointer">
+                    class="repair-filter-control flex items-center gap-1 text-xs text-red-600 hover:text-red-700 font-semibold px-3 rounded-lg border border-red-200 hover:bg-red-50 transition-colors cursor-pointer">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     Clear
                 </button>
             </div>
 
             {{-- Table view --}}
-            <div x-show="viewMode === 'table'" class="card relative flex min-h-0 flex-1 flex-col" style="z-index:0;">
+            <div x-show="viewMode === 'table'" class="card repair-panel relative flex min-h-0 flex-1 flex-col" style="z-index:0;">
                 <div class="card-header flex shrink-0 items-center justify-between py-1.5">
                     <h3 class="font-semibold text-gray-800 text-sm">
                         Repair Queue (<span x-text="filteredItems.length"></span>)
                     </h3>
                 </div>
 
-                <div class="min-h-0 flex-1 overflow-hidden">
+                <div class="repair-table-shell min-h-0 flex-1 overflow-hidden">
                     <div class="h-full overflow-y-auto overscroll-contain">
                     <table class="data-table w-full">
                         <thead class="sticky top-0 z-10">
@@ -177,11 +382,11 @@
             </div>
 
             {{-- Kanban view --}}
-            <div x-show="viewMode === 'kanban'" x-cloak class="card flex min-h-0 flex-1 flex-col overflow-hidden">
+            <div x-show="viewMode === 'kanban'" x-cloak class="card repair-panel flex min-h-0 flex-1 flex-col overflow-hidden">
                 <div class="card-header flex shrink-0 items-center justify-between py-1.5">
                     <h3 class="font-semibold text-gray-800 text-sm">Repair Board</h3>
                 </div>
-                <div class="flex min-h-0 flex-1 flex-col px-4 pb-3 pt-1.5">
+                <div class="repair-kanban-body flex min-h-0 flex-1 flex-col">
                     <div class="h-full overflow-x-auto overflow-y-hidden pb-2">
                         <div class="flex h-full min-w-max items-start gap-3">
                             <template x-for="[colKey, colMeta] of kanbanColumns" :key="colKey">
@@ -222,7 +427,7 @@
         <div class="relative order-first flex lg:min-h-0 flex-col gap-1.5 lg:overflow-hidden lg:order-none" :style="custOpen ? 'z-index:95;' : 'z-index:0;'">
 
             {{-- Customer selector --}}
-            <div class="card relative shrink-0" :style="custOpen ? 'overflow:visible; z-index:110;' : 'overflow:visible; z-index:10;'">
+            <div class="card repair-panel relative shrink-0" :style="custOpen ? 'overflow:visible; z-index:110;' : 'overflow:visible; z-index:10;'">
                 <div class="card-body py-2.5" style="overflow:visible">
                     <div class="flex items-start justify-between gap-3">
                         <div>
@@ -237,7 +442,7 @@
                     <div x-show="!selectedCust" x-cloak class="mt-2 flex flex-col gap-1.5 sm:flex-row sm:items-end">
                         <div class="flex-1 relative" @click.away="custOpen = false">
                             <input x-model="custSearch" @focus="searchCustomers(1)" @input.debounce.300ms="searchCustomers(1)" type="text"
-                                class="form-input-custom min-h-[2.4rem] py-2 text-sm" placeholder="Search by name / phone...">
+                                class="form-input-custom repair-search-input min-h-[2.4rem] py-2 text-sm" placeholder="Search by name / phone...">
                             <div x-show="custOpen && custResults.length > 0" x-cloak class="absolute left-0 right-0 mt-1 overflow-hidden rounded-lg border bg-white shadow-lg" style="z-index:160;">
                                 <div class="max-h-48 overflow-y-auto" @scroll="handleCustScroll($event)">
                                     <template x-for="c in custResults" :key="c.id">
@@ -272,7 +477,7 @@
             </div>
 
             {{-- Repair Details Form --}}
-            <div class="card relative flex min-h-0 flex-1 flex-col" style="z-index:0;">
+            <div class="card repair-panel relative flex min-h-0 flex-1 flex-col" style="z-index:0;">
                 <div class="card-header flex shrink-0 items-center justify-between py-1.5">
                     <h3 class="font-semibold text-gray-800 text-sm">
                         <svg class="w-4 h-4 inline mr-1 -mt-0.5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
@@ -281,28 +486,28 @@
                     <button x-show="hasFormData()" @click="resetForm()" class="text-xs text-red-400 hover:text-red-600">Clear</button>
                 </div>
 
-                <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+                <div class="repair-form-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain">
                     <div class="px-4 py-2 space-y-2">
                         {{-- Device info --}}
                         <div class="grid grid-cols-2 gap-2">
                             <div>
                                 <label class="text-xs font-medium text-gray-600 mb-1 block">Device Brand *</label>
-                                <input x-model="form.device_brand" list="brand-list" type="text" class="form-input-custom text-sm" placeholder="Samsung, Apple..." autocomplete="off">
+                                <input x-model="form.device_brand" list="brand-list" type="text" class="form-input-custom repair-form-input text-sm" placeholder="Samsung, Apple..." autocomplete="off">
                             </div>
                             <div>
                                 <label class="text-xs font-medium text-gray-600 mb-1 block">Device Model *</label>
-                                <input x-model="form.device_model" type="text" class="form-input-custom text-sm" placeholder="Galaxy S24, iPhone 15...">
+                                <input x-model="form.device_model" type="text" class="form-input-custom repair-form-input text-sm" placeholder="Galaxy S24, iPhone 15...">
                             </div>
                         </div>
 
                         <div>
                             <label class="text-xs font-medium text-gray-600 mb-1 block">IMEI / Serial No.</label>
-                            <input x-model="form.imei" type="text" class="form-input-custom text-sm" placeholder="Optional IMEI or serial">
+                            <input x-model="form.imei" type="text" class="form-input-custom repair-form-input text-sm" placeholder="Optional IMEI or serial">
                         </div>
 
                         <div>
                             <label class="text-xs font-medium text-gray-600 mb-1 block">Problem Description *</label>
-                            <textarea x-model="form.problem_description" class="form-input-custom text-sm resize-none" rows="3" placeholder="Describe the issue: display broken, charging issue, etc."></textarea>
+                            <textarea x-model="form.problem_description" class="form-input-custom repair-form-input text-sm resize-none" rows="3" placeholder="Describe the issue: display broken, charging issue, etc."></textarea>
                         </div>
 
                         {{-- Optional details (collapsible) --}}
@@ -316,21 +521,21 @@
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="text-xs font-medium text-gray-600 mb-1 block">Delivery Date</label>
-                                        <input x-model="form.expected_delivery_date" type="date" class="form-input-custom text-sm">
+                                        <input x-model="form.expected_delivery_date" type="date" class="form-input-custom repair-form-input text-sm">
                                     </div>
                                     <div>
                                         <label class="text-xs font-medium text-gray-600 mb-1 block">Estimated Cost</label>
-                                        <input x-model="form.estimated_cost" type="number" step="0.01" class="form-input-custom text-sm" placeholder="0.00">
+                                        <input x-model="form.estimated_cost" type="number" step="0.01" class="form-input-custom repair-form-input text-sm" placeholder="0.00">
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="text-xs font-medium text-gray-600 mb-1 block">Advance Amount</label>
-                                        <input x-model="form.advance_amount" type="number" step="0.01" class="form-input-custom text-sm" placeholder="0.00">
+                                        <input x-model="form.advance_amount" type="number" step="0.01" class="form-input-custom repair-form-input text-sm" placeholder="0.00">
                                     </div>
                                     <div>
                                         <label class="text-xs font-medium text-gray-600 mb-1 block">Payment Method</label>
-                                        <select x-model="form.advance_method" class="form-select-custom text-sm">
+                                        <select x-model="form.advance_method" class="form-select-custom repair-form-select text-sm">
                                             <option value="cash">Cash</option>
                                             <option value="card">Card</option>
                                             <option value="upi">UPI</option>
@@ -340,7 +545,7 @@
                                 </div>
                                 <div>
                                     <label class="text-xs font-medium text-gray-600 mb-1 block">Reference / Txn ID</label>
-                                    <input x-model="form.advance_reference" type="text" class="form-input-custom text-sm" placeholder="Optional">
+                                    <input x-model="form.advance_reference" type="text" class="form-input-custom repair-form-input text-sm" placeholder="Optional">
                                 </div>
                             </div>
                         </div>
@@ -348,7 +553,7 @@
                 </div>
 
                 {{-- Summary --}}
-                <div class="shrink-0 border-t bg-gray-50/50 px-4 py-2 space-y-1 text-sm">
+                <div class="repair-summary shrink-0 border-t bg-gray-50/50 px-4 py-2 space-y-1 text-sm">
                     <div class="flex justify-between text-gray-600">
                         <span>Estimated Cost</span>
                         <span x-text="'₹' + Number(form.estimated_cost || 0).toFixed(2)"></span>
@@ -364,7 +569,7 @@
                 </div>
 
                 {{-- Create button --}}
-                <div class="shrink-0 border-t px-4 py-2">
+                <div class="repair-actionbar shrink-0 border-t px-4 py-2">
                     <button @click="saveRepair()"
                         class="btn-primary w-full py-2.5 text-sm font-semibold"
                         :disabled="saving || !canCreate()">

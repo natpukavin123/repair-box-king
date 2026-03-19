@@ -3,7 +3,25 @@
 @section('content-class', 'workspace-content')
 
 @section('content')
-<div x-data="servicesPage()" x-init="load()" class="workspace-screen">
+<style>
+    .services-workspace .workspace-toolbar,
+    .services-workspace .workspace-filterbar,
+    .services-workspace .workspace-table-card {
+        border-radius: 1.2rem;
+    }
+
+    .services-workspace .workspace-table-scroll .data-table thead {
+        background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(238, 242, 255, 0.9));
+    }
+
+    .services-workspace .workspace-table-scroll .data-table th,
+    .services-workspace .workspace-table-scroll .data-table td {
+        padding-top: 0.78rem;
+        padding-bottom: 0.78rem;
+    }
+</style>
+
+<div x-data="servicesPage()" x-init="load()" class="workspace-screen services-workspace">
     <x-ui.action-bar title="Service Ledger" description="Track completed and pending services in the same contained work area used across the app.">
         <a href="/services/create" class="btn-primary inline-flex w-full items-center justify-center sm:w-auto"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> New Service</a>
     </x-ui.action-bar>
@@ -60,7 +78,7 @@
     </x-ui.table-card>
 
     <div x-show="showModal" class="modal-overlay" x-cloak @click.self="if(!showAddCust) showModal = false">
-        <div class="modal-container modal-lg">
+        <div class="modal-container admin-modal modal-lg">
             <div class="modal-header"><h3 class="text-lg font-semibold">Edit Service</h3><button @click="showModal = false" class="text-gray-400 hover:text-gray-600">&times;</button></div>
             <div class="modal-body">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -101,7 +119,7 @@
 
     <!-- Add Customer Modal -->
     <div x-show="showAddCust" class="modal-overlay" x-cloak @click.self="closeAddCustModal()">
-        <div class="modal-container max-w-md">
+        <div class="modal-container admin-modal max-w-md">
             <div class="modal-header"><h3 class="text-lg font-semibold">Add Customer</h3><button @click="closeAddCustModal()" class="text-gray-400 hover:text-gray-600">&times;</button></div>
             <div class="modal-body">
                 <div class="space-y-3">

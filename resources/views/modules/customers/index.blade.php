@@ -3,7 +3,25 @@
 @section('content-class', 'workspace-content')
 
 @section('content')
-<div x-data="customersPage()" x-init="init()" class="workspace-screen">
+<style>
+    .customers-workspace .workspace-toolbar,
+    .customers-workspace .workspace-filterbar,
+    .customers-workspace .workspace-table-card {
+        border-radius: 1.2rem;
+    }
+
+    .customers-workspace .workspace-table-scroll .data-table thead {
+        background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(238, 242, 255, 0.9));
+    }
+
+    .customers-workspace .workspace-table-scroll .data-table th,
+    .customers-workspace .workspace-table-scroll .data-table td {
+        padding-top: 0.78rem;
+        padding-bottom: 0.78rem;
+    }
+</style>
+
+<div x-data="customersPage()" x-init="init()" class="workspace-screen customers-workspace">
     <x-ui.action-bar title="Customer Desk" description="Search, open, and update customers without leaving the page.">
         <a href="/customers/create" class="btn-primary inline-flex w-full items-center justify-center sm:w-auto"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add Customer</a>
     </x-ui.action-bar>
@@ -61,7 +79,7 @@
 
     <!-- Form Modal -->
     <div x-show="showModal" class="modal-overlay" x-cloak>
-        <div class="modal-container modal-lg">
+        <div class="modal-container admin-modal modal-lg">
             <div class="modal-header"><h3 class="text-lg font-semibold">Edit Customer</h3><button @click="closeEditModal()" class="text-gray-400 hover:text-gray-600">&times;</button></div>
             <div class="modal-body">
                 <div x-show="submitError" x-text="submitError" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 mb-4"></div>
@@ -78,7 +96,7 @@
 
     <!-- Detail Modal -->
     <div x-show="showDetail" class="modal-overlay" x-cloak>
-        <div class="modal-container modal-xl">
+        <div class="modal-container admin-modal modal-xl">
             <div class="modal-header"><h3 class="text-lg font-semibold" x-text="detail?.name"></h3><button @click="showDetail = false" class="text-gray-400 hover:text-gray-600">&times;</button></div>
             <div class="modal-body">
                 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 text-sm mb-4">

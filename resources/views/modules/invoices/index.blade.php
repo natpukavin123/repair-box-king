@@ -3,7 +3,23 @@
 @section('content-class', 'workspace-content')
 
 @section('content')
-<div x-data="invoicesPage()" x-init="load()" class="workspace-screen">
+<style>
+    .invoices-workspace .workspace-toolbar,
+    .invoices-workspace .workspace-filterbar,
+    .invoices-workspace .workspace-table-card {
+        border-radius: 1.2rem;
+    }
+
+    .invoices-workspace .invoice-status-pill {
+        min-height: 2.25rem;
+    }
+
+    .invoices-workspace .workspace-table-scroll .data-table thead {
+        background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(238, 242, 255, 0.9));
+    }
+ </style>
+
+<div x-data="invoicesPage()" x-init="load()" class="workspace-screen invoices-workspace">
 
     <x-ui.action-bar title="Invoice Ledger" description="Billing, payment collection, and invoice review stay in the same contained workspace.">
         <a href="/pos" class="btn-primary inline-flex w-full items-center justify-center gap-1.5 sm:w-auto">
@@ -53,30 +69,30 @@
             <div class="mobile-scroll sm:overflow-visible">
             <div class="flex gap-1.5 items-center pb-1 sm:pb-0">
                 <button @click="filter.payment_status = ''; page=1; load()"
-                    class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+                    class="invoice-status-pill px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
                     :class="filter.payment_status === '' ? 'bg-gray-800 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
                     All
                 </button>
                 <button @click="filter.payment_status = 'paid'; page=1; load()"
-                    class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all inline-flex items-center gap-1"
+                    class="invoice-status-pill px-3 py-1.5 rounded-full text-xs font-semibold transition-all inline-flex items-center gap-1"
                     :class="filter.payment_status === 'paid' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'">
                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"/></svg>
                     Paid
                 </button>
                 <button @click="filter.payment_status = 'partial'; page=1; load()"
-                    class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all inline-flex items-center gap-1"
+                    class="invoice-status-pill px-3 py-1.5 rounded-full text-xs font-semibold transition-all inline-flex items-center gap-1"
                     :class="filter.payment_status === 'partial' ? 'bg-amber-500 text-white shadow-sm' : 'bg-amber-50 text-amber-700 hover:bg-amber-100'">
                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"/></svg>
                     Partial
                 </button>
                 <button @click="filter.payment_status = 'unpaid'; page=1; load()"
-                    class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all inline-flex items-center gap-1"
+                    class="invoice-status-pill px-3 py-1.5 rounded-full text-xs font-semibold transition-all inline-flex items-center gap-1"
                     :class="filter.payment_status === 'unpaid' ? 'bg-red-600 text-white shadow-sm' : 'bg-red-50 text-red-700 hover:bg-red-100'">
                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4"/></svg>
                     Unpaid
                 </button>
                 <button @click="resetFilters()" title="Reset to current month"
-                    class="px-3 py-1.5 rounded-full text-xs font-semibold bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300 transition-all inline-flex items-center gap-1"
+                    class="invoice-status-pill px-3 py-1.5 rounded-full text-xs font-semibold bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 hover:border-gray-300 transition-all inline-flex items-center gap-1"
                     x-show="filter.search || filter.payment_status || filter.date_from !== _monthStart() || filter.date_to !== _monthEnd()">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -286,7 +302,7 @@
 
     {{-- ══ VIEW MODAL ══ --}}
     <div x-show="showView" class="modal-overlay" x-cloak @keydown.escape.window="showView = false">
-        <div class="modal-container modal-lg">
+        <div class="modal-container admin-modal modal-lg">
             <div class="modal-header">
                 <div>
                     <h3 class="text-lg font-semibold" x-text="'Invoice #' + (viewData?.invoice_number || '')"></h3>
@@ -407,7 +423,7 @@
 
     {{-- ══ PAYMENT MODAL ══ --}}
     <div x-show="showPayModal" class="modal-overlay" x-cloak @keydown.escape.window="showPayModal = false">
-        <div class="modal-container max-w-lg" @click.stop>
+        <div class="modal-container admin-modal max-w-lg" @click.stop>
             <div class="modal-header">
                 <div>
                     <h3 class="text-lg font-bold text-gray-800">Record Payment</h3>

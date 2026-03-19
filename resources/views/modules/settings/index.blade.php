@@ -3,16 +3,23 @@
 
 @section('content')
 <div x-data="settingsPage()" x-init="init()">
+    <div class="page-header-inline">
+        <div class="page-header-inline-copy">
+            <h2 class="page-header-inline-title">Settings</h2>
+            <p class="page-header-inline-description">System preferences, master data, notification templates, and maintenance tools.</p>
+        </div>
+    </div>
+
     {{-- Tabs --}}
-    <div class="flex flex-wrap gap-2 mb-6">
-        <button @click="tab='general'; updateUrl()" :class="tab==='general' ? 'btn-primary' : 'btn-secondary'" class="text-sm">General</button>
-        <button @click="tab='master-data'; updateUrl()" :class="tab==='master-data' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Master Data</button>
-        <button @click="tab='service-types'; updateUrl()" :class="tab==='service-types' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Service Types</button>
-        <button @click="tab='recharge-providers'; updateUrl()" :class="tab==='recharge-providers' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Recharge Providers</button>
-        <button @click="tab='email-templates'; updateUrl()" :class="tab==='email-templates' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Email Templates</button>
-        <button @click="tab='notifications'; updateUrl(); loadNotifications()" :class="tab==='notifications' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Notifications</button>
-        <button @click="tab='print-settings'; updateUrl()" :class="tab==='print-settings' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Print Settings</button>
-        <button @click="tab='backups'; updateUrl()" :class="tab==='backups' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Backups</button>
+    <div class="secondary-tabs">
+        <button @click="tab='general'; updateUrl()" :class="tab==='general' ? 'secondary-tab is-active' : 'secondary-tab'">General</button>
+        <button @click="tab='master-data'; updateUrl()" :class="tab==='master-data' ? 'secondary-tab is-active' : 'secondary-tab'">Master Data</button>
+        <button @click="tab='service-types'; updateUrl()" :class="tab==='service-types' ? 'secondary-tab is-active' : 'secondary-tab'">Service Types</button>
+        <button @click="tab='recharge-providers'; updateUrl()" :class="tab==='recharge-providers' ? 'secondary-tab is-active' : 'secondary-tab'">Recharge Providers</button>
+        <button @click="tab='email-templates'; updateUrl()" :class="tab==='email-templates' ? 'secondary-tab is-active' : 'secondary-tab'">Email Templates</button>
+        <button @click="tab='notifications'; updateUrl(); loadNotifications()" :class="tab==='notifications' ? 'secondary-tab is-active' : 'secondary-tab'">Notifications</button>
+        <button @click="tab='print-settings'; updateUrl()" :class="tab==='print-settings' ? 'secondary-tab is-active' : 'secondary-tab'">Print Settings</button>
+        <button @click="tab='backups'; updateUrl()" :class="tab==='backups' ? 'secondary-tab is-active' : 'secondary-tab'">Backups</button>
     </div>
 
     {{-- Master Data --}}

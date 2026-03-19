@@ -3,11 +3,18 @@
 
 @section('content')
 <div x-data="returnsPage()" x-init="init()">
+    <div class="page-header-inline">
+        <div class="page-header-inline-copy">
+            <h2 class="page-header-inline-title">Returns &amp; Refunds</h2>
+            <p class="page-header-inline-description">Track customer returns, supplier returns, and refund actions from one compact workflow.</p>
+        </div>
+    </div>
+
     <!-- Tabs -->
-    <div class="flex gap-2 mb-4 border-b pb-2">
-        <button @click="tab = 'customer'; updateUrl()" class="px-4 py-2 text-sm font-medium rounded-t" :class="tab === 'customer' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:text-gray-800'">Customer Returns</button>
-        <button @click="tab = 'supplier'; updateUrl()" class="px-4 py-2 text-sm font-medium rounded-t" :class="tab === 'supplier' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:text-gray-800'">Supplier Returns</button>
-        <button @click="tab = 'refunds'; loadRefunds(); updateUrl()" class="px-4 py-2 text-sm font-medium rounded-t" :class="tab === 'refunds' ? 'bg-primary-600 text-white' : 'text-gray-600 hover:text-gray-800'">Refunds</button>
+    <div class="secondary-tabs">
+        <button @click="tab = 'customer'; updateUrl()" :class="tab === 'customer' ? 'secondary-tab is-active' : 'secondary-tab'">Customer Returns</button>
+        <button @click="tab = 'supplier'; updateUrl()" :class="tab === 'supplier' ? 'secondary-tab is-active' : 'secondary-tab'">Supplier Returns</button>
+        <button @click="tab = 'refunds'; loadRefunds(); updateUrl()" :class="tab === 'refunds' ? 'secondary-tab is-active' : 'secondary-tab'">Refunds</button>
     </div>
 
     <!-- Customer Returns -->

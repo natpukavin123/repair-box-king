@@ -3,7 +3,25 @@
 @section('content-class', 'workspace-content')
 
 @section('content')
-<div x-data="suppliersPage()" x-init="load()" class="workspace-screen">
+<style>
+    .suppliers-workspace .workspace-toolbar,
+    .suppliers-workspace .workspace-filterbar,
+    .suppliers-workspace .workspace-table-card {
+        border-radius: 1.2rem;
+    }
+
+    .suppliers-workspace .workspace-table-scroll .data-table thead {
+        background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(238, 242, 255, 0.9));
+    }
+
+    .suppliers-workspace .workspace-table-scroll .data-table th,
+    .suppliers-workspace .workspace-table-scroll .data-table td {
+        padding-top: 0.78rem;
+        padding-bottom: 0.78rem;
+    }
+</style>
+
+<div x-data="suppliersPage()" x-init="load()" class="workspace-screen suppliers-workspace">
     <x-ui.action-bar title="Supplier Records" description="Core supplier details stay in one contained workspace with the table scrolling inside the page.">
         <a href="/suppliers/create" class="btn-primary inline-flex w-full items-center justify-center sm:w-auto"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add Supplier</a>
     </x-ui.action-bar>
@@ -54,7 +72,7 @@
     </x-ui.table-card>
 
     <div x-show="showModal" class="modal-overlay" x-cloak>
-        <div class="modal-container modal-lg">
+        <div class="modal-container admin-modal modal-lg">
             <div class="modal-header"><h3 class="text-lg font-semibold">Edit Supplier</h3><button @click="showModal = false" class="text-gray-400 hover:text-gray-600">&times;</button></div>
             <div class="modal-body">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

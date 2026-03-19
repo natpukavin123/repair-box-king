@@ -3,10 +3,17 @@
 
 @section('content')
 <div x-data="reportsPage()" x-init="init()">
+    <div class="page-header-inline">
+        <div class="page-header-inline-copy">
+            <h2 class="page-header-inline-title">Reports</h2>
+            <p class="page-header-inline-description">Switch between sales and profit views without leaving the reporting workspace.</p>
+        </div>
+    </div>
+
     {{-- Report Type Tabs --}}
-    <div class="flex flex-wrap gap-2 mb-6">
-        <button @click="type='sales'; updateUrl()" :class="type==='sales' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Sales Report</button>
-        <button @click="type='profit'; updateUrl()" :class="type==='profit' ? 'btn-primary' : 'btn-secondary'" class="text-sm">Profit Report</button>
+    <div class="secondary-tabs">
+        <button @click="type='sales'; updateUrl()" :class="type==='sales' ? 'secondary-tab is-active' : 'secondary-tab'">Sales Report</button>
+        <button @click="type='profit'; updateUrl()" :class="type==='profit' ? 'secondary-tab is-active' : 'secondary-tab'">Profit Report</button>
     </div>
 
     {{-- Date Range Filter --}}

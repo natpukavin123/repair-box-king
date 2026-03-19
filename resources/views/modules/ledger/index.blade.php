@@ -4,6 +4,13 @@
 
 @section('content')
 <div x-data="ledgerPage()" x-init="load()" class="page-list">
+    <div class="page-header-inline">
+        <div class="page-header-inline-copy">
+            <h2 class="page-header-inline-title">Ledger</h2>
+            <p class="page-header-inline-description">See cash movement, totals, and transaction history in one cleaner accounting view.</p>
+        </div>
+    </div>
+
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div class="stat-card"><p class="text-xs text-gray-500 uppercase">Total In</p><p class="text-2xl font-bold text-green-600" x-text="'₹' + Number(summary.total_in || 0).toLocaleString('en-IN', {minimumFractionDigits:2})"></p></div>

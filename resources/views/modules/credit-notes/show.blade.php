@@ -224,20 +224,20 @@
             <div class="card border-2 border-primary-200">
                 <div class="card-header bg-primary-50 p-0">
                     <!-- Tabs -->
-                    <div class="flex border-b border-primary-100">
+                    <div class="secondary-tabs m-0 rounded-none border-0 border-b border-primary-100 bg-transparent p-2 shadow-none">
                         <button @click="activeTab = 'refund'"
-                            class="flex-1 px-3 py-2.5 text-xs font-semibold transition-colors"
-                            :class="activeTab === 'refund' ? 'text-primary-800 border-b-2 border-primary-600 bg-white' : 'text-gray-500 hover:text-gray-700'">
+                            class="secondary-tab flex-1 text-xs transition-colors"
+                            :class="activeTab === 'refund' ? 'secondary-tab is-active' : 'secondary-tab'">
                             💰 Refund
                         </button>
                         <button @click="activeTab = 'repair'"
-                            class="flex-1 px-3 py-2.5 text-xs font-semibold transition-colors"
-                            :class="activeTab === 'repair' ? 'text-blue-800 border-b-2 border-blue-600 bg-white' : 'text-gray-500 hover:text-gray-700'">
+                            class="secondary-tab flex-1 text-xs transition-colors"
+                            :class="activeTab === 'repair' ? 'secondary-tab is-active' : 'secondary-tab'">
                             🔧 New Repair
                         </button>
                         <button @click="activeTab = 'invoice'"
-                            class="flex-1 px-3 py-2.5 text-xs font-semibold transition-colors"
-                            :class="activeTab === 'invoice' ? 'text-purple-800 border-b-2 border-purple-600 bg-white' : 'text-gray-500 hover:text-gray-700'">
+                            class="secondary-tab flex-1 text-xs transition-colors"
+                            :class="activeTab === 'invoice' ? 'secondary-tab is-active' : 'secondary-tab'">
                             🧾 New Invoice
                         </button>
                     </div>

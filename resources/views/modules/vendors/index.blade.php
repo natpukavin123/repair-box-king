@@ -3,7 +3,44 @@
 @section('content-class', 'workspace-content')
 
 @section('content')
-<div x-data="vendorsPage()" x-init="init()" class="workspace-screen">
+<style>
+    .vendors-workspace .workspace-toolbar,
+    .vendors-workspace .workspace-filterbar,
+    .vendors-workspace .workspace-table-card,
+    .vendors-workspace .vendors-pagination {
+        border-radius: 1.2rem;
+    }
+
+    .vendors-workspace .workspace-table-scroll .data-table thead {
+        background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(238, 242, 255, 0.9));
+    }
+
+    .vendors-workspace .workspace-table-scroll .data-table th,
+    .vendors-workspace .workspace-table-scroll .data-table td {
+        padding-top: 0.78rem;
+        padding-bottom: 0.78rem;
+    }
+
+    .vendors-workspace .vendors-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.65rem;
+        margin-top: 0.85rem;
+        padding: 0.5rem 0.75rem;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(246, 249, 255, 0.86));
+        box-shadow: 0 18px 42px -34px rgba(15, 23, 42, 0.24);
+    }
+
+    @media (max-width: 640px) {
+        .vendors-workspace .vendors-pagination {
+            align-items: stretch;
+        }
+    }
+</style>
+
+<div x-data="vendorsPage()" x-init="init()" class="workspace-screen vendors-workspace">
     <x-ui.action-bar title="Vendor Management" description="Frequently used vendor lookups and edits stay in a fixed single-page layout.">
         <a href="/vendors/create" class="btn-primary inline-flex w-full items-center justify-center sm:w-auto"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add Vendor</a>
     </x-ui.action-bar>
@@ -56,7 +93,7 @@
     </x-ui.table-card>
 
     {{-- Pagination --}}
-    <div x-show="lastPage > 1" class="flex flex-col items-stretch justify-center gap-2 mt-4 sm:flex-row sm:items-center">
+    <div x-show="lastPage > 1" class="vendors-pagination flex flex-col items-stretch justify-center gap-2 mt-4 sm:flex-row sm:items-center">
         <button @click="page--; load()" :disabled="page <= 1" class="btn-secondary text-sm w-full sm:w-auto">&laquo; Prev</button>
         <span class="text-sm text-gray-600" x-text="'Page ' + page + ' of ' + lastPage"></span>
         <button @click="page++; load()" :disabled="page >= lastPage" class="btn-secondary text-sm w-full sm:w-auto">Next &raquo;</button>
@@ -64,7 +101,7 @@
 
     {{-- Modal --}}
     <div x-show="showModal" class="modal-overlay" x-cloak>
-        <div class="modal-container">
+        <div class="modal-container admin-modal">
             <div class="modal-header"><h3 class="text-lg font-semibold">Edit Vendor</h3><button @click="showModal = false" class="text-gray-400 hover:text-gray-600">&times;</button></div>
             <div class="modal-body space-y-4">
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label><input x-model="form.name" type="text" class="form-input-custom"></div>

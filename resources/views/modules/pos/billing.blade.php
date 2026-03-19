@@ -6,17 +6,113 @@
 @endphp
 
 @section('content')
-<div x-data="posBilling()" x-init="init()" class="h-full">
+<style>
+    .sales-workspace {
+        --sales-panel-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 249, 255, 0.88));
+        --sales-panel-border: rgba(148, 163, 184, 0.18);
+        --sales-shadow: 0 22px 48px -34px rgba(15, 23, 42, 0.34);
+    }
+
+    .sales-workspace .sales-toolbar,
+    .sales-workspace .sales-filterbar,
+    .sales-workspace .sales-panel,
+    .sales-workspace .sales-item-card {
+        border: 1px solid var(--sales-panel-border);
+        background: var(--sales-panel-bg);
+        box-shadow: var(--sales-shadow);
+    }
+
+    .sales-workspace .sales-toolbar,
+    .sales-workspace .sales-filterbar {
+        border-radius: 1.2rem;
+        backdrop-filter: blur(16px);
+    }
+
+    .sales-workspace .sales-toolbar {
+        padding: 0.55rem;
+    }
+
+    .sales-workspace .sales-filterbar {
+        padding: 0.45rem;
+    }
+
+    .sales-workspace .sales-segmented {
+        padding: 0.22rem;
+        border-radius: 0.95rem;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: rgba(241, 245, 249, 0.9);
+    }
+
+    .sales-workspace .sales-segmented > button {
+        min-height: 2.5rem;
+        border-radius: 0.78rem;
+    }
+
+    .sales-workspace .sales-field,
+    .sales-workspace .sales-select {
+        min-height: 2.7rem;
+        border-radius: 0.95rem;
+        border-color: rgba(148, 163, 184, 0.22);
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 12px 28px -24px rgba(15, 23, 42, 0.28);
+    }
+
+    .sales-workspace .sales-panel {
+        border-radius: 1.35rem;
+        overflow: hidden;
+    }
+
+    .sales-workspace .sales-panel .card-header {
+        padding: 0.9rem 1rem;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(241, 245, 255, 0.48));
+    }
+
+    .sales-workspace .sales-panel .card-body {
+        padding: 1rem;
+    }
+
+    .sales-workspace .sales-item-card {
+        border-radius: 1rem;
+    }
+
+    .sales-workspace .sales-item-card:hover {
+        transform: translateY(-1px);
+    }
+
+    .sales-workspace .sales-cart-row {
+        padding: 0.7rem 0.85rem;
+    }
+
+    .sales-workspace .sales-summary,
+    .sales-workspace .sales-actionbar {
+        padding-top: 0.9rem;
+        padding-bottom: 0.9rem;
+    }
+
+    @media (max-width: 1023px) {
+        .sales-workspace .sales-toolbar,
+        .sales-workspace .sales-filterbar,
+        .sales-workspace .sales-panel .card-header,
+        .sales-workspace .sales-panel .card-body,
+        .sales-workspace .sales-summary,
+        .sales-workspace .sales-actionbar {
+            padding-left: 0.85rem;
+            padding-right: 0.85rem;
+        }
+    }
+</style>
+
+<div x-data="posBilling()" x-init="init()" class="sales-workspace h-full">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
 
         {{-- LEFT: Product / Service Search --}}
         <div class="lg:col-span-2 flex flex-col">
 
             {{-- Search bar + type selector --}}
-            <div class="mb-3 flex flex-col sm:flex-row gap-2 sm:items-center">
+            <div class="sales-toolbar mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <input x-model="searchQuery" @input.debounce.250ms="searchProducts()" type="text"
-                    placeholder="Search by name, SKU, barcode..." class="form-input-custom flex-1" autofocus>
-                <div class="inline-flex w-full sm:w-auto rounded-lg border border-gray-200 bg-gray-50 p-1 overflow-x-auto">
+                    placeholder="Search by name, SKU, barcode..." class="form-input-custom sales-field flex-1" autofocus>
+                <div class="sales-segmented inline-flex w-full overflow-x-auto sm:w-auto">
                     <button type="button"
                         @click="itemType = 'product'; searchProducts()"
                         :class="itemType === 'product' ? 'bg-white text-primary-700 shadow-sm border-primary-200' : 'text-gray-600 hover:text-gray-800'"
@@ -39,13 +135,13 @@
             </div>
 
             {{-- Filter bar (products only) --}}
-            <div x-show="itemType === 'product'" class="mb-3 flex flex-wrap gap-2 items-center">
+            <div x-show="itemType === 'product'" class="sales-filterbar mb-3 flex flex-wrap items-center gap-2">
 
                 {{-- Category multi-select --}}
                 <div class="relative" @click.away="catOpen = false">
                     <button type="button" @click="catOpen = !catOpen"
                         :class="selCategories.length ? 'border-primary-400 bg-primary-50 text-primary-700' : 'border-gray-300 bg-white text-gray-700'"
-                        class="flex items-center gap-1.5 text-sm h-9 pl-3 pr-2 rounded-lg border shadow-sm hover:shadow transition-all cursor-pointer">
+                        class="flex items-center gap-1.5 text-sm min-h-[2.5rem] pl-3 pr-2 rounded-lg border shadow-sm hover:shadow transition-all cursor-pointer">
                         <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18"/></svg>
                         <span x-text="selCategories.length === 0 ? 'Category' : (selCategories.length === 1 ? filterCategories.find(c=>c.id===selCategories[0])?.name || 'Category' : selCategories.length + ' Categories')"></span>
                         <span x-show="selCategories.length" class="ml-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1" x-text="selCategories.length"></span>
@@ -76,7 +172,7 @@
                 <div class="relative" x-show="allFilterSubcategories.length > 0" @click.away="subOpen = false">
                     <button type="button" @click="subOpen = !subOpen"
                         :class="selSubcategories.length ? 'border-primary-400 bg-primary-50 text-primary-700' : 'border-gray-300 bg-white text-gray-700'"
-                        class="flex items-center gap-1.5 text-sm h-9 pl-3 pr-2 rounded-lg border shadow-sm hover:shadow transition-all cursor-pointer">
+                        class="flex items-center gap-1.5 text-sm min-h-[2.5rem] pl-3 pr-2 rounded-lg border shadow-sm hover:shadow transition-all cursor-pointer">
                         <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
                         <span x-text="selSubcategories.length === 0 ? 'Subcategory' : (selSubcategories.length === 1 ? allFilterSubcategories.find(s=>s.id===selSubcategories[0])?.name || 'Subcategory' : selSubcategories.length + ' Subcategories')"></span>
                         <span x-show="selSubcategories.length" class="ml-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1" x-text="selSubcategories.length"></span>
@@ -107,7 +203,7 @@
                 <div class="relative" x-show="filterBrands.length > 0" @click.away="brandOpen = false">
                     <button type="button" @click="brandOpen = !brandOpen"
                         :class="selBrands.length ? 'border-primary-400 bg-primary-50 text-primary-700' : 'border-gray-300 bg-white text-gray-700'"
-                        class="flex items-center gap-1.5 text-sm h-9 pl-3 pr-2 rounded-lg border shadow-sm hover:shadow transition-all cursor-pointer">
+                        class="flex items-center gap-1.5 text-sm min-h-[2.5rem] pl-3 pr-2 rounded-lg border shadow-sm hover:shadow transition-all cursor-pointer">
                         <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5a1.99 1.99 0 011.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>
                         <span x-text="selBrands.length === 0 ? 'Brand' : (selBrands.length === 1 ? filterBrands.find(b=>b.id===selBrands[0])?.name || 'Brand' : selBrands.length + ' Brands')"></span>
                         <span x-show="selBrands.length" class="ml-0.5 bg-primary-600 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1" x-text="selBrands.length"></span>
@@ -137,7 +233,7 @@
                 {{-- Clear all filters --}}
                 <button x-show="selCategories.length || selSubcategories.length || selBrands.length"
                     @click="clearFilters()"
-                    class="flex items-center gap-1 text-xs text-red-600 hover:text-red-700 font-semibold px-3 h-9 rounded-lg border border-red-200 hover:bg-red-50 transition-colors cursor-pointer">
+                    class="flex items-center gap-1 text-xs text-red-600 hover:text-red-700 font-semibold px-3 min-h-[2.5rem] rounded-lg border border-red-200 hover:bg-red-50 transition-colors cursor-pointer">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     Clear
                 </button>
@@ -148,7 +244,7 @@
                 class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2.5 overflow-y-auto flex-1 max-h-[50vh] lg:max-h-[60vh] pb-1 pr-1 content-start auto-rows-max">
                 <template x-for="p in searchResults" :key="p.id">
                     <button @click="addProduct(p)"
-                        class="group relative bg-white rounded-lg text-left shadow-sm hover:shadow-lg border border-gray-100 hover:border-primary-300 transition-all duration-200 overflow-hidden flex flex-col cursor-pointer">
+                        class="sales-item-card group relative rounded-lg text-left hover:shadow-lg hover:border-primary-300 transition-all duration-200 overflow-hidden flex flex-col cursor-pointer">
                         <div class="relative w-full overflow-hidden bg-gray-50" style="height:80px">
                             <img x-show="p.thumbnail" :src="'/storage/' + p.thumbnail"
                                 class="absolute inset-0 w-full h-full object-contain p-1 group-hover:scale-110 transition-transform duration-300">
@@ -191,7 +287,7 @@
                 class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2.5 overflow-y-auto flex-1 max-h-[50vh] lg:max-h-[60vh] pb-1 pr-1 content-start auto-rows-max">
                 <template x-for="s in filteredServices" :key="s.id">
                     <button @click="openServiceModal(s)"
-                        class="group relative bg-white rounded-lg text-left shadow-sm hover:shadow-lg border border-gray-100 hover:border-indigo-300 transition-all duration-200 overflow-hidden flex flex-col cursor-pointer">
+                        class="sales-item-card group relative rounded-lg text-left hover:shadow-lg hover:border-indigo-300 transition-all duration-200 overflow-hidden flex flex-col cursor-pointer">
                         <div class="relative w-full overflow-hidden" style="height:80px">
                             <img x-show="s.thumbnail" :src="'/storage/' + s.thumbnail"
                                 class="absolute inset-0 w-full h-full object-contain p-1 group-hover:scale-110 transition-transform duration-300">
@@ -219,20 +315,20 @@
             </div>
 
             {{-- Manual item entry --}}
-            <div x-show="itemType === 'manual'" class="card p-4">
+            <div x-show="itemType === 'manual'" class="card sales-panel p-4">
                 <h4 class="text-sm font-semibold text-gray-700 mb-3">Manual Item Entry</h4>
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
                     <div class="md:col-span-2">
                         <label class="text-xs font-medium text-gray-600">Item Name *</label>
-                        <input x-model="manualItem.item_name" type="text" class="form-input-custom mt-1 text-sm" placeholder="e.g. Tempered Glass">
+                            <input x-model="manualItem.item_name" type="text" class="form-input-custom sales-field mt-1 text-sm" placeholder="e.g. Tempered Glass">
                     </div>
                     <div>
                         <label class="text-xs font-medium text-gray-600">MRP</label>
-                        <input x-model.number="manualItem.mrp" type="number" step="0.01" class="form-input-custom mt-1 text-sm" placeholder="0.00">
+                            <input x-model.number="manualItem.mrp" type="number" step="0.01" class="form-input-custom sales-field mt-1 text-sm" placeholder="0.00">
                     </div>
                     <div>
                         <label class="text-xs font-medium text-gray-600">Sell Price *</label>
-                        <input x-model.number="manualItem.price" type="number" step="0.01" class="form-input-custom mt-1 text-sm" placeholder="0.00">
+                            <input x-model.number="manualItem.price" type="number" step="0.01" class="form-input-custom sales-field mt-1 text-sm" placeholder="0.00">
                     </div>
                     <div class="flex items-end">
                         <button @click="addManualItem()" class="btn-primary w-full text-sm">Add to Cart</button>
@@ -245,7 +341,7 @@
         <div class="relative flex flex-col gap-3 order-first lg:order-none" :style="custOpen ? 'z-index:95;' : 'z-index:0;'">
 
             {{-- Customer selector --}}
-            <div class="card relative" :style="custOpen ? 'overflow:visible; z-index:110;' : 'overflow:visible; z-index:10;'">
+            <div class="card sales-panel relative" :style="custOpen ? 'overflow:visible; z-index:110;' : 'overflow:visible; z-index:10;'">
                 <div class="card-body py-3" style="overflow:visible">
                     <div class="flex items-start justify-between gap-3">
                         <div>
@@ -260,7 +356,7 @@
                     <div x-show="!selectedCustomer" x-cloak class="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
                         <div class="flex-1 relative" @click.away="custOpen = false">
                             <input x-model="customerSearch" @focus="findCustomers(1)" @input.debounce.300ms="findCustomers(1)" type="text"
-                                class="form-input-custom text-sm" placeholder="Search by name / phone...">
+                                class="form-input-custom sales-field text-sm" placeholder="Search by name / phone...">
                             <div x-show="custOpen && customerResults.length > 0" x-cloak class="absolute left-0 right-0 mt-1 overflow-hidden rounded-lg border bg-white shadow-lg" style="z-index:160;">
                                 <div class="max-h-48 overflow-y-auto" @scroll="handleCustScroll($event)">
                                     <template x-for="c in customerResults" :key="c.id">
@@ -295,7 +391,7 @@
             </div>
 
             {{-- Cart --}}
-            <div class="card relative flex-1 flex flex-col" style="z-index:0;">
+            <div class="card sales-panel relative flex-1 flex flex-col" style="z-index:0;">
                 <div class="card-header py-2 flex items-center justify-between">
                     <h3 class="font-semibold text-gray-800 text-sm">
                         Cart (<span x-text="cart.length"></span> item<span x-show="cart.length !== 1">s</span>)
@@ -306,7 +402,7 @@
 
                 <div class="flex-1 overflow-y-auto max-h-[34vh] lg:max-h-[38vh]">
                     <template x-for="(item, idx) in cart" :key="idx">
-                        <div class="px-3 py-2 border-b last:border-0 hover:bg-gray-50/50 transition-colors">
+                        <div class="sales-cart-row border-b last:border-0 hover:bg-gray-50/50 transition-colors">
                             <div class="flex items-start gap-2">
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-medium text-gray-900 truncate leading-tight cursor-default"
@@ -361,7 +457,7 @@
                 </div>
 
                 {{-- Summary --}}
-                <div class="border-t px-4 py-3 space-y-1.5 text-sm bg-gray-50/50">
+                <div class="sales-summary border-t px-4 py-3 space-y-1.5 text-sm bg-gray-50/50">
                     <div class="flex justify-between text-gray-600">
                         <span>Subtotal</span>
                         <span x-text="'₹' + subtotal().toFixed(2)"></span>
@@ -378,7 +474,7 @@
                 </div>
 
                 {{-- Create Invoice button --}}
-                <div class="border-t px-4 py-3">
+                <div class="sales-actionbar border-t px-4 py-3">
                     <button @click="createInvoiceDraft()"
                         class="btn-primary w-full py-3 text-base font-semibold"
                         :disabled="saving || cart.length === 0 || grandTotal() <= 0">

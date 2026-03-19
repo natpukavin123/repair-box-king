@@ -3,7 +3,25 @@
 @section('content-class', 'workspace-content')
 
 @section('content')
-<div x-data="usersPage()" x-init="load()" class="workspace-screen">
+<style>
+    .users-workspace .workspace-toolbar,
+    .users-workspace .workspace-filterbar,
+    .users-workspace .workspace-table-card {
+        border-radius: 1.2rem;
+    }
+
+    .users-workspace .workspace-table-scroll .data-table thead {
+        background: linear-gradient(180deg, rgba(248, 250, 252, 0.98), rgba(238, 242, 255, 0.9));
+    }
+
+    .users-workspace .workspace-table-scroll .data-table th,
+    .users-workspace .workspace-table-scroll .data-table td {
+        padding-top: 0.78rem;
+        padding-bottom: 0.78rem;
+    }
+</style>
+
+<div x-data="usersPage()" x-init="load()" class="workspace-screen users-workspace">
     <x-ui.action-bar title="Team Access" description="Manage user accounts, roles, and status from a contained single-screen table view.">
         <a href="/users/create" class="btn-primary inline-flex w-full items-center justify-center sm:w-auto"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add User</a>
     </x-ui.action-bar>
@@ -54,7 +72,7 @@
     </x-ui.table-card>
 
     <div x-show="showModal" class="modal-overlay" x-cloak>
-        <div class="modal-container">
+        <div class="modal-container admin-modal">
             <div class="modal-header"><h3 class="text-lg font-semibold">Edit User</h3><button @click="showModal = false" class="text-gray-400 hover:text-gray-600">&times;</button></div>
             <div class="modal-body">
                 <div class="space-y-4">
