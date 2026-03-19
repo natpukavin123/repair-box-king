@@ -105,6 +105,7 @@ body[data-theme='solstice'] {
 }
 
 html, body {
+    height: 100%;
     min-height: 100%;
 }
 
@@ -620,6 +621,175 @@ body.app-shell textarea {
     overflow: hidden;
 }
 
+body.app-shell.workspace-layout {
+    overflow: auto;
+}
+
+@media (min-width: 1024px) {
+    body.app-shell.workspace-layout {
+        height: 100dvh;
+        min-height: 100dvh;
+        overflow: hidden;
+    }
+}
+
+body.app-shell.workspace-layout .app-frame,
+.app-frame.workspace-layout-frame {
+    display: flex;
+    flex-direction: column;
+}
+
+@media (min-width: 1024px) {
+    body.app-shell.workspace-layout .app-frame,
+    .app-frame.workspace-layout-frame {
+        height: 100dvh;
+        min-height: 100dvh;
+        overflow: hidden;
+    }
+}
+
+body.app-shell.workspace-layout .topnav,
+body.app-shell.workspace-layout .page-header {
+    flex-shrink: 0;
+}
+
+body.app-shell.workspace-layout .topnav {
+    padding: 0.35rem 0.85rem 0;
+}
+
+body.app-shell.workspace-layout .topnav-inner {
+    min-height: 4rem;
+    padding: 0.48rem 0.75rem;
+    border-radius: 1.35rem;
+}
+
+body.app-shell.workspace-layout .brand-link {
+    gap: 0.7rem;
+}
+
+body.app-shell.workspace-layout .brand-logo {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.9rem;
+}
+
+body.app-shell.workspace-layout .brand-name {
+    font-size: 0.9rem;
+}
+
+body.app-shell.workspace-layout .brand-subtitle {
+    margin-top: 0.08rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.16em;
+}
+
+body.app-shell.workspace-layout .topnav-links-shell {
+    padding: 0.25rem;
+    border-radius: 1.1rem;
+}
+
+body.app-shell.workspace-layout .topnav-link {
+    gap: 0.45rem;
+    padding: 0.52rem 0.72rem;
+    border-radius: 0.82rem;
+    font-size: 0.64rem;
+    letter-spacing: 0.14em;
+}
+
+body.app-shell.workspace-layout .topnav-link-compact {
+    padding-inline: 0.8rem;
+}
+
+body.app-shell.workspace-layout .icon-action {
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 0.85rem;
+}
+
+body.app-shell.workspace-layout .user-chip {
+    gap: 0.55rem;
+    padding: 0.3rem 0.5rem 0.3rem 0.35rem;
+}
+
+body.app-shell.workspace-layout .user-chip-avatar {
+    width: 1.85rem;
+    height: 1.85rem;
+    font-size: 0.72rem;
+}
+
+body.app-shell.workspace-layout .user-chip-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.12em;
+}
+
+body.app-shell.workspace-layout .user-chip-name {
+    font-size: 0.76rem;
+}
+
+body.app-shell.workspace-layout .page-header {
+    padding: 0.45rem 1rem 0;
+}
+
+body.app-shell.workspace-layout .page-header.page-header-compact {
+    padding-top: 0.25rem;
+}
+
+body.app-shell.workspace-layout .page-header-inner {
+    padding: 0.75rem 1rem;
+    border-radius: 1.2rem;
+}
+
+body.app-shell.workspace-layout .page-header-inner.page-header-inner-compact {
+    padding: 0.55rem 0.9rem;
+    border-radius: 1rem;
+}
+
+body.app-shell.workspace-layout .page-kicker {
+    font-size: 0.54rem;
+    letter-spacing: 0.14em;
+}
+
+body.app-shell.workspace-layout .page-title {
+    margin-top: 0.1rem;
+    font-size: clamp(1.05rem, 1.4vw, 1.45rem);
+}
+
+body.app-shell.workspace-layout .page-header-compact .page-title {
+    margin-top: 0;
+    font-size: clamp(0.98rem, 1.2vw, 1.3rem);
+}
+
+body.app-shell.workspace-layout .page-meta-chip {
+    min-width: 7.25rem;
+    padding: 0.55rem 0.7rem;
+}
+
+body.app-shell.workspace-layout .page-meta-label {
+    font-size: 0.54rem;
+    letter-spacing: 0.12em;
+}
+
+body.app-shell.workspace-layout .page-meta-value {
+    margin-top: 0.2rem;
+    font-size: 0.78rem;
+}
+
+body.app-shell.workspace-layout .app-main-shell,
+.app-main-shell.workspace-layout-main {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+    padding-bottom: 0;
+    box-sizing: border-box;
+}
+
+@media (min-width: 1024px) {
+    body.app-shell.workspace-layout .app-main-shell,
+    .app-main-shell.workspace-layout-main {
+        overflow: hidden;
+    }
+}
+
 .page-header {
     padding: 1rem 1.25rem 0;
 }
@@ -688,7 +858,17 @@ body.app-shell textarea {
 
 .page-main.workspace-content {
     display: flex;
-    overflow: hidden;
+    min-height: 0;
+}
+
+@media (min-width: 1024px) {
+    .page-main.workspace-content {
+        overflow: hidden;
+    }
+}
+
+body.app-shell.workspace-layout .page-main {
+    padding: 0.35rem 0.85rem 0.35rem;
 }
 
 .page-main.workspace-content > .content-shell {
@@ -696,7 +876,12 @@ body.app-shell textarea {
     flex: 1;
     min-height: 0;
     height: 100%;
-    overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+    .page-main.workspace-content > .content-shell {
+        overflow: hidden;
+    }
 }
 
 .content-shell {

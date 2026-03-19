@@ -1,6 +1,7 @@
 @php
     $allowedThemes = ['atelier', 'graphite', 'solstice'];
     $allowedMotion = ['enhanced', 'reduced', 'none'];
+    $isWorkspaceLayout = trim($__env->yieldContent('content-class')) === 'workspace-content';
 
     $uiTheme = \App\Models\Setting::getValue('ui_theme', 'atelier');
     $uiMotion = \App\Models\Setting::getValue('ui_motion', 'enhanced');
@@ -20,7 +21,7 @@
     ];
 @endphp
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en" class="h-full {{ $isWorkspaceLayout ? 'lg:overflow-hidden' : '' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -66,7 +67,7 @@
         }
     </style>
 </head>
-<body class="h-full app-shell" data-theme="{{ $uiTheme }}" data-motion="{{ $uiMotion }}" x-data="{ mobileMenuOpen: false }">
+<body class="h-full app-shell {{ $isWorkspaceLayout ? 'workspace-layout' : '' }}" data-theme="{{ $uiTheme }}" data-motion="{{ $uiMotion }}" x-data="{ mobileMenuOpen: false }">
 
 <div class="app-backdrop" aria-hidden="true">
     <span class="app-orb app-orb-one"></span>
@@ -74,7 +75,7 @@
     <span class="app-orb app-orb-three"></span>
 </div>
 
-<div class="app-frame">
+<div class="app-frame {{ $isWorkspaceLayout ? 'workspace-layout-frame' : '' }}">
 
 <div class="page-loader" id="pageLoader">
     <div class="loader-circle"></div>
@@ -169,27 +170,7 @@
 </nav>
 
 <!-- Main Content -->
-<div class="app-main-shell">
-    <!-- Page Header -->
-    <header class="page-header no-print">
-        <div class="page-header-inner">
-            <div>
-                <p class="page-kicker">Operations workspace</p>
-                <h2 class="page-title">@yield('page-title', 'Dashboard')</h2>
-            </div>
-            <div class="page-header-meta hidden lg:flex">
-                <div class="page-meta-chip">
-                    <div class="page-meta-label">Theme</div>
-                    <div class="page-meta-value">{{ $themeNames[$uiTheme] ?? 'Atelier Glass' }}</div>
-                </div>
-                <div class="page-meta-chip">
-                    <div class="page-meta-label">Today</div>
-                    <div class="page-meta-value">{{ now()->format('d M Y') }}</div>
-                </div>
-            </div>
-        </div>
-    </header>
-
+<div class="app-main-shell {{ $isWorkspaceLayout ? 'workspace-layout-main' : '' }}">
     <!-- Page Content -->
     <main class="page-main @yield('content-class')">
         <div class="content-shell">
