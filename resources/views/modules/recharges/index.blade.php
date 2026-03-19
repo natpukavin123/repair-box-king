@@ -171,8 +171,8 @@
     }
 </style>
 
-<div x-data="rechargesPage()" x-init="init()" class="workspace-screen rch-workspace w-full lg:overflow-hidden">
-    <div class="grid w-full lg:flex-1 lg:min-h-0 grid-cols-1 gap-2 lg:overflow-hidden lg:grid-cols-3 lg:grid-rows-1">
+<div x-data="rechargesPage()" x-init="init()" class="workspace-screen rch-workspace w-full">
+    <div class="grid w-full lg:flex-1 lg:min-h-0 grid-cols-1 gap-2 lg:grid-cols-3 lg:grid-rows-1">
 
         {{-- ===== LEFT: Recharge List (table) ===== --}}
         <div class="flex lg:min-h-0 flex-col lg:overflow-hidden lg:col-span-2">
@@ -190,7 +190,7 @@
             </div>
 
             {{-- Filter bar --}}
-            <div class="rch-filterbar mb-1 flex shrink-0 flex-wrap items-center gap-1.5">
+            <div class="rch-filterbar mb-1 flex shrink-0 flex-wrap items-center gap-1.5 relative z-20">
                 {{-- Status dropdown --}}
                 <div class="relative" x-data="{ statusOpen: false }" @click.away="statusOpen = false">
                     <button type="button" @click="statusOpen = !statusOpen"
@@ -348,7 +348,7 @@
         </div>
 
         {{-- ===== RIGHT: New Recharge Form ===== --}}
-        <div class="relative order-first flex lg:min-h-0 flex-col gap-1.5 lg:overflow-hidden lg:order-none" :style="custOpen ? 'z-index:95;' : 'z-index:0;'">
+        <div class="relative order-first flex lg:min-h-0 flex-col gap-1.5 lg:order-none" :style="custOpen ? 'z-index:95;' : 'z-index:10;'">
 
             {{-- Customer selector --}}
             <div class="card rch-panel relative shrink-0" :style="custOpen ? 'overflow:visible; z-index:110;' : 'overflow:visible; z-index:10;'">

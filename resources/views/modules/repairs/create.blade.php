@@ -31,7 +31,7 @@
         </div>
     </div>
 
-    <div class="rounded-3xl border border-slate-200 bg-white shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)] overflow-hidden">
+    <div class="rounded-3xl border border-slate-200 bg-white shadow-[0_24px_70px_-48px_rgba(15,23,42,0.35)]">
         <div class="border-b border-slate-200 bg-white px-6 py-4">
             <h3 class="text-base font-semibold text-slate-900" x-text="currentStepMeta.title"></h3>
             <p class="mt-1 text-sm text-slate-500" x-text="currentStepMeta.description"></p>

@@ -171,8 +171,8 @@
     }
 </style>
 
-<div x-data="expensesPage()" x-init="load()" class="workspace-screen exp-workspace w-full lg:overflow-hidden">
-    <div class="grid w-full lg:flex-1 lg:min-h-0 grid-cols-1 gap-2 lg:overflow-hidden lg:grid-cols-3 lg:grid-rows-1">
+<div x-data="expensesPage()" x-init="load()" class="workspace-screen exp-workspace w-full">
+    <div class="grid w-full lg:flex-1 lg:min-h-0 grid-cols-1 gap-2 lg:grid-cols-3 lg:grid-rows-1">
 
         {{-- ===== LEFT: Expense List (table) ===== --}}
         <div class="flex lg:min-h-0 flex-col lg:overflow-hidden lg:col-span-2">
@@ -190,7 +190,7 @@
             </div>
 
             {{-- Filter bar --}}
-            <div class="exp-filterbar mb-1 flex shrink-0 flex-wrap items-center gap-1.5">
+            <div class="exp-filterbar mb-1 flex shrink-0 flex-wrap items-center gap-1.5 relative z-20">
                 {{-- Category dropdown --}}
                 <div class="relative" x-data="{ catOpen: false }" @click.away="catOpen = false">
                     <button type="button" @click="catOpen = !catOpen"
@@ -339,7 +339,7 @@
         </div>
 
         {{-- ===== RIGHT: Add Expense Form ===== --}}
-        <div class="relative order-first flex lg:min-h-0 flex-col gap-1.5 lg:overflow-hidden lg:order-none" style="z-index:0;">
+        <div class="relative order-first flex lg:min-h-0 flex-col gap-1.5 lg:order-none" style="z-index:10;">
 
             {{-- Add Expense Form --}}
             <div class="card exp-panel relative flex min-h-0 flex-1 flex-col">

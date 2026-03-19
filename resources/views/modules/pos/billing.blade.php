@@ -135,7 +135,7 @@
             </div>
 
             {{-- Filter bar (products only) --}}
-            <div x-show="itemType === 'product'" class="sales-filterbar mb-3 flex flex-wrap items-center gap-2">
+            <div x-show="itemType === 'product'" class="sales-filterbar mb-3 flex flex-wrap items-center gap-2 relative z-30">
 
                 {{-- Category multi-select --}}
                 <div class="relative" @click.away="catOpen = false">
@@ -338,7 +338,7 @@
         </div>
 
         {{-- RIGHT: Cart & Customer --}}
-        <div class="relative flex flex-col gap-3 order-first lg:order-none" :style="custOpen ? 'z-index:95;' : 'z-index:0;'">
+        <div class="relative flex flex-col gap-3 order-first lg:order-none" :style="custOpen ? 'z-index:95;' : 'z-index:10;'">
 
             {{-- Customer selector --}}
             <div class="card sales-panel relative" :style="custOpen ? 'overflow:visible; z-index:110;' : 'overflow:visible; z-index:10;'">

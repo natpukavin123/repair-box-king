@@ -208,8 +208,8 @@
     }
 </style>
 
-<div x-data="repairsPage()" x-init="init()" class="workspace-screen repairs-workspace w-full lg:overflow-hidden">
-    <div class="grid w-full lg:flex-1 lg:min-h-0 grid-cols-1 gap-2 lg:overflow-hidden lg:grid-cols-3 lg:grid-rows-1">
+<div x-data="repairsPage()" x-init="init()" class="workspace-screen repairs-workspace w-full">
+    <div class="grid w-full lg:flex-1 lg:min-h-0 grid-cols-1 gap-2 lg:grid-cols-3 lg:grid-rows-1">
 
         {{-- LEFT: Repair Queue --}}
         <div class="flex lg:min-h-0 flex-col lg:overflow-hidden lg:col-span-2">
@@ -234,7 +234,7 @@
             </div>
 
             {{-- Filter bar --}}
-            <div class="repair-filterbar mb-1 flex shrink-0 flex-wrap items-center gap-1.5">
+            <div class="repair-filterbar mb-1 flex shrink-0 flex-wrap items-center gap-1.5 relative z-20">
                 {{-- Status dropdown --}}
                 <div class="relative" x-data="{ statusOpen: false }" @click.away="statusOpen = false">
                     <button type="button" @click="statusOpen = !statusOpen"
@@ -424,7 +424,7 @@
         </div>
 
         {{-- RIGHT: Create Repair (like POS cart) --}}
-        <div class="relative order-first flex lg:min-h-0 flex-col gap-1.5 lg:overflow-hidden lg:order-none" :style="custOpen ? 'z-index:95;' : 'z-index:0;'">
+        <div class="relative order-first flex lg:min-h-0 flex-col gap-1.5 lg:order-none" :style="custOpen ? 'z-index:95;' : 'z-index:10;'">
 
             {{-- Customer selector --}}
             <div class="card repair-panel relative shrink-0" :style="custOpen ? 'overflow:visible; z-index:110;' : 'overflow:visible; z-index:10;'">
@@ -477,7 +477,7 @@
             </div>
 
             {{-- Repair Details Form --}}
-            <div class="card repair-panel relative flex min-h-0 flex-1 flex-col" style="z-index:0;">
+            <div class="card repair-panel relative flex min-h-0 flex-1 flex-col" style="z-index:10;">
                 <div class="card-header flex shrink-0 items-center justify-between py-1.5">
                     <h3 class="font-semibold text-gray-800 text-sm">
                         <svg class="w-4 h-4 inline mr-1 -mt-0.5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>

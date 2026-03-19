@@ -255,7 +255,7 @@
 
             <!-- ===== COMBINED PARTS + SERVICES (EDITABLE/READ-ONLY) ===== -->
             <template x-if="['in_progress'].includes(repair.status) && !repair.is_locked">
-                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <div class="bg-white rounded-xl shadow-sm border overflow-visible">
                     <div class="bg-gradient-to-r from-indigo-50 to-blue-50 border-b px-5 py-4">
                         <h3 class="font-bold text-sm text-gray-900 uppercase tracking-wider flex items-center gap-2">
                             <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 015.646 5.646 9.003 9.003 0 0020.354 15.354z"/></svg>
@@ -481,7 +481,7 @@
 
             <!-- PARTS READ-ONLY SUMMARY (completed/payment/closed/cancelled) -->
             <template x-if="['completed','payment','closed','cancelled'].includes(repair.status) && (repair.parts || []).length > 0">
-                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <div class="bg-white rounded-xl shadow-sm border overflow-visible">
                     <div class="bg-gradient-to-r from-indigo-50 to-blue-50 border-b px-5 py-4">
                         <h3 class="font-bold text-sm text-gray-900 uppercase tracking-wider flex items-center gap-2">
                             <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 015.646 5.646 9.003 9.003 0 0020.354 15.354z"/></svg>
@@ -521,7 +521,7 @@
 
             <!-- SERVICES READ-ONLY SUMMARY (completed/payment/closed/cancelled) -->
             <template x-if="['completed','payment','closed','cancelled'].includes(repair.status) && (repair.repair_services || []).length > 0">
-                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <div class="bg-white rounded-xl shadow-sm border overflow-visible">
                     <div class="bg-gradient-to-r from-indigo-50 to-blue-50 border-b px-5 py-4">
                         <h3 class="font-bold text-sm text-gray-900 uppercase tracking-wider flex items-center gap-2">
                             <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -613,7 +613,7 @@
 
             <!-- ===== REPAIR OPERATIONS PANEL (Compact) ===== -->
             <template x-if="!repair.is_locked && repair.status !== 'cancelled'">
-                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <div class="bg-white rounded-xl shadow-sm border overflow-visible">
                     <!-- Header -->
                     <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-3 flex items-center justify-between">
                         <h3 class="font-bold text-white text-xs uppercase tracking-wider">Repair Operations</h3>
@@ -845,7 +845,7 @@
 
             <!-- ===== CHILD REPAIRS ===== -->
             <template x-if="(repair.child_repairs || []).length > 0">
-                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                <div class="bg-white rounded-xl shadow-sm border overflow-visible">
                     <div class="bg-gray-50 px-4 py-3 border-b"><h3 class="font-semibold text-sm text-gray-600">Related Repairs</h3></div>
                     <div class="p-3">
                         <template x-for="child in repair.child_repairs" :key="child.id">
