@@ -37,7 +37,7 @@
                                 </div>
                             </div>
                         </div>
-                        <button type="button" @click="showAddCust = true; newCust = {name:'', mobile_number:'', email:'', address:''}" class="btn-primary text-sm px-3 whitespace-nowrap w-full sm:w-auto">+ New</button>
+                        <button type="button" @click="openAddCustModal()" class="btn-primary text-sm px-3 whitespace-nowrap w-full sm:w-auto">+ New</button>
                     </div>
                     <div x-show="custOpen && !custLoading && custResults.length === 0" class="text-xs text-gray-400 mt-1">No customers found.</div>
                     <div x-show="selCust" class="mt-1"><span class="badge badge-primary" x-text="selCust?.name"></span> <button @click="selCust = null; form.customer_id = null" class="text-red-400 text-xs">&times;</button></div>
@@ -70,25 +70,32 @@
     </div>
 
     <!-- Add Customer Modal -->
-    <div x-show="showAddCust" class="modal-overlay" x-cloak @click.self="showAddCust = false">
+    <div x-show="showAddCust" class="modal-overlay" x-cloak @click.self="closeAddCustModal()">
         <div class="modal-container max-w-md">
-            <div class="modal-header"><h3 class="text-lg font-semibold">Add Customer</h3><button @click="showAddCust = false" class="text-gray-400 hover:text-gray-600">&times;</button></div>
+            <div class="modal-header"><h3 class="text-lg font-semibold">Add Customer</h3><button @click="closeAddCustModal()" class="text-gray-400 hover:text-gray-600">&times;</button></div>
             <div class="modal-body">
                 <x-ui.form-section title="Customer Details" description="Create and select a customer without leaving the service form.">
-                    <x-ui.input-field label="Name" x-model="newCust.name" required />
+                    <div class="workspace-field" x-show="customerSubmitError">
+                        <div x-text="customerSubmitError" class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"></div>
+                    </div>
+                    <div class="workspace-field">
+                        <x-ui.input-field label="Name" x-model="newCust.name" required />
+                        <p x-show="customerFormTried && !newCust.name.trim()" class="workspace-field-hint text-red-500">Name is required</p>
+                    </div>
                     <div class="workspace-field">
                         <label class="form-label">Mobile <span class="text-red-500">*</span> <span class="text-xs text-gray-500">(10 digits)</span></label>
-                        <input x-model="newCust.mobile_number" type="text" class="form-input-custom" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required @keydown="if(!/[0-9]/.test($event.key) && !['Backspace','Delete','Tab','ArrowLeft','ArrowRight'].includes($event.key)) $event.preventDefault()">
-                        <p x-show="newCust.mobile_number && !/^\d{10}$/.test(newCust.mobile_number)" class="workspace-field-hint text-red-500">Mobile must be exactly 10 digits</p>
+                        <input x-model="newCust.mobile_number" type="text" class="form-input-custom" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required @input="newCust.mobile_number = RepairBox.normalizeCustomerMobile(newCust.mobile_number)" @keydown="if(!/[0-9]/.test($event.key) && !['Backspace','Delete','Tab','ArrowLeft','ArrowRight'].includes($event.key)) $event.preventDefault()">
+                        <p x-show="customerFormTried && !newCust.mobile_number.trim()" class="workspace-field-hint text-red-500">Mobile number is required</p>
+                        <p x-show="(customerFormTried || newCust.mobile_number) && newCust.mobile_number.trim() && !/^\d{10}$/.test(newCust.mobile_number.trim())" class="workspace-field-hint text-red-500">Mobile must be exactly 10 digits</p>
                     </div>
                     <div class="workspace-field">
                         <x-ui.input-field label="Email" x-model="newCust.email" type="email" />
-                        <p x-show="newCust.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCust.email)" class="workspace-field-hint text-red-500">Please enter a valid email</p>
+                        <p x-show="(customerFormTried || newCust.email) && newCust.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCust.email.trim())" class="workspace-field-hint text-red-500">Please enter a valid email</p>
                     </div>
                     <x-ui.input-field label="Address" x-model="newCust.address" />
                 </x-ui.form-section>
             </div>
-            <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end"><button @click="showAddCust = false" class="btn-secondary w-full sm:w-auto">Cancel</button><button @click="saveNewCust()" class="btn-primary w-full sm:w-auto" :disabled="!newCust.name.trim() || !/^\d{10}$/.test(newCust.mobile_number) || (newCust.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCust.email))">Save & Select</button></div>
+            <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end"><button @click="closeAddCustModal()" class="btn-secondary w-full sm:w-auto">Cancel</button><button @click="saveNewCust()" class="btn-primary w-full sm:w-auto" :disabled="customerSaving"><span x-text="customerSaving ? 'Saving...' : 'Save & Select'"></span></button></div>
         </div>
     </div>
 </div>
@@ -101,6 +108,7 @@ function createServicePage() {
         saving: false,
         custSearch: '', custResults: [], custOpen: false, custHasMore: false, custPage: 1, custLoading: false, selCust: null,
         showAddCust: false, newCust: {name: '', mobile_number: '', email: '', address: ''},
+        customerFormTried: false, customerSaving: false, customerSubmitError: '',
         form: { service_type_id: '', customer_id: null, description: '', customer_charge: '', vendor_cost: '', payment_method: 'cash', status: 'completed' },
         async findCust(page) {
             page = page || 1;
@@ -119,26 +127,41 @@ function createServicePage() {
             if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10 && this.custHasMore && !this.custLoading) { this.findCust(this.custPage + 1); }
         },
         selectCust(c) { this.selCust = c; this.form.customer_id = c.id; this.custResults = []; this.custOpen = false; this.custSearch = ''; },
+        openAddCustModal() {
+            this.customerFormTried = false;
+            this.customerSaving = false;
+            this.customerSubmitError = '';
+            this.newCust = RepairBox.emptyCustomer();
+            this.showAddCust = true;
+        },
+        closeAddCustModal() {
+            this.customerFormTried = false;
+            this.customerSaving = false;
+            this.customerSubmitError = '';
+            this.showAddCust = false;
+        },
         async saveNewCust() {
-            if (!this.newCust.name.trim()) {
-                RepairBox.toast('Name is required', 'error');
+            this.customerFormTried = true;
+            this.customerSubmitError = '';
+
+            const validation = RepairBox.validateCustomerPayload(this.newCust);
+            this.newCust = {
+                ...this.newCust,
+                ...validation.payload,
+                email: validation.payload.email || '',
+                address: validation.payload.address || '',
+            };
+
+            if (!validation.valid) {
                 return;
             }
-            const mobile = this.newCust.mobile_number.trim();
-            if (!mobile) {
-                RepairBox.toast('Mobile number is required', 'error');
-                return;
-            }
-            if (!/^\d{10}$/.test(mobile)) {
-                RepairBox.toast('Mobile must be exactly 10 digits', 'error');
-                return;
-            }
-            if (this.newCust.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.newCust.email)) {
-                RepairBox.toast('Please enter a valid email address', 'error');
-                return;
-            }
-            const r = await RepairBox.ajax('/customers', 'POST', this.newCust);
-            if (r.success !== false && r.data) { this.selCust = r.data; this.form.customer_id = r.data.id; this.custResults = []; this.custSearch = ''; this.showAddCust = false; RepairBox.toast('Customer added', 'success'); }
+
+            this.customerSaving = true;
+            const r = await RepairBox.ajax('/customers', 'POST', validation.payload);
+            this.customerSaving = false;
+
+            if (r.success !== false && r.data) { this.selCust = r.data; this.form.customer_id = r.data.id; this.custResults = []; this.custSearch = ''; this.closeAddCustModal(); this.newCust = RepairBox.emptyCustomer(); RepairBox.toast('Customer added', 'success'); return; }
+            this.customerSubmitError = r.message || 'Unable to save customer. Please check the details and try again.';
         },
         async save() {
             this.saving = true;

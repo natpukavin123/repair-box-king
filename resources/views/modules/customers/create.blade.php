@@ -16,10 +16,22 @@
 
     <div class="card">
         <div class="card-body space-y-5">
+            <div x-show="submitError" x-text="submitError" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"></div>
             <x-ui.form-section title="Customer Details" description="Capture the basic contact information used across billing and repairs.">
-                <x-ui.input-field label="Name" x-model="form.name" required />
-                <x-ui.input-field label="Mobile" x-model="form.mobile_number" required />
-                <x-ui.input-field label="Email" x-model="form.email" type="email" />
+                <div class="workspace-field">
+                    <x-ui.input-field label="Name" x-model="form.name" required />
+                    <p x-show="formTried && !form.name.trim()" class="workspace-field-hint text-red-500">Name is required</p>
+                </div>
+                <div class="workspace-field">
+                    <label class="form-label">Mobile <span class="text-red-500">*</span> <span class="text-xs text-gray-500">(10 digits)</span></label>
+                    <input x-model="form.mobile_number" type="text" class="form-input-custom" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" @input="form.mobile_number = RepairBox.normalizeCustomerMobile(form.mobile_number)" @keydown="if(!/[0-9]/.test($event.key) && !['Backspace','Delete','Tab','ArrowLeft','ArrowRight'].includes($event.key)) $event.preventDefault()">
+                    <p x-show="formTried && !form.mobile_number.trim()" class="workspace-field-hint text-red-500">Mobile number is required</p>
+                    <p x-show="(formTried || form.mobile_number) && form.mobile_number.trim() && !/^\d{10}$/.test(form.mobile_number.trim())" class="workspace-field-hint text-red-500">Mobile must be exactly 10 digits</p>
+                </div>
+                <div class="workspace-field">
+                    <x-ui.input-field label="Email" x-model="form.email" type="email" />
+                    <p x-show="(formTried || form.email) && form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())" class="workspace-field-hint text-red-500">Please enter a valid email</p>
+                </div>
                 <x-ui.textarea-field label="Address" x-model="form.address" rows="2" />
             </x-ui.form-section>
         </div>
@@ -39,12 +51,30 @@
 function createCustomerPage() {
     return {
         saving: false,
+        formTried: false,
+        submitError: '',
         form: { name: '', mobile_number: '', email: '', address: '' },
         async save() {
+            this.formTried = true;
+            this.submitError = '';
+
+            const validation = RepairBox.validateCustomerPayload(this.form);
+            this.form = {
+                ...this.form,
+                ...validation.payload,
+                email: validation.payload.email || '',
+                address: validation.payload.address || '',
+            };
+
+            if (!validation.valid) {
+                return;
+            }
+
             this.saving = true;
-            const r = await RepairBox.ajax('/customers', 'POST', this.form);
+            const r = await RepairBox.ajax('/customers', 'POST', validation.payload);
             this.saving = false;
-            if (r.success !== false) { RepairBox.toast('Customer created', 'success'); window.location.href = '/customers'; }
+            if (r.success !== false) { RepairBox.toast('Customer created', 'success'); window.location.href = '/customers'; return; }
+            this.submitError = r.message || 'Unable to save customer. Please check the details and try again.';
         }
     };
 }

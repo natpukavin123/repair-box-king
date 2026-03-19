@@ -249,6 +249,50 @@ window.RepairBox = {
     },
     confirm: function(message) { return Promise.resolve(window.confirm(message)); },
     formatCurrency: function(amount) { return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount); },
+    emptyCustomer: function() {
+        return { name: '', mobile_number: '', email: '', address: '' };
+    },
+    normalizeCustomerMobile: function(value) {
+        return String(value || '').replace(/\D+/g, '').slice(0, 10);
+    },
+    normalizeCustomerPayload: function(payload) {
+        return {
+            name: String(payload?.name || '').trim(),
+            mobile_number: RepairBox.normalizeCustomerMobile(payload?.mobile_number),
+            email: String(payload?.email || '').trim(),
+            address: String(payload?.address || '').trim(),
+        };
+    },
+    validateCustomerPayload: function(payload) {
+        var normalized = RepairBox.normalizeCustomerPayload(payload);
+        var errors = {};
+
+        if (!normalized.name) {
+            errors.name = 'Name is required';
+        }
+
+        if (!normalized.mobile_number) {
+            errors.mobile_number = 'Mobile number is required';
+        } else if (!/^\d{10}$/.test(normalized.mobile_number)) {
+            errors.mobile_number = 'Mobile must be exactly 10 digits';
+        }
+
+        if (normalized.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized.email)) {
+            errors.email = 'Please enter a valid email';
+        }
+
+        return {
+            valid: Object.keys(errors).length === 0,
+            errors: errors,
+            payload: {
+                name: normalized.name,
+                mobile_number: normalized.mobile_number,
+                email: normalized.email || null,
+                address: normalized.address || null,
+            },
+            firstError: Object.values(errors)[0] || '',
+        };
+    },
     upload: async function(url, formData) {
         try {
             const response = await axios.post(url, formData, {

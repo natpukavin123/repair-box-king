@@ -242,41 +242,60 @@
         </div>
 
         {{-- RIGHT: Cart & Customer --}}
-        <div class="flex flex-col gap-3 order-first lg:order-none">
+        <div class="relative flex flex-col gap-3 order-first lg:order-none" :style="custOpen ? 'z-index:95;' : 'z-index:0;'">
 
             {{-- Customer selector --}}
-            <div class="card" style="overflow:visible">
+            <div class="card relative" :style="custOpen ? 'overflow:visible; z-index:110;' : 'overflow:visible; z-index:10;'">
                 <div class="card-body py-3" style="overflow:visible">
-                    <div class="flex flex-col sm:flex-row gap-2 sm:items-end">
-                        <div class="flex-1 relative" @click.away="custOpen = false">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
                             <label class="text-xs font-medium text-gray-600">Customer</label>
+                            <p class="mt-1 text-xs text-gray-400" x-show="!selectedCustomer">Search and attach the customer before billing.</p>
+                            <p class="mt-1 text-xs text-emerald-600" x-show="selectedCustomer">Customer selected for this invoice.</p>
+                        </div>
+                        <button type="button" @click="openAddCustomerModal()"
+                            class="btn-primary text-sm px-3 py-2 whitespace-nowrap w-auto">+ New</button>
+                    </div>
+
+                    <div x-show="!selectedCustomer" x-cloak class="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
+                        <div class="flex-1 relative" @click.away="custOpen = false">
                             <input x-model="customerSearch" @focus="findCustomers(1)" @input.debounce.300ms="findCustomers(1)" type="text"
-                                class="form-input-custom mt-1 text-sm" placeholder="Search by name / phone...">
-                            <div x-show="custOpen && customerResults.length > 0" x-cloak class="absolute left-0 right-0 mt-1 border rounded-lg bg-white shadow-lg overflow-hidden" style="z-index:50">
+                                class="form-input-custom text-sm" placeholder="Search by name / phone...">
+                            <div x-show="custOpen && customerResults.length > 0" x-cloak class="absolute left-0 right-0 mt-1 overflow-hidden rounded-lg border bg-white shadow-lg" style="z-index:160;">
                                 <div class="max-h-48 overflow-y-auto" @scroll="handleCustScroll($event)">
                                     <template x-for="c in customerResults" :key="c.id">
-                                        <button @click="selectCustomer(c)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b last:border-0"
-                                            x-text="c.name + ' - ' + c.mobile_number"></button>
+                                        <button @click="selectCustomer(c)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b last:border-0">
+                                            <div class="font-medium text-gray-800" x-text="c.name"></div>
+                                            <div class="text-xs text-gray-400" x-text="c.mobile_number || 'No mobile number'"></div>
+                                        </button>
                                     </template>
                                     <div x-show="custLoading" class="px-3 py-2 text-xs text-gray-400 text-center flex items-center justify-center gap-2"><svg class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>Loading…</div>
                                 </div>
                             </div>
                         </div>
-                        <button type="button" @click="showAddCustomer = true; newCustomer = {name:'',mobile_number:'',email:'',address:''}"
-                            class="btn-primary text-sm px-3 py-2 whitespace-nowrap w-full sm:w-auto">+ New</button>
                     </div>
-                    <div x-show="custOpen && !custLoading && customerResults.length === 0"
-                        class="text-xs text-gray-400 mt-1">No customers found - click <strong>+ New</strong> to add.</div>
-                    <div x-show="selectedCustomer" class="mt-2 flex items-center gap-2">
-                        <span class="badge badge-primary text-xs" x-text="selectedCustomer?.name"></span>
-                        <button @click="selectedCustomer = null; form.customer_id = null; customerSearch = ''"
-                            class="text-red-400 hover:text-red-600 text-xs">&times; Remove</button>
+
+                    <div x-show="custOpen && !custLoading && customerResults.length === 0 && !selectedCustomer"
+                        class="text-xs text-gray-400 mt-2">No customers found - click <strong>+ New</strong> to add.</div>
+
+                    <div x-show="selectedCustomer" x-cloak class="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <div class="text-sm font-semibold text-emerald-900 truncate" x-text="selectedCustomer?.name"></div>
+                                <div class="mt-1 text-xs text-emerald-700" x-text="selectedCustomer?.mobile_number || 'No mobile number'"></div>
+                                <div class="mt-1 text-xs text-emerald-600 break-all" x-show="selectedCustomer?.email" x-text="selectedCustomer?.email"></div>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <button type="button" @click="clearCustomer(); $nextTick(() => findCustomers(1))" class="inline-flex items-center rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100">Change</button>
+                                <button type="button" @click="clearCustomer()" class="inline-flex items-center rounded-lg px-2 py-1.5 text-xs font-semibold text-red-500 transition hover:bg-red-50 hover:text-red-600">Remove</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {{-- Cart --}}
-            <div class="card flex-1 flex flex-col">
+            <div class="card relative flex-1 flex flex-col" style="z-index:0;">
                 <div class="card-header py-2 flex items-center justify-between">
                     <h3 class="font-semibold text-gray-800 text-sm">
                         Cart (<span x-text="cart.length"></span> item<span x-show="cart.length !== 1">s</span>)
@@ -300,7 +319,7 @@
                                     {{-- MRP reference --}}
                                     <div x-show="item.mrp && item.mrp > item.price" class="flex items-center gap-1 mt-0.5">
                                         <span class="text-[10px] text-gray-400">MRP:</span>
-                                        <span class="text-[10px] text-gray-400 line-through" x-text="'₹' + Number(item.mrp).toFixed(2)"></span>
+                                        <span class="text-[10px] text-gray-400" x-text="'₹' + Number(item.mrp).toFixed(2)"></span>
                                     </div>
                                     {{-- Max discount (privileged only, revealed by tapping item name) --}}
                                     @if($canViewCostPrice)
@@ -595,24 +614,28 @@
         <div class="modal-container max-w-md" @click.stop>
             <div class="modal-header">
                 <h3 class="text-lg font-semibold">Add New Customer</h3>
-                <button @click="showAddCustomer = false" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+                <button @click="closeAddCustomerModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
             </div>
             <div class="modal-body space-y-3">
+                <div x-show="customerSubmitError" x-text="customerSubmitError" class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"></div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
                     <input x-model="newCustomer.name" type="text" class="form-input-custom" placeholder="Full name" required>
+                    <p x-show="customerFormTried && !newCustomer.name.trim()" class="text-xs text-red-500 mt-1">Name is required</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Mobile * <span class="text-xs text-gray-500">(10 digits)</span></label>
                     <input x-model="newCustomer.mobile_number" type="text" class="form-input-custom" placeholder="10-digit mobile number"
                         inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required
+                        @input="newCustomer.mobile_number = RepairBox.normalizeCustomerMobile(newCustomer.mobile_number)"
                         @keydown="if(!/[0-9]/.test($event.key) && !['Backspace','Delete','Tab','ArrowLeft','ArrowRight'].includes($event.key)) $event.preventDefault()">
-                    <p x-show="newCustomer.mobile_number && !/^\d{10}$/.test(newCustomer.mobile_number)" class="text-xs text-red-500 mt-1">Mobile must be exactly 10 digits</p>
+                    <p x-show="customerFormTried && !newCustomer.mobile_number.trim()" class="text-xs text-red-500 mt-1">Mobile number is required</p>
+                    <p x-show="(customerFormTried || newCustomer.mobile_number) && newCustomer.mobile_number.trim() && !/^\d{10}$/.test(newCustomer.mobile_number.trim())" class="text-xs text-red-500 mt-1">Mobile must be exactly 10 digits</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                     <input x-model="newCustomer.email" type="email" class="form-input-custom" placeholder="Optional">
-                    <p x-show="newCustomer.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCustomer.email)" class="text-xs text-red-500 mt-1">Please enter a valid email</p>
+                    <p x-show="(customerFormTried || newCustomer.email) && newCustomer.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCustomer.email.trim())" class="text-xs text-red-500 mt-1">Please enter a valid email</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
@@ -620,10 +643,10 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" @click="showAddCustomer = false" class="btn-secondary">Cancel</button>
-                <button type="button" @click.prevent="saveNewCustomer()" class="btn-primary"
-                    :disabled="!newCustomer.name.trim() || !/^\d{10}$/.test(newCustomer.mobile_number) || (newCustomer.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCustomer.email))">
-                    Save &amp; Select
+                <button type="button" @click="closeAddCustomerModal()" class="btn-secondary">Cancel</button>
+                <button type="button" @click.prevent="saveNewCustomer()" class="btn-primary" :disabled="customerSaving">
+                    <span x-show="!customerSaving">Save &amp; Select</span>
+                    <span x-show="customerSaving">Saving...</span>
                 </button>
             </div>
         </div>
@@ -660,6 +683,9 @@ function posBilling() {
         custLoading: false,
         selectedCustomer: null,
         showAddCustomer: false,
+        customerFormTried: false,
+        customerSaving: false,
+        customerSubmitError: '',
         newCustomer: { name: '', mobile_number: '', email: '', address: '' },
 
         manualItem: { item_name: '', price: 0, mrp: 0 },
@@ -880,31 +906,56 @@ function posBilling() {
             this.custOpen = false;
             this.customerSearch = '';
         },
+        clearCustomer() {
+            this.selectedCustomer = null;
+            this.form.customer_id = null;
+            this.customerSearch = '';
+            this.customerResults = [];
+            this.custOpen = false;
+        },
+        openAddCustomerModal() {
+            this.customerFormTried = false;
+            this.customerSaving = false;
+            this.customerSubmitError = '';
+            this.newCustomer = RepairBox.emptyCustomer();
+            this.showAddCustomer = true;
+        },
+        closeAddCustomerModal() {
+            this.customerFormTried = false;
+            this.customerSaving = false;
+            this.customerSubmitError = '';
+            this.showAddCustomer = false;
+        },
 
         async saveNewCustomer() {
-            if (!this.newCustomer.name.trim()) {
-                RepairBox.toast('Name is required', 'error');
+            this.customerFormTried = true;
+            this.customerSubmitError = '';
+
+            const validation = RepairBox.validateCustomerPayload(this.newCustomer);
+            this.newCustomer = {
+                ...this.newCustomer,
+                ...validation.payload,
+                email: validation.payload.email || '',
+                address: validation.payload.address || '',
+            };
+
+            if (!validation.valid) {
                 return;
             }
-            const mobile = this.newCustomer.mobile_number.trim();
-            if (!mobile) {
-                RepairBox.toast('Mobile number is required', 'error');
-                return;
-            }
-            if (!/^\d{10}$/.test(mobile)) {
-                RepairBox.toast('Mobile must be exactly 10 digits', 'error');
-                return;
-            }
-            if (this.newCustomer.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.newCustomer.email)) {
-                RepairBox.toast('Please enter a valid email address', 'error');
-                return;
-            }
-            const r = await RepairBox.ajax('/customers', 'POST', this.newCustomer);
+
+            this.customerSaving = true;
+            const r = await RepairBox.ajax('/customers', 'POST', validation.payload);
+            this.customerSaving = false;
+
             if (r.success !== false && r.data) {
                 this.selectCustomer(r.data);
-                this.showAddCustomer = false;
+                this.closeAddCustomerModal();
+                this.newCustomer = RepairBox.emptyCustomer();
                 RepairBox.toast('Customer added', 'success');
+                return;
             }
+
+            this.customerSubmitError = r.message || 'Unable to save customer. Please check the details and try again.';
         },
 
         subtotal() {

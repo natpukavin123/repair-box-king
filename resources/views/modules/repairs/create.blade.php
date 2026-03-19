@@ -92,7 +92,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <button type="button" @click="showAddCust = true; newCust = { name: '', mobile_number: '', email: '', address: '' }" class="btn-secondary inline-flex w-full items-center justify-center gap-1.5 min-h-[3.5rem] px-5 sm:w-auto">
+                            <button type="button" @click="openAddCustModal()" class="btn-secondary inline-flex w-full items-center justify-center gap-1.5 min-h-[3.5rem] px-5 sm:w-auto">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
                                 </svg>
@@ -226,23 +226,30 @@
     </div>
 
     <div x-show="showAddCust" class="modal-overlay" x-cloak>
-        <div class="modal-container max-w-md" @click.away="showAddCust = false">
+        <div class="modal-container max-w-md" @click.away="closeAddCustModal()">
             <div class="modal-header">
                 <h3 class="text-lg font-bold text-slate-900">Add New Customer</h3>
-                <button @click="showAddCust = false" class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
+                <button @click="closeAddCustModal()" class="text-slate-400 hover:text-slate-600 text-xl leading-none">&times;</button>
             </div>
             <div class="modal-body space-y-3">
+                <div x-show="customerSubmitError" x-text="customerSubmitError" class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"></div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Full Name <span class="text-red-500">*</span></label>
                     <input x-model="newCust.name" type="text" class="form-input-custom" placeholder="John Doe">
+                    <p x-show="customerFormTried && !newCust.name.trim()" class="text-xs text-red-500 mt-1">Name is required</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Mobile Number <span class="text-red-500">*</span></label>
-                    <input x-model="newCust.mobile_number" type="text" class="form-input-custom" placeholder="9876543210">
+                    <input x-model="newCust.mobile_number" type="text" class="form-input-custom" placeholder="9876543210" inputmode="numeric" pattern="[0-9]{10}" maxlength="10"
+                        @input="newCust.mobile_number = RepairBox.normalizeCustomerMobile(newCust.mobile_number)"
+                        @keydown="if(!/[0-9]/.test($event.key) && !['Backspace','Delete','Tab','ArrowLeft','ArrowRight'].includes($event.key)) $event.preventDefault()">
+                    <p x-show="customerFormTried && !newCust.mobile_number.trim()" class="text-xs text-red-500 mt-1">Mobile number is required</p>
+                    <p x-show="(customerFormTried || newCust.mobile_number) && newCust.mobile_number.trim() && !/^\d{10}$/.test(newCust.mobile_number.trim())" class="text-xs text-red-500 mt-1">Mobile must be exactly 10 digits</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Email</label>
                     <input x-model="newCust.email" type="email" class="form-input-custom" placeholder="Optional">
+                    <p x-show="(customerFormTried || newCust.email) && newCust.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCust.email.trim())" class="text-xs text-red-500 mt-1">Please enter a valid email</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1">Address</label>
@@ -250,12 +257,13 @@
                 </div>
             </div>
             <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
-                <button @click="showAddCust = false" class="btn-secondary w-full sm:w-auto">Cancel</button>
-                <button @click="saveNewCust()" class="btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-2">
+                <button @click="closeAddCustModal()" class="btn-secondary w-full sm:w-auto">Cancel</button>
+                <button @click="saveNewCust()" class="btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-2" :disabled="customerSaving">
+                    <span x-show="customerSaving" class="spinner"></span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
-                    Save & Select
+                    <span x-text="customerSaving ? 'Saving...' : 'Save & Select'"></span>
                 </button>
             </div>
         </div>
@@ -270,6 +278,9 @@ function createRepairPage() {
     return {
         saving: false,
         showAddCust: false,
+        customerFormTried: false,
+        customerSaving: false,
+        customerSubmitError: '',
         currentStep: 1,
         optionalOpen: false,
 
@@ -349,6 +360,21 @@ function createRepairPage() {
             this.$nextTick(() => this.$refs.custInput?.focus());
         },
 
+        openAddCustModal() {
+            this.customerFormTried = false;
+            this.customerSaving = false;
+            this.customerSubmitError = '';
+            this.newCust = RepairBox.emptyCustomer();
+            this.showAddCust = true;
+        },
+
+        closeAddCustModal() {
+            this.customerFormTried = false;
+            this.customerSaving = false;
+            this.customerSubmitError = '';
+            this.showAddCust = false;
+        },
+
         async searchCustomers(page) {
             page = page || 1;
             if (page === 1) this.custPage = 1;
@@ -378,17 +404,34 @@ function createRepairPage() {
         },
 
         async saveNewCust() {
-            if (!this.newCust.name.trim() || !this.newCust.mobile_number.trim()) {
-                RepairBox.toast('Name and mobile are required', 'error');
+            this.customerFormTried = true;
+            this.customerSubmitError = '';
+
+            const validation = RepairBox.validateCustomerPayload(this.newCust);
+            this.newCust = {
+                ...this.newCust,
+                ...validation.payload,
+                email: validation.payload.email || '',
+                address: validation.payload.address || '',
+            };
+
+            if (!validation.valid) {
                 return;
             }
 
-            const r = await RepairBox.ajax('/customers', 'POST', this.newCust);
+            this.customerSaving = true;
+            const r = await RepairBox.ajax('/customers', 'POST', validation.payload);
+            this.customerSaving = false;
+
             if (r.success !== false && r.data) {
                 this.selectCustomer(r.data);
-                this.showAddCust = false;
+                this.closeAddCustModal();
+                this.newCust = RepairBox.emptyCustomer();
                 RepairBox.toast('Customer added and selected', 'success');
+                return;
             }
+
+            this.customerSubmitError = r.message || 'Unable to save customer. Please check the details and try again.';
         },
 
         async save() {

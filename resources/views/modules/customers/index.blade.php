@@ -62,16 +62,17 @@
     <!-- Form Modal -->
     <div x-show="showModal" class="modal-overlay" x-cloak>
         <div class="modal-container modal-lg">
-            <div class="modal-header"><h3 class="text-lg font-semibold">Edit Customer</h3><button @click="showModal = false" class="text-gray-400 hover:text-gray-600">&times;</button></div>
+            <div class="modal-header"><h3 class="text-lg font-semibold">Edit Customer</h3><button @click="closeEditModal()" class="text-gray-400 hover:text-gray-600">&times;</button></div>
             <div class="modal-body">
+                <div x-show="submitError" x-text="submitError" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 mb-4"></div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label><input x-model="form.name" type="text" class="form-input-custom"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Mobile *</label><input x-model="form.mobile_number" type="text" class="form-input-custom"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input x-model="form.email" type="email" class="form-input-custom"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label><input x-model="form.name" type="text" class="form-input-custom"><p x-show="formTried && !form.name.trim()" class="text-xs text-red-500 mt-1">Name is required</p></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Mobile * <span class="text-xs text-gray-500">(10 digits)</span></label><input x-model="form.mobile_number" type="text" class="form-input-custom" inputmode="numeric" pattern="[0-9]{10}" maxlength="10" @input="form.mobile_number = RepairBox.normalizeCustomerMobile(form.mobile_number)" @keydown="if(!/[0-9]/.test($event.key) && !['Backspace','Delete','Tab','ArrowLeft','ArrowRight'].includes($event.key)) $event.preventDefault()"><p x-show="formTried && !form.mobile_number.trim()" class="text-xs text-red-500 mt-1">Mobile number is required</p><p x-show="(formTried || form.mobile_number) && form.mobile_number.trim() && !/^\d{10}$/.test(form.mobile_number.trim())" class="text-xs text-red-500 mt-1">Mobile must be exactly 10 digits</p></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label><input x-model="form.email" type="email" class="form-input-custom"><p x-show="(formTried || form.email) && form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())" class="text-xs text-red-500 mt-1">Please enter a valid email</p></div>
                     <div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-1">Address</label><textarea x-model="form.address" class="form-input-custom" rows="2"></textarea></div>
                 </div>
             </div>
-            <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end"><button @click="showModal = false" class="btn-secondary w-full sm:w-auto">Cancel</button><button @click="save()" class="btn-primary w-full sm:w-auto" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span>Update</button></div>
+            <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end"><button @click="closeEditModal()" class="btn-secondary w-full sm:w-auto">Cancel</button><button @click="save()" class="btn-primary w-full sm:w-auto" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span>Update</button></div>
         </div>
     </div>
 
@@ -113,6 +114,7 @@
 function customersPage() {
     return {
         items: [], showModal: false, showDetail: false, editing: null, saving: false, search: '', detail: null, loading: true,
+        formTried: false, submitError: '',
         form: { name: '', mobile_number: '', email: '', address: '' },
         init() {
             const p = new URLSearchParams(window.location.search);
@@ -132,12 +134,29 @@ function customersPage() {
             this.updateUrl();
             this.loading = false;
         },
-        edit(c) { this.editing = c.id; this.form = { name: c.name, mobile_number: c.mobile_number, email: c.email || '', address: c.address || '' }; this.showModal = true; },
+        edit(c) { this.editing = c.id; this.formTried = false; this.submitError = ''; this.form = { name: c.name, mobile_number: c.mobile_number, email: c.email || '', address: c.address || '' }; this.showModal = true; },
+        closeEditModal() { this.formTried = false; this.submitError = ''; this.showModal = false; },
         async save() {
+            this.formTried = true;
+            this.submitError = '';
+
+            const validation = RepairBox.validateCustomerPayload(this.form);
+            this.form = {
+                ...this.form,
+                ...validation.payload,
+                email: validation.payload.email || '',
+                address: validation.payload.address || '',
+            };
+
+            if (!validation.valid) {
+                return;
+            }
+
             this.saving = true;
-            const r = await RepairBox.ajax(`/customers/${this.editing}`, 'PUT', this.form);
+            const r = await RepairBox.ajax(`/customers/${this.editing}`, 'PUT', validation.payload);
             this.saving = false;
-            if (r.success !== false) { RepairBox.toast('Updated', 'success'); this.showModal = false; this.load(); }
+            if (r.success !== false) { RepairBox.toast('Updated', 'success'); this.closeEditModal(); this.load(); return; }
+            this.submitError = r.message || 'Unable to update customer. Please check the details and try again.';
         },
         async view(c) { const r = await RepairBox.ajax(`/customers/${c.id}`); if(r.data) { this.detail = r.data; this.showDetail = true; } },
         async remove(c) {

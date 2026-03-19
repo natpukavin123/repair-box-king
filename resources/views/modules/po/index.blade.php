@@ -39,7 +39,7 @@
                                 </div>
                             </div>
                         </div>
-                        <button type="button" @click="showNewCust = true; newCust = {name:'', mobile_number:'', email:'', address:''}"
+                        <button type="button" @click="openNewCustModal()"
                             class="btn-secondary text-sm px-3 whitespace-nowrap w-full sm:w-auto">
                             <svg class="w-4 h-4 inline mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
                             New
@@ -298,22 +298,28 @@
         <div class="modal-container max-w-md" @click.stop>
             <div class="modal-header">
                 <h3 class="text-lg font-semibold">Add New Customer</h3>
-                <button @click="showNewCust = false" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+                <button @click="closeNewCustModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
             </div>
             <div class="modal-body space-y-3">
+                <div x-show="customerSubmitError" x-text="customerSubmitError" class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"></div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
                     <input x-model="newCust.name" type="text" class="form-input-custom" placeholder="Full name" required>
+                    <p x-show="customerFormTried && !newCust.name.trim()" class="text-xs text-red-500 mt-1">Name is required</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Mobile * <span class="text-xs text-gray-500">(10 digits)</span></label>
                     <input x-model="newCust.mobile_number" type="text" class="form-input-custom" placeholder="10-digit mobile number"
                         inputmode="numeric" pattern="[0-9]{10}" maxlength="10" required
+                        @input="newCust.mobile_number = RepairBox.normalizeCustomerMobile(newCust.mobile_number)"
                         @keydown="if(!/[0-9]/.test($event.key) && !['Backspace','Delete','Tab','ArrowLeft','ArrowRight'].includes($event.key)) $event.preventDefault()">
+                    <p x-show="customerFormTried && !newCust.mobile_number.trim()" class="text-xs text-red-500 mt-1">Mobile number is required</p>
+                    <p x-show="(customerFormTried || newCust.mobile_number) && newCust.mobile_number.trim() && !/^\d{10}$/.test(newCust.mobile_number.trim())" class="text-xs text-red-500 mt-1">Mobile must be exactly 10 digits</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                     <input x-model="newCust.email" type="email" class="form-input-custom" placeholder="Optional">
+                    <p x-show="(customerFormTried || newCust.email) && newCust.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCust.email.trim())" class="text-xs text-red-500 mt-1">Please enter a valid email</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
@@ -321,8 +327,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" @click="showNewCust = false" class="btn-secondary">Cancel</button>
-                <button type="button" @click="saveNewCust()" class="btn-primary">Save &amp; Select</button>
+                <button type="button" @click="closeNewCustModal()" class="btn-secondary">Cancel</button>
+                <button type="button" @click="saveNewCust()" class="btn-primary" :disabled="customerSaving"><span x-text="customerSaving ? 'Saving...' : 'Save & Select'"></span></button>
             </div>
         </div>
     </div>
@@ -355,6 +361,9 @@ function poPage() {
         selectedCustomer: null,
         showNewCust: false,
         newCust: { name: '', mobile_number: '', email: '', address: '' },
+        customerFormTried: false,
+        customerSaving: false,
+        customerSubmitError: '',
 
         statusList: [
             { key: 'open',      label: 'Open',      activeCls: 'border-blue-500 bg-blue-50 text-blue-700' },
@@ -445,25 +454,41 @@ function poPage() {
             this.custSearch = '';
         },
 
+        openNewCustModal() {
+            this.customerFormTried = false;
+            this.customerSaving = false;
+            this.customerSubmitError = '';
+            this.newCust = RepairBox.emptyCustomer();
+            this.showNewCust = true;
+        },
+
+        closeNewCustModal() {
+            this.customerFormTried = false;
+            this.customerSaving = false;
+            this.customerSubmitError = '';
+            this.showNewCust = false;
+        },
+
         async saveNewCust() {
-            if (!this.newCust.name.trim()) {
-                RepairBox.toast('Name is required', 'error');
+            this.customerFormTried = true;
+            this.customerSubmitError = '';
+
+            const validation = RepairBox.validateCustomerPayload(this.newCust);
+            this.newCust = {
+                ...this.newCust,
+                ...validation.payload,
+                email: validation.payload.email || '',
+                address: validation.payload.address || '',
+            };
+
+            if (!validation.valid) {
                 return;
             }
-            const mobile = this.newCust.mobile_number.trim();
-            if (!mobile) {
-                RepairBox.toast('Mobile number is required', 'error');
-                return;
-            }
-            if (!/^\d{10}$/.test(mobile)) {
-                RepairBox.toast('Mobile must be exactly 10 digits', 'error');
-                return;
-            }
-            if (this.newCust.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.newCust.email)) {
-                RepairBox.toast('Please enter a valid email address', 'error');
-                return;
-            }
-            const r = await RepairBox.ajax('/customers', 'POST', this.newCust);
+
+            this.customerSaving = true;
+            const r = await RepairBox.ajax('/customers', 'POST', validation.payload);
+            this.customerSaving = false;
+
             if (r.success !== false && r.data) {
                 this.form.customer_id = r.data.id;
                 this.form.customer_name = r.data.name;
@@ -472,10 +497,13 @@ function poPage() {
                 this.custResults = [];
                 this.custSearch = '';
                 this.custOpen = false;
-                this.showNewCust = false;
-                this.newCust = { name: '', mobile_number: '', email: '', address: '' };
+                this.closeNewCustModal();
+                this.newCust = RepairBox.emptyCustomer();
                 RepairBox.toast('Customer added', 'success');
+                return;
             }
+
+            this.customerSubmitError = r.message || 'Unable to save customer. Please check the details and try again.';
         },
 
         // === Helpers ===
@@ -543,7 +571,7 @@ function poPage() {
             this.form = { customer_id: '', customer_name: '', customer_phone: '', requested_items: '', required_by: '', notes: '' };
             this.selectedCustomer = null;
             this.custSearch = '';
-            this.showNewCust = false;
+            this.closeNewCustModal();
             this.page = 1;
             await this.load();
         },
