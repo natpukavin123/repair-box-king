@@ -74,7 +74,8 @@ class RepairController extends Controller
         }
 
         $statusMeta = Repair::STATUS_META;
-        return view('modules.repairs.index', compact('statusMeta'));
+        $brands = \App\Models\Brand::where('status', 'active')->orderBy('name')->pluck('name');
+        return view('modules.repairs.index', compact('statusMeta', 'brands'));
     }
 
     public function create()
