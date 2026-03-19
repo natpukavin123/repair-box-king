@@ -452,7 +452,7 @@
                 </x-ui.form-section>
 
                 <template x-for="(pay, pidx) in payForm" :key="pidx">
-                    <x-ui.form-section :title="payForm.length > 1 ? 'Payment ' + (pidx + 1) : 'Payment Method'" gridClass="space-y-3">
+                    <x-ui.form-section title="Payment Method" gridClass="space-y-3">
                         <div class="flex items-center justify-between">
                             <button x-show="payForm.length > 1" @click="payForm.splice(pidx, 1)"
                                 class="text-red-400 hover:text-red-600 text-xs">Remove</button>
