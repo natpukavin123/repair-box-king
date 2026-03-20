@@ -149,8 +149,10 @@ body.lang-ta .inv-shop-name{font-size:18px;}
 @page{size:A4 landscape;margin:0;}
 @media print{
     html,body{margin:0;padding:0;background:#fff;width:297mm;height:210mm;}
-    .toolbar,.cut-zone,.blank-half{display:none!important;}
-    .a4-shell{width:148.5mm;height:210mm;box-shadow:none;margin:0;display:block;}
+    .toolbar,.cut-zone{display:none!important;}
+    .a4-shell{width:297mm;height:210mm;box-shadow:none;margin:0;display:flex;flex-direction:row;}
+    .blank-half{display:block!important;flex:1;background:#fff!important;}
+    .blank-half *{display:none!important;}
     .inv-half{width:148.5mm;height:210mm;}
 }
 </style>
