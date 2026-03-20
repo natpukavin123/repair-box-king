@@ -120,150 +120,129 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600;700&family=Noto+Sans+Tamil:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'DM Sans',Arial,sans-serif;font-size:10px;color:#111;background:#bec2c8;
-    -webkit-print-color-adjust:exact;print-color-adjust:exact;}
+body{font-family:'DM Sans',Arial,sans-serif;font-size:12px;color:#000;background:#ccc;}
 body.lang-ta .inv,body.lang-ta .inv *:not(.inv-logo-txt):not(.inv-num):not(.serial-sub){font-family:'Noto Sans Tamil','DM Sans',sans-serif;}
-body.lang-ta .inv-shop-name{font-size:15px;}
+body.lang-ta .inv-shop-name{font-size:18px;}
 
 /* ═══════ TOOLBAR ═══════ */
-.toolbar{width:297mm;margin:0 auto;padding:14px 4px 10px;display:flex;align-items:center;justify-content:space-between;gap:12px;
-    background:linear-gradient(180deg,#f8fafc 0%,#eef0f3 100%);
-    border-radius:0 0 12px 12px;border-bottom:1px solid #dde0e5;margin-bottom:2px;
-    box-shadow:0 2px 10px rgba(0,0,0,.07);}
+.toolbar{width:297mm;margin:0 auto;padding:14px 4px 10px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .toolbar-left{display:flex;align-items:center;gap:14px;}
-.back-btn{display:inline-flex;align-items:center;gap:5px;color:#374151;font-size:11px;font-weight:600;
-    text-decoration:none;padding:7px 12px;background:#fff;border-radius:7px;
-    border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:all .15s;}
-.back-btn:hover{background:#f9fafb;color:#111;box-shadow:0 2px 6px rgba(0,0,0,.1);transform:translateX(-1px);}
-.t-title{font-size:13px;font-weight:700;color:#111827;}
-.t-sub{font-size:10px;color:#6b7280;margin-top:2px;}
+.back-btn{display:inline-flex;align-items:center;gap:5px;color:#000;font-size:12px;font-weight:600;
+    text-decoration:none;padding:7px 12px;background:#fff;border-radius:7px;border:1px solid #000;}
+.back-btn:hover{background:#eee;}
+.t-title{font-size:14px;font-weight:700;color:#000;}
+.t-sub{font-size:11px;color:#000;margin-top:2px;}
 .toolbar-actions{display:flex;align-items:center;gap:10px;}
-.lang-picker{display:flex;gap:0;border-radius:8px;overflow:hidden;border:1.5px solid #d1d5db;box-shadow:0 1px 3px rgba(0,0,0,.05);}
-.lang-btn{padding:8px 18px;font-size:11.5px;font-weight:600;border:none;cursor:pointer;
-    background:#fff;color:#6b7280;transition:all .15s;font-family:inherit;}
-.lang-btn:hover{background:#f3f4f6;color:#374151;}
-.lang-btn.active{background:#111;color:#fff;}
-.print-btn{display:inline-flex;align-items:center;gap:8px;color:#fff;
-    background:linear-gradient(135deg,#1a1a2e 0%,#111 60%,#2d2d2d 100%);
-    font-family:'DM Sans',Arial,sans-serif;font-size:12px;font-weight:600;
-    padding:10px 22px 10px 18px;border:none;border-radius:8px;cursor:pointer;
-    box-shadow:0 3px 12px rgba(0,0,0,.3),0 1px 3px rgba(0,0,0,.12);transition:all .15s;}
-.print-btn:hover{background:linear-gradient(135deg,#2d2d2d 0%,#222 100%);box-shadow:0 5px 18px rgba(0,0,0,.35);transform:translateY(-1px);}
+.lang-picker{display:flex;gap:0;border-radius:8px;overflow:hidden;border:2px solid #000;}
+.lang-btn{padding:8px 18px;font-size:12px;font-weight:600;border:none;cursor:pointer;
+    background:#fff;color:#000;transition:all .15s;font-family:inherit;}
+.lang-btn:hover{background:#eee;}
+.lang-btn.active{background:#000;color:#fff;}
+.print-btn{display:inline-flex;align-items:center;gap:8px;color:#fff;background:#000;
+    font-family:'DM Sans',Arial,sans-serif;font-size:13px;font-weight:600;
+    padding:10px 22px 10px 18px;border:none;border-radius:8px;cursor:pointer;}
+.print-btn:hover{background:#333;}
 
 /* ═══════ A4 LANDSCAPE SHELL ═══════ */
 .a4-shell{width:297mm;height:210mm;margin:0 auto 20mm;background:#fff;display:flex;flex-direction:row;
-    box-shadow:0 0 0 1px rgba(0,0,0,.08),0 14px 55px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.1);}
+    box-shadow:0 2px 12px rgba(0,0,0,.3);}
 .inv-half{width:148.5mm;height:210mm;flex-shrink:0;overflow:hidden;padding:4mm 5mm;background:#fff;}
 
-.cut-zone{width:0;flex-shrink:0;border-left:1.5px dashed #b0b5be;position:relative;}
+.cut-zone{width:0;flex-shrink:0;border-left:1.5px dashed #999;position:relative;}
 .cut-label{position:absolute;top:50%;left:-1px;transform:translate(-50%,-50%) rotate(-90deg);
-    background:#dde0e5;border:1px dashed #b0b5be;border-radius:2px;
-    padding:1px 12px;font-size:7.5px;font-weight:800;letter-spacing:2px;
-    color:#8b909a;text-transform:uppercase;white-space:nowrap;display:flex;align-items:center;gap:6px;}
-.blank-half{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;background:#f2f3f5;}
-.blank-circle{width:44px;height:44px;border:2px dashed #cdd0d5;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;color:#cdd0d5;font-size:20px;}
-.blank-title{font-size:10px;font-weight:800;color:#c2c6cb;letter-spacing:2px;text-transform:uppercase;}
-.blank-sub{font-size:8.5px;color:#cbd0d6;text-align:center;line-height:1.65;}
+    background:#ddd;border:1px dashed #999;border-radius:2px;
+    padding:1px 12px;font-size:8px;font-weight:800;letter-spacing:2px;
+    color:#666;text-transform:uppercase;white-space:nowrap;display:flex;align-items:center;gap:6px;}
+.blank-half{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;background:#f5f5f5;}
+.blank-circle{width:44px;height:44px;border:2px dashed #bbb;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;color:#bbb;font-size:20px;}
+.blank-title{font-size:11px;font-weight:800;color:#aaa;letter-spacing:2px;text-transform:uppercase;}
+.blank-sub{font-size:9px;color:#aaa;text-align:center;line-height:1.65;}
 
 /* ══════════════════ INVOICE CARD ══════════════════ */
-.inv{width:100%;height:100%;display:flex;flex-direction:column;border:1px solid #c5c9cf;border-radius:3px;overflow:hidden;}
+.inv{width:100%;height:100%;display:flex;flex-direction:column;border:2px solid #000;overflow:hidden;}
 
-.inv-hdr{background:linear-gradient(135deg,#0a0a0a 0%,#181818 45%,#111 100%);
-    padding:12px 14px 10px;display:flex;align-items:center;gap:12px;flex-shrink:0;
-    box-shadow:inset 0 -1px 0 rgba(255,255,255,.04);}
-.inv-logo{width:44px;height:44px;border:1.5px solid rgba(255,255,255,.22);border-radius:50%;
-    overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.05);}
+.inv-hdr{background:#fff;padding:12px 14px 10px;display:flex;align-items:center;gap:12px;flex-shrink:0;border-bottom:2px solid #000;}
+.inv-logo{width:44px;height:44px;border:2px solid #000;border-radius:50%;
+    overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff;}
 .inv-logo img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;}
-.inv-logo-txt{font-size:6px;font-weight:700;color:rgba(255,255,255,.5);text-align:center;line-height:1.4;}
+.inv-logo-txt{font-size:7px;font-weight:700;color:#000;text-align:center;line-height:1.4;}
 .inv-shop{flex:1;min-width:0;}
-.inv-shop-name{font-family:'Playfair Display',Georgia,serif;font-size:17px;font-weight:900;color:#fff;line-height:1;
+.inv-shop-name{font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:900;color:#000;line-height:1;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.inv-shop-slogan{font-size:6.5px;color:rgba(255,255,255,.32);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
-.inv-shop-contact{font-size:7.5px;color:rgba(255,255,255,.48);margin-top:4px;line-height:1.7;}
+.inv-shop-slogan{font-size:8px;color:#000;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
+.inv-shop-contact{font-size:9px;color:#000;margin-top:4px;line-height:1.7;}
 .inv-badge{text-align:right;flex-shrink:0;}
-.inv-type{display:inline-block;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);
-    color:rgba(255,255,255,.55);font-size:6px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:2px 6px;border-radius:2px;margin-bottom:2px;}
-.inv-num{font-family:'Playfair Display',Georgia,serif;font-size:14px;font-weight:900;color:#fff;line-height:1;}
-.inv-date{font-size:7.5px;color:rgba(255,255,255,.4);margin-top:2px;}
-.inv-rule{height:4px;background:linear-gradient(90deg,#8b5e34 0%,#c9893a 20%,#e8c060 40%,#f5d87a 50%,#e8c060 60%,#c9893a 80%,#8b5e34 100%);
-    flex-shrink:0;box-shadow:0 1px 4px rgba(184,147,106,.35);}
+.inv-type{display:inline-block;border:1.5px solid #000;
+    color:#000;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:3px 8px;margin-bottom:3px;}
+.inv-num{font-family:'Playfair Display',Georgia,serif;font-size:16px;font-weight:900;color:#000;line-height:1;}
+.inv-date{font-size:9px;color:#000;margin-top:2px;}
+.inv-rule{height:0;flex-shrink:0;}
 
-.inv-info{display:flex;border-bottom:1.5px solid #111;flex-shrink:0;}
+.inv-info{display:flex;border-bottom:2px solid #000;flex-shrink:0;}
 .inf-cell{flex:1;padding:8px 10px;}
-.inf-cell:first-child{background:linear-gradient(180deg,#fff 60%,#fafbfc 100%);}
-.inf-cell:last-child{background:linear-gradient(180deg,#fafafa 0%,#f3f4f6 100%);}
-.inf-cell+.inf-cell{border-left:1px solid #e4e7eb;}
-.inf-lbl{font-size:6px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
-    color:#b8bec8;margin-bottom:3px;display:flex;align-items:center;gap:4px;}
-.inf-lbl::before{content:'';display:inline-block;width:10px;height:1.5px;background:currentColor;border-radius:1px;}
-.inf-val{font-size:10.5px;font-weight:700;color:#0f172a;line-height:1.3;}
-.inf-sub{font-size:7.5px;color:#6b7280;margin-top:3px;line-height:1.65;}
+.inf-cell+.inf-cell{border-left:1.5px solid #000;}
+.inf-lbl{font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+    color:#000;margin-bottom:3px;}
+.inf-lbl::before{display:none;}
+.inf-val{font-size:12px;font-weight:700;color:#000;line-height:1.3;}
+.inf-sub{font-size:9px;color:#000;margin-top:3px;line-height:1.65;}
 
-.inv-tbl-wrap{border-bottom:1.5px solid #111;flex-shrink:0;}
+.inv-tbl-wrap{border-bottom:2px solid #000;flex-shrink:0;}
 table.inv-tbl{width:100%;border-collapse:collapse;}
-table.inv-tbl thead th{background:linear-gradient(180deg,#2a2a2a 0%,#111 100%);
-    color:rgba(255,255,255,.88);font-size:6.5px;font-weight:700;
+table.inv-tbl thead th{background:#fff;
+    color:#000;font-size:8px;font-weight:700;
     letter-spacing:1px;text-transform:uppercase;padding:5px 6px;
-    text-align:center;border-right:1px solid #333;}
+    text-align:center;border:1.5px solid #000;}
 table.inv-tbl thead th.tl{text-align:left;}
-table.inv-tbl thead th:last-child{border-right:none;}
-table.inv-tbl tbody td{padding:4.5px 6px;font-size:9px;border-bottom:1px solid #f0f1f3;border-right:1px solid #f0f1f3;vertical-align:middle;}
-table.inv-tbl tbody td:last-child{border-right:none;}
-table.inv-tbl tbody tr:nth-child(even){background:#f8f9fa;}
-table.inv-tbl tbody tr:hover{background:#f0f7ff;}
-table.inv-tbl tbody tr.erow{height:16px;}
-table.inv-tbl tfoot td{background:linear-gradient(90deg,#1a1a1a,#111);
-    color:#fff;font-size:8px;font-weight:700;
-    padding:5.5px 6px;text-align:right;border-right:1px solid #333;}
-table.inv-tbl tfoot td:last-child{border-right:none;}
+table.inv-tbl tbody td{padding:5px 6px;font-size:11px;border:1px solid #000;vertical-align:middle;}
+table.inv-tbl tbody tr.erow{height:18px;}
+table.inv-tbl tfoot td{background:#fff;
+    color:#000;font-size:10px;font-weight:700;
+    padding:5px 6px;text-align:right;border:1.5px solid #000;}
 .tc{text-align:center;}.tr{text-align:right;}.tl{text-align:left;}
-.serial-sub{font-size:6.5px;color:#9ca3af;font-style:italic;margin-top:1px;}
+.serial-sub{font-size:8px;color:#000;font-style:italic;margin-top:1px;}
 
-.inv-bottom{display:flex;flex:1;border-bottom:1.5px solid #111;min-height:0;overflow:hidden;}
-.inv-bl{flex:1;border-right:1px solid #e4e7eb;padding:7px 10px;display:flex;flex-direction:column;gap:5px;overflow:hidden;}
+.inv-bottom{display:flex;flex:1;border-bottom:2px solid #000;min-height:0;overflow:hidden;}
+.inv-bl{flex:1;border-right:1.5px solid #000;padding:7px 10px;display:flex;flex-direction:column;gap:5px;overflow:hidden;}
 .inv-br{width:155px;flex-shrink:0;display:flex;flex-direction:column;}
-.sec-lbl{font-size:6.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#9ca3af;margin-bottom:2px;}
-.words-box{border:1px solid #d1d5db;border-left:3px solid #c9893a;
-    padding:4px 8px;font-size:7.5px;font-weight:600;color:#111;line-height:1.6;
-    background:linear-gradient(90deg,#fffbf5 0%,#f9fafb 100%);border-radius:0 3px 3px 0;}
-.pay-row{display:flex;justify-content:space-between;font-size:8px;padding:2px 0;border-bottom:1px dashed #efefef;color:#374151;}
+.sec-lbl{font-size:8px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#000;margin-bottom:2px;}
+.words-box{border:1.5px solid #000;
+    padding:5px 8px;font-size:9px;font-weight:600;color:#000;line-height:1.6;
+    background:#fff;}
+.pay-row{display:flex;justify-content:space-between;font-size:10px;padding:2px 0;border-bottom:1px solid #000;color:#000;}
 .pay-row:last-child{border-bottom:none;}
-.p-green{color:#059669;font-weight:700;}
+.p-green{color:#000;font-weight:700;}
 
 .qr-area{display:flex;align-items:center;gap:8px;padding:4px 0;}
-.qr-box{width:36px;height:36px;border:1.5px solid #d1d5db;display:flex;align-items:center;justify-content:center;
-    font-size:6.5px;font-weight:700;color:#9ca3af;text-align:center;line-height:1.3;background:#f9fafb;}
+.qr-box{width:36px;height:36px;border:1.5px solid #000;display:flex;align-items:center;justify-content:center;
+    font-size:8px;font-weight:700;color:#000;text-align:center;line-height:1.3;background:#fff;}
 .qr-meta{flex:1;min-width:0;}
-.qr-upi{font-size:7.5px;font-weight:700;color:#111;word-break:break-all;}
-.qr-scan{font-size:6.5px;color:#9ca3af;margin-top:1px;}
+.qr-upi{font-size:9px;font-weight:700;color:#000;word-break:break-all;}
+.qr-scan{font-size:8px;color:#000;margin-top:1px;}
 
 table.sum-tbl{width:100%;border-collapse:collapse;}
-table.sum-tbl td{padding:4.5px 9px;font-size:8.5px;border-bottom:1px solid #f0f0f0;color:#374151;}
+table.sum-tbl td{padding:5px 9px;font-size:10px;border-bottom:1px solid #000;color:#000;}
 table.sum-tbl td:last-child{text-align:right;font-weight:600;}
-table.sum-tbl .row-sub td{color:#6b7280;font-size:8px;}
-table.sum-tbl .row-grand td{background:linear-gradient(135deg,#0d0d0d 0%,#1e1e1e 50%,#111 100%);
-    color:#fff;font-family:'Playfair Display',Georgia,serif;
-    font-size:11px;font-weight:700;padding:7px 9px;border-bottom:none;
-    letter-spacing:.3px;}
-table.sum-tbl .row-grand td:last-child{color:#e8c060;}
-table.sum-tbl .row-paid td{color:#047857;font-weight:700;border-bottom:1px dashed #d1fae5;padding:5px 9px;background:#f0fdf4;}
-table.sum-tbl .row-bal  td{color:#b91c1c;font-weight:700;font-size:9.5px;border-bottom:none;background:#fef2f2;padding:5px 9px;}
-table.sum-tbl .row-full td{color:#047857;font-weight:800;text-align:center;border-bottom:none;
-    background:linear-gradient(90deg,#ecfdf5,#d1fae5);font-size:8.5px;letter-spacing:.5px;padding:6px 9px;}
+table.sum-tbl .row-sub td{color:#000;font-size:9px;}
+table.sum-tbl .row-grand td{background:#fff;
+    color:#000;font-family:'Playfair Display',Georgia,serif;
+    font-size:12px;font-weight:900;padding:7px 9px;border:1.5px solid #000;}
+table.sum-tbl .row-paid td{color:#000;font-weight:700;border-bottom:1px solid #000;padding:5px 9px;}
+table.sum-tbl .row-bal  td{color:#000;font-weight:900;font-size:11px;border-bottom:none;text-decoration:underline;padding:5px 9px;}
+table.sum-tbl .row-full td{color:#000;font-weight:900;text-align:center;border-bottom:none;
+    font-size:10px;letter-spacing:.5px;padding:6px 9px;}
 
-.sign-area{padding:5px 9px 7px;text-align:center;border-top:1px dashed #d1d5db;
-    background:linear-gradient(to bottom,#fff,#f9fafb);margin-top:auto;}
+.sign-area{padding:5px 9px 7px;text-align:center;border-top:1.5px solid #000;margin-top:auto;}
 .sign-blank{height:22px;}
-.sign-line{border-top:1.5px solid #9ca3af;margin:0 14px 3px;border-style:solid;}
-.sign-for{font-family:'Playfair Display',Georgia,serif;font-size:8.5px;font-weight:700;color:#111;letter-spacing:.2px;}
-.sign-auth{font-size:6px;color:#b0b7c3;letter-spacing:1.2px;text-transform:uppercase;margin-top:2px;}
+.sign-line{border-top:1.5px solid #000;margin:0 14px 3px;}
+.sign-for{font-family:'Playfair Display',Georgia,serif;font-size:10px;font-weight:700;color:#000;}
+.sign-auth{font-size:8px;color:#000;letter-spacing:1.2px;text-transform:uppercase;margin-top:2px;}
 
-.inv-foot{background:linear-gradient(90deg,#0a0a0a 0%,#1a1a1a 100%);
-    padding:5px 10px;display:flex;justify-content:space-between;align-items:center;
-    flex-shrink:0;border-top:2px solid #c9893a;}
-.inv-tc{font-size:6.5px;color:rgba(255,255,255,.38);flex:1;margin-right:8px;line-height:1.6;}
-.inv-gen{font-size:6.5px;color:rgba(255,255,255,.26);white-space:nowrap;letter-spacing:.3px;}
+.inv-foot{background:#fff;border-top:2px solid #000;
+    padding:5px 10px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.inv-tc{font-size:8px;color:#000;flex:1;margin-right:8px;line-height:1.6;}
+.inv-gen{font-size:8px;color:#000;white-space:nowrap;}
 
 @page{size:A4 landscape;margin:0;}
 @media print{
@@ -300,7 +279,26 @@ table.sum-tbl .row-full td{color:#047857;font-weight:800;text-align:center;borde
 </div>
 
 <div class="a4-shell">
-    <!-- LEFT HALF: REPAIR INVOICE -->
+    <!-- LEFT HALF: blank -->
+    <div class="blank-half">
+        <div class="blank-circle">&#8629;</div>
+        <div class="blank-title">Blank &mdash; Reuse</div>
+        <div class="blank-sub">Cut vertically along dashed line<br>Reuse left half for next print</div>
+    </div>
+
+    <!-- CUT LINE -->
+    <div class="cut-zone">
+        <div class="cut-label">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
+                <line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/>
+                <line x1="8.12" y1="8.12" x2="12" y2="12"/>
+            </svg>
+            Cut Here
+        </div>
+    </div>
+
+    <!-- RIGHT HALF: REPAIR INVOICE -->
     <div class="inv-half">
         <div class="inv">
 
@@ -366,7 +364,7 @@ table.sum-tbl .row-full td{color:#047857;font-weight:800;text-align:center;borde
                             <td class="tc">{{ $idx+1 }}</td>
                             <td>{{ $item['name'] }}@if($item['serial'])<div class="serial-sub">IMEI: {{ $item['serial'] }}</div>@endif</td>
                             <td class="tc">{{ $item['qty'] }}</td>
-                            <td class="tr" style="color:#6b7280;">@if($item['mrp'] > $item['rate']){{ number_format($item['mrp'],2) }}@else&mdash;@endif</td>
+                            <td class="tr" style="color:#000;font-weight:500;">@if($item['mrp'] > $item['rate']){{ number_format($item['mrp'],2) }}@else&mdash;@endif</td>
                             <td class="tr" style="font-weight:600;">{{ number_format($item['rate'],2) }}</td>
                             <td class="tr" style="font-weight:600;">{{ number_format($item['total'],2) }}</td>
                         </tr>
@@ -451,29 +449,14 @@ table.sum-tbl .row-full td{color:#047857;font-weight:800;text-align:center;borde
 
             <div class="inv-foot">
                 <div class="inv-tc" data-en="{{ e($footerTextEn) }}" data-ta="{{ e($footerTextTa) }}">{{ $defaultLang === 'ta' ? $footerTextTa : $footerTextEn }}</div>
-                <div class="inv-gen">Tracking: {{ $repair->tracking_id ?? '—' }} &nbsp;|&nbsp; E &amp; O.E.</div>
+                <div class="inv-gen">
+                    {{ $shopName }} &nbsp;|&nbsp; &#128222; {{ $shopPhone }}
+                    @if($shopEmail) &nbsp;|&nbsp; &#9993; {{ $shopEmail }} @endif
+                    &nbsp;|&nbsp; E &amp; O.E.
+                </div>
             </div>
 
         </div>
-    </div>
-
-    <!-- CUT LINE -->
-    <div class="cut-zone">
-        <div class="cut-label">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
-                <line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/>
-                <line x1="8.12" y1="8.12" x2="12" y2="12"/>
-            </svg>
-            Cut Here
-        </div>
-    </div>
-
-    <!-- RIGHT HALF: blank -->
-    <div class="blank-half">
-        <div class="blank-circle">&#8629;</div>
-        <div class="blank-title">Blank &mdash; Reuse</div>
-        <div class="blank-sub">Cut vertically along dashed line<br>Reuse right half for next print</div>
     </div>
 </div>
 
