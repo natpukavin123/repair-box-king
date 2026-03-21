@@ -148,6 +148,12 @@
                         </div>
                         <span>Recharge Providers</span>
                     </button>
+                    <button @click="switchSection('services')" :class="mdSection==='services' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
+                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#6366f1,#4f46e5);">
+                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        </div>
+                        <span>Services</span>
+                    </button>
                 </div>
             </div>
 
@@ -515,6 +521,58 @@
                             </table>
                         </template>
 
+                        {{-- Services Table --}}
+                        <template x-if="mdSection==='services'">
+                            <table class="data-table w-full">
+                                <thead class="sticky top-0 z-10">
+                                    <tr class="bg-gray-50">
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Default Price</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Description</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Status</th>
+                                        <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <template x-for="(item, idx) in mdItems" :key="item.id">
+                                        <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openMdEdit(item)">
+                                            <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
+                                            <td class="px-3 py-2 font-medium text-gray-800 text-sm">
+                                                <div class="flex items-center gap-2">
+                                                    <template x-if="item.thumbnail">
+                                                        <img :src="'/storage/' + item.thumbnail" class="w-7 h-7 rounded object-cover">
+                                                    </template>
+                                                    <span x-text="item.name"></span>
+                                                </div>
+                                            </td>
+                                            <td class="px-3 py-2 text-sm" x-text="item.default_price ? RepairBox.formatCurrency(item.default_price) : '-'"></td>
+                                            <td class="px-3 py-2 text-sm text-gray-500" x-text="item.description ? item.description.substring(0,50) + (item.description.length > 50 ? '...' : '') : '-'"></td>
+                                            <td class="px-3 py-2">
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
+                                                    :class="(item.status||'active')==='active' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'"
+                                                    x-text="item.status||'active'"></span>
+                                            </td>
+                                            <td class="px-3 py-2 text-center" @click.stop>
+                                                <button @click="openMdEdit(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition" title="Edit">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                </button>
+                                                <button @click="deleteMdItem(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition" title="Delete">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="mdItems.length === 0 && !mdLoading">
+                                        <td colspan="6" class="text-center py-12">
+                                            <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                            <p class="text-gray-400 font-medium">No services found</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </template>
+
                         </div>
                     </div>
                 </div>
@@ -679,6 +737,55 @@
                             </div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Commission % *</label>
                                 <input x-model="mdForm.commission_percentage" type="number" step="0.01" min="0" max="100" class="form-input-custom" placeholder="e.g. 3.5"></div>
+                        </div>
+                    </template>
+
+                    {{-- Services Form --}}
+                    <template x-if="mdSection==='services'">
+                        <div class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                                <input x-model="mdForm.name" type="text" class="form-input-custom" placeholder="Service name"></div>
+
+                            {{-- Quick fill suggestions for name (only when creating) --}}
+                            <div x-show="!mdEditing" x-cloak>
+                                <p class="text-xs font-medium text-gray-500 mb-1.5">Quick fill</p>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <template x-for="tag in svcQuickFillTags" :key="tag">
+                                        <button type="button" @click="mdForm.name = tag"
+                                            :class="mdForm.name === tag ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-400 hover:text-indigo-600'"
+                                            class="px-2.5 py-1 rounded-full text-xs font-medium border transition-colors"
+                                            x-text="tag"></button>
+                                    </template>
+                                </div>
+                            </div>
+
+                            {{-- Quick fill tags for POS --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Quick Fill Options <span class="text-gray-400 font-normal">(shown in POS)</span></label>
+                                <div class="flex flex-wrap gap-1.5 mb-2">
+                                    <template x-for="(qf, qi) in (mdForm.quick_fills || [])" :key="qi">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                            <span x-text="qf"></span>
+                                            <button type="button" @click="mdForm.quick_fills.splice(qi, 1)" class="text-indigo-400 hover:text-red-500 leading-none">&times;</button>
+                                        </span>
+                                    </template>
+                                </div>
+                                <div class="flex gap-2">
+                                    <input x-model="svcNewQuickFill" type="text" class="form-input-custom text-sm flex-1" placeholder="Type quick fill option & press Enter"
+                                        @keydown.enter.prevent="if(svcNewQuickFill.trim()) { if(!mdForm.quick_fills) mdForm.quick_fills=[]; mdForm.quick_fills.push(svcNewQuickFill.trim()); svcNewQuickFill=''; }">
+                                    <button type="button" class="btn-secondary text-xs px-3"
+                                        @click="if(svcNewQuickFill.trim()) { if(!mdForm.quick_fills) mdForm.quick_fills=[]; mdForm.quick_fills.push(svcNewQuickFill.trim()); svcNewQuickFill=''; }">Add</button>
+                                </div>
+                            </div>
+
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Default Price</label>
+                                <input x-model="mdForm.default_price" type="number" step="0.01" min="0" class="form-input-custom" placeholder="0.00"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                <textarea x-model="mdForm.description" class="form-input-custom" rows="2" placeholder="Service description"></textarea></div>
+                            <template x-if="mdEditing">
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                    <select x-model="mdForm.status" class="form-select-custom"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+                            </template>
                         </div>
                     </template>
                 </div>
@@ -1779,6 +1886,7 @@ function masterDataPanel() {
         products:   { label: 'Products',          singular: 'Product',  url: '/products',   deleteUrl: '/products' },
         customers:  { label: 'Customers',         singular: 'Customer', url: '/customers',  deleteUrl: '/customers' },
         'recharge-providers': { label: 'Recharge Providers', singular: 'Provider', url: '/recharge-providers', deleteUrl: '/recharge-providers' },
+        services:  { label: 'Services', singular: 'Service', url: '/service-types', deleteUrl: '/service-types' },
     };
 
     return {
@@ -1793,6 +1901,13 @@ function masterDataPanel() {
         mdCategories: [],
         mdBrands: [],
         mdProducts: [],
+        svcQuickFillTags: [
+            'Xerox / Photocopy', 'Lamination', 'Screen Replacement', 'Battery Replacement',
+            'Charging Port Repair', 'Software / Flashing', 'Data Recovery', 'Water Damage Repair',
+            'Speaker Repair', 'Mic Repair', 'Camera Repair', 'Back Panel Replacement',
+            'Keyboard Repair', 'Motherboard Repair', 'SIM Tray Replace', 'General Service',
+        ],
+        svcNewQuickFill: '',
 
         get mdSectionLabel() { return sectionConfig[this.mdSection]?.label || ''; },
         get mdSectionLabelSingular() { return sectionConfig[this.mdSection]?.singular || ''; },
@@ -1840,6 +1955,10 @@ function masterDataPanel() {
             this.mdEditing = item.id;
             this.mdForm = { ...item };
 
+            if (this.mdSection === 'services' && !this.mdForm.quick_fills) {
+                this.mdForm.quick_fills = [];
+            }
+
             if (this.mdSection === 'products') {
                 this.loadDropdowns();
             }
@@ -1856,6 +1975,7 @@ function masterDataPanel() {
                 case 'customers': return { name: '', mobile_number: '', email: '', address: '' };
                 case 'inventory': return { product_id: '', adjustment_type: 'addition', quantity: '', reason: '' };
                 case 'recharge-providers': return { name: '', provider_type: '', commission_percentage: '' };
+                case 'services': return { name: '', default_price: '', description: '', quick_fills: [] };
                 default: return {};
             }
         },

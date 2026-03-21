@@ -148,6 +148,7 @@ Route::middleware('auth')->group(function () {
     Route::get('vendors-search', [SettingController::class, 'searchVendors']);
     Route::post('service-types', [SettingController::class, 'storeServiceType']);
     Route::put('service-types/{serviceType}', [SettingController::class, 'updateServiceType']);
+    Route::delete('service-types/{serviceType}', [SettingController::class, 'destroyServiceType']);
     Route::post('service-types/{serviceType}/upload-image', [SettingController::class, 'uploadServiceTypeImage']);
     Route::get('recharge-providers', [SettingController::class, 'rechargeProviders']);
     Route::post('recharge-providers', [SettingController::class, 'storeRechargeProvider']);

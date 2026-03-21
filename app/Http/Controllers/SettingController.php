@@ -72,7 +72,9 @@ class SettingController extends Controller
         $data = $request->validate([
             'name'          => 'required|string|max:150',
             'default_price' => 'nullable|numeric|min:0',
-            'description' => 'nullable|string',
+            'description'   => 'nullable|string',
+            'quick_fills'   => 'nullable|array',
+            'quick_fills.*' => 'string|max:100',
         ]);
         $st = ServiceType::create($data);
         return response()->json(['success' => true, 'data' => $st]);
@@ -83,11 +85,19 @@ class SettingController extends Controller
         $data = $request->validate([
             'name'          => 'required|string|max:150',
             'default_price' => 'nullable|numeric|min:0',
-            'description' => 'nullable|string',
-            'status'      => 'in:active,inactive',
+            'description'   => 'nullable|string',
+            'quick_fills'   => 'nullable|array',
+            'quick_fills.*' => 'string|max:100',
+            'status'        => 'in:active,inactive',
         ]);
         $serviceType->update($data);
         return response()->json(['success' => true, 'data' => $serviceType]);
+    }
+
+    public function destroyServiceType(ServiceType $serviceType)
+    {
+        $serviceType->delete();
+        return response()->json(['success' => true]);
     }
 
     public function uploadServiceTypeImage(Request $request, ServiceType $serviceType)
@@ -407,6 +417,13 @@ class SettingController extends Controller
                 'columns' => ['name', 'provider_type', 'commission_percentage'],
                 'unique_key' => 'name',
                 'rules' => ['name' => 'required|string|max:150', 'provider_type' => 'required|string|max:50', 'commission_percentage' => 'required|numeric|min:0|max:100'],
+            ],
+            'service_types' => [
+                'model' => ServiceType::class,
+                'label' => 'Service Types',
+                'columns' => ['name', 'default_price', 'description'],
+                'unique_key' => 'name',
+                'rules' => ['name' => 'required|string|max:150', 'default_price' => 'nullable|numeric|min:0', 'description' => 'nullable|string'],
             ],
         ];
     }

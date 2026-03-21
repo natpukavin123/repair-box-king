@@ -917,23 +917,10 @@ function posBilling() {
         },
 
         get svcModalSuggestions() {
-            const n = (this.svcModal.service?.name || '').toLowerCase();
-            if (n.includes('xerox') || n.includes('print') || n.includes('copy') || n.includes('photocopy'))
-                return [['A4 B&W', 'pages'], ['A4 Color', 'pages'], ['A3 B&W', 'pages'], ['A3 Color', 'pages'], ['Legal B&W', 'pages']];
-            if (n.includes('lamination') || n.includes('laminate'))
-                return [['A4 Lamination', 'sheets'], ['A3 Lamination', 'sheets'], ['ID Card Size', 'pcs'], ['Passport Size', 'pcs']];
-            if (n.includes('screen') || n.includes('display') || n.includes('lcd'))
-                return [['Original Screen', null], ['OEM Screen', null], ['Grade A Screen', null], ['Grade B Screen', null], ['Copy Screen', null]];
-            if (n.includes('battery'))
-                return [['Original Battery', null], ['OEM Battery', null], ['Duplicate Battery', null]];
-            if (n.includes('charging') || n.includes('port') || n.includes('usb'))
-                return [['USB-C Port', null], ['Micro-USB Port', null], ['Lightning Port', null], ['Type-B Port', null]];
-            if (n.includes('software') || n.includes('flash') || n.includes('update'))
-                return [['Flash / Re-flash', null], ['Factory Reset', null], ['OS Update', null], ['IMEI Repair', null], ['Pattern Unlock', null]];
-            if (n.includes('data') || n.includes('recovery'))
-                return [['Full Recovery', null], ['Contacts Only', null], ['Photos Only', null], ['WhatsApp Backup', null]];
-            if (n.includes('water') || n.includes('damage'))
-                return [['Diagnosis Done', null], ['Board Level Repair', null], ['Cleaning + Dry', null]];
+            const s = this.svcModal.service;
+            if (s && Array.isArray(s.quick_fills) && s.quick_fills.length > 0) {
+                return s.quick_fills.map(qf => [qf, null]);
+            }
             return [];
         },
 
