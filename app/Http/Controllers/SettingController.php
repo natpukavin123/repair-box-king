@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\{Setting, EmailTemplate, Notification, ActivityLog, Backup};
 use App\Models\{ServiceType, RechargeProvider, Vendor};
+use App\Models\{Brand, Category, Subcategory, Product, Customer, Part};
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\{DB, Storage, Validator};
 
 class SettingController extends Controller
 {
@@ -351,6 +352,280 @@ class SettingController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => 'Test notification sent via: ' . implode(' & ', $sent) . '. Check logs if recipients didn\'t receive it.']);
+    }
+
+    // ── Import ─────────────────────────────────────────────────────────────────
+
+    private function getImportConfig(): array
+    {
+        return [
+            'brands' => [
+                'model' => Brand::class,
+                'label' => 'Brands',
+                'columns' => ['name'],
+                'unique_key' => 'name',
+                'rules' => ['name' => 'required|string|max:150'],
+            ],
+            'categories' => [
+                'model' => Category::class,
+                'label' => 'Categories',
+                'columns' => ['name', 'description'],
+                'unique_key' => 'name',
+                'rules' => ['name' => 'required|string|max:150', 'description' => 'nullable|string'],
+            ],
+            'customers' => [
+                'model' => Customer::class,
+                'label' => 'Customers',
+                'columns' => ['name', 'mobile_number', 'email', 'address', 'notes'],
+                'unique_key' => 'mobile_number',
+                'rules' => ['name' => 'required|string|max:150', 'mobile_number' => 'required|string|max:20', 'email' => 'nullable|string|max:150', 'address' => 'nullable|string', 'notes' => 'nullable|string'],
+            ],
+            'products' => [
+                'model' => Product::class,
+                'label' => 'Products',
+                'columns' => ['name', 'sku', 'barcode', 'category', 'brand', 'purchase_price', 'mrp', 'selling_price', 'description'],
+                'unique_key' => 'sku',
+                'rules' => ['name' => 'required|string|max:255', 'sku' => 'nullable|string|max:100', 'barcode' => 'nullable|string|max:100', 'category' => 'nullable|string', 'brand' => 'nullable|string', 'purchase_price' => 'nullable|numeric|min:0', 'mrp' => 'nullable|numeric|min:0', 'selling_price' => 'nullable|numeric|min:0', 'description' => 'nullable|string'],
+            ],
+            'parts' => [
+                'model' => Part::class,
+                'label' => 'Parts',
+                'columns' => ['name', 'sku', 'cost_price', 'selling_price'],
+                'unique_key' => 'sku',
+                'rules' => ['name' => 'required|string|max:150', 'sku' => 'nullable|string|max:50', 'cost_price' => 'nullable|numeric|min:0', 'selling_price' => 'nullable|numeric|min:0'],
+            ],
+            'vendors' => [
+                'model' => Vendor::class,
+                'label' => 'Vendors',
+                'columns' => ['name', 'phone', 'address', 'specialization'],
+                'unique_key' => 'name',
+                'rules' => ['name' => 'required|string|max:150', 'phone' => 'nullable|string|max:20', 'address' => 'nullable|string', 'specialization' => 'nullable|string|max:255'],
+            ],
+            'recharge_providers' => [
+                'model' => RechargeProvider::class,
+                'label' => 'Recharge Providers',
+                'columns' => ['name', 'provider_type', 'commission_percentage'],
+                'unique_key' => 'name',
+                'rules' => ['name' => 'required|string|max:150', 'provider_type' => 'required|string|max:50', 'commission_percentage' => 'required|numeric|min:0|max:100'],
+            ],
+        ];
+    }
+
+    private function parseCsv(string $content): array
+    {
+        $lines = preg_split('/\r\n|\r|\n/', trim($content));
+        if (count($lines) < 2) return [];
+
+        $headers = str_getcsv(array_shift($lines));
+        $headers = array_map(fn($h) => strtolower(trim($h)), $headers);
+
+        $rows = [];
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '') continue;
+            $values = str_getcsv($line);
+            $row = [];
+            foreach ($headers as $i => $header) {
+                $row[$header] = isset($values[$i]) ? trim($values[$i]) : '';
+            }
+            $rows[] = $row;
+        }
+        return $rows;
+    }
+
+    public function validateImport(Request $request)
+    {
+        $request->validate([
+            'type' => 'required|string',
+            'file' => 'required|file|mimes:csv,txt|max:5120',
+        ]);
+
+        $configs = $this->getImportConfig();
+        $type = $request->input('type');
+
+        if (!isset($configs[$type])) {
+            return response()->json(['success' => false, 'message' => 'Invalid import type.'], 422);
+        }
+
+        $config = $configs[$type];
+        $content = file_get_contents($request->file('file')->getRealPath());
+        $rows = $this->parseCsv($content);
+
+        if (empty($rows)) {
+            return response()->json(['success' => false, 'message' => 'CSV file is empty or has no data rows.'], 422);
+        }
+
+        // Validate headers
+        $csvHeaders = array_keys($rows[0]);
+        $missingHeaders = array_diff($config['columns'], $csvHeaders);
+        $extraHeaders = array_diff($csvHeaders, $config['columns']);
+
+        // Only require that mandatory columns from rules are present
+        $requiredColumns = [];
+        foreach ($config['rules'] as $col => $rule) {
+            if (str_contains($rule, 'required') && in_array($col, $config['columns'])) {
+                $requiredColumns[] = $col;
+            }
+        }
+        $missingRequired = array_diff($requiredColumns, $csvHeaders);
+        if (!empty($missingRequired)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Missing required columns: ' . implode(', ', $missingRequired),
+            ], 422);
+        }
+
+        // Validate each row
+        $results = [];
+        $errorCount = 0;
+        $createCount = 0;
+        $updateCount = 0;
+
+        foreach ($rows as $i => $row) {
+            $rowNum = $i + 2; // +2 for header row + 0-index
+            $rowData = array_intersect_key($row, array_flip($config['columns']));
+
+            $validator = Validator::make($rowData, $config['rules']);
+            $errors = [];
+
+            if ($validator->fails()) {
+                $errors = $validator->errors()->all();
+            }
+
+            // Check if record exists (for create vs update)
+            $uniqueKey = $config['unique_key'];
+            $uniqueValue = $rowData[$uniqueKey] ?? '';
+            $action = 'create';
+
+            if (!empty($uniqueValue)) {
+                if ($type === 'products' && $uniqueKey === 'sku') {
+                    $existing = Product::where('sku', $uniqueValue)->first();
+                } elseif ($type === 'customers' && $uniqueKey === 'mobile_number') {
+                    $existing = Customer::where('mobile_number', $uniqueValue)->first();
+                } else {
+                    $existing = $config['model']::where($uniqueKey, $uniqueValue)->first();
+                }
+
+                if ($existing) {
+                    $action = 'update';
+                    $updateCount++;
+                } else {
+                    $createCount++;
+                }
+            } else {
+                $createCount++;
+            }
+
+            if (!empty($errors)) {
+                $errorCount++;
+            }
+
+            $results[] = [
+                'row' => $rowNum,
+                'data' => $rowData,
+                'action' => $action,
+                'errors' => $errors,
+            ];
+        }
+
+        // Store validated data in session for confirm step
+        $request->session()->put('import_data', [
+            'type' => $type,
+            'rows' => $rows,
+            'results' => $results,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'type' => $type,
+            'label' => $config['label'],
+            'total' => count($rows),
+            'creates' => $createCount,
+            'updates' => $updateCount,
+            'errors' => $errorCount,
+            'results' => $results,
+            'columns' => $config['columns'],
+        ]);
+    }
+
+    public function confirmImport(Request $request)
+    {
+        $importData = $request->session()->get('import_data');
+        if (!$importData) {
+            return response()->json(['success' => false, 'message' => 'No import data found. Please validate again.'], 422);
+        }
+
+        $configs = $this->getImportConfig();
+        $type = $importData['type'];
+        $config = $configs[$type];
+        $rows = $importData['rows'];
+
+        $created = 0;
+        $updated = 0;
+        $skipped = 0;
+
+        DB::beginTransaction();
+        try {
+            foreach ($rows as $row) {
+                $rowData = array_intersect_key($row, array_flip($config['columns']));
+
+                // Validate again
+                $validator = Validator::make($rowData, $config['rules']);
+                if ($validator->fails()) {
+                    $skipped++;
+                    continue;
+                }
+
+                // Resolve foreign keys for products
+                if ($type === 'products') {
+                    $finalData = collect($rowData)->except(['category', 'brand'])->toArray();
+                    if (!empty($rowData['category'])) {
+                        $cat = Category::firstOrCreate(['name' => $rowData['category']]);
+                        $finalData['category_id'] = $cat->id;
+                    }
+                    if (!empty($rowData['brand'])) {
+                        $brand = Brand::firstOrCreate(['name' => $rowData['brand']]);
+                        $finalData['brand_id'] = $brand->id;
+                    }
+                    // Set defaults for price fields
+                    $finalData['purchase_price'] = $finalData['purchase_price'] ?: 0;
+                    $finalData['mrp'] = $finalData['mrp'] ?: 0;
+                    $finalData['selling_price'] = $finalData['selling_price'] ?: 0;
+                    $rowData = $finalData;
+                }
+
+                $uniqueKey = $config['unique_key'];
+                $uniqueValue = $rowData[$uniqueKey] ?? '';
+
+                if (!empty($uniqueValue)) {
+                    $existing = $config['model']::where($uniqueKey, $uniqueValue)->first();
+                    if ($existing) {
+                        $existing->update($rowData);
+                        $updated++;
+                    } else {
+                        $config['model']::create($rowData);
+                        $created++;
+                    }
+                } else {
+                    $config['model']::create($rowData);
+                    $created++;
+                }
+            }
+
+            DB::commit();
+            $request->session()->forget('import_data');
+
+            return response()->json([
+                'success' => true,
+                'message' => "Import completed: {$created} created, {$updated} updated, {$skipped} skipped.",
+                'created' => $created,
+                'updated' => $updated,
+                'skipped' => $skipped,
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'Import failed: ' . $e->getMessage()], 500);
+        }
     }
 }
 

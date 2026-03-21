@@ -165,6 +165,10 @@ Route::middleware('auth')->group(function () {
     Route::get('backups', [SettingController::class, 'backups']);
     Route::post('backups', [SettingController::class, 'createBackup']);
 
+    // Import
+    Route::post('import/validate', [SettingController::class, 'validateImport']);
+    Route::post('import/confirm', [SettingController::class, 'confirmImport']);
+
     // ─── Dev Tools (admin only) ────────────────────────────────────────────
     Route::prefix('dev-tools')->name('dev-tools.')->group(function () {
         Route::get('/',           [DevToolsController::class, 'index'])->name('index');

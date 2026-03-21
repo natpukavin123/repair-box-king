@@ -18,6 +18,7 @@
         <button @click="tab='notifications'; updateUrl(); loadNotifications()" :class="tab==='notifications' ? 'secondary-tab is-active' : 'secondary-tab'">Notifications</button>
         <button @click="tab='print-settings'; updateUrl()" :class="tab==='print-settings' ? 'secondary-tab is-active' : 'secondary-tab'">Print Settings</button>
         <button @click="tab='backups'; updateUrl()" :class="tab==='backups' ? 'secondary-tab is-active' : 'secondary-tab'">Backups</button>
+        <button @click="tab='import'; updateUrl()" :class="tab==='import' ? 'secondary-tab is-active' : 'secondary-tab'">Import</button>
     </div>
 
     {{-- Master Data --}}
@@ -1246,6 +1247,175 @@
         </div>
     </div>
 
+    {{-- Import Tab --}}
+    <div x-show="tab==='import'" x-cloak>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-lg font-semibold">Import Master Data</h3>
+                <p class="text-sm text-gray-500 mt-1">Upload a CSV file to create or update records in bulk. The file will be validated first before importing.</p>
+            </div>
+            <div class="card-body space-y-6">
+
+                {{-- Step 1: Select type and upload --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Import Type</label>
+                        <select x-model="importType" class="form-select-custom" @change="resetImport()">
+                            <option value="">-- Select type --</option>
+                            <option value="brands">Brands</option>
+                            <option value="categories">Categories</option>
+                            <option value="customers">Customers</option>
+                            <option value="products">Products</option>
+                            <option value="parts">Parts</option>
+                            <option value="vendors">Vendors</option>
+                            <option value="recharge_providers">Recharge Providers</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">CSV File</label>
+                        <input type="file" accept=".csv" @change="importFile = $event.target.files[0]"
+                            class="form-input-custom text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
+                            x-ref="importFileInput">
+                    </div>
+                </div>
+
+                {{-- Expected columns hint --}}
+                <div x-show="importType" class="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <h4 class="text-sm font-semibold text-blue-800 mb-1">Expected CSV Columns</h4>
+                    <p class="text-xs text-blue-700" x-text="getExpectedColumns()"></p>
+                    <p class="text-xs text-blue-600 mt-1">
+                        <span class="font-medium">Matching key:</span>
+                        <span x-text="getUniqueKeyLabel()"></span> — existing records with the same value will be <strong>updated</strong>, new ones will be <strong>created</strong>.
+                    </p>
+                </div>
+
+                {{-- Validate button --}}
+                <div class="flex gap-3">
+                    <button @click="validateImport()" class="btn-primary px-5 py-2.5 text-sm font-semibold rounded-xl"
+                        :disabled="!importType || !importFile || importValidating">
+                        <span x-show="importValidating" class="spinner mr-1"></span>
+                        Validate File
+                    </button>
+                    <button x-show="importType || importFile" @click="resetImport(); $refs.importFileInput.value=''" class="btn-secondary px-4 py-2.5 text-sm rounded-xl">
+                        Reset
+                    </button>
+                </div>
+
+                {{-- Validation Results --}}
+                <div x-show="importResults" x-cloak>
+                    {{-- Summary --}}
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <div class="bg-gray-50 rounded-xl p-4 text-center border">
+                            <div class="text-2xl font-bold text-gray-800" x-text="importSummary.total"></div>
+                            <div class="text-xs text-gray-500 mt-1">Total Rows</div>
+                        </div>
+                        <div class="bg-green-50 rounded-xl p-4 text-center border border-green-200">
+                            <div class="text-2xl font-bold text-green-700" x-text="importSummary.creates"></div>
+                            <div class="text-xs text-green-600 mt-1">New Records</div>
+                        </div>
+                        <div class="bg-blue-50 rounded-xl p-4 text-center border border-blue-200">
+                            <div class="text-2xl font-bold text-blue-700" x-text="importSummary.updates"></div>
+                            <div class="text-xs text-blue-600 mt-1">Updates</div>
+                        </div>
+                        <div class="rounded-xl p-4 text-center border" :class="importSummary.errors > 0 ? 'bg-red-50 border-red-200' : 'bg-gray-50'">
+                            <div class="text-2xl font-bold" :class="importSummary.errors > 0 ? 'text-red-700' : 'text-gray-400'" x-text="importSummary.errors"></div>
+                            <div class="text-xs mt-1" :class="importSummary.errors > 0 ? 'text-red-600' : 'text-gray-500'">Errors</div>
+                        </div>
+                    </div>
+
+                    {{-- Row details table --}}
+                    <div class="border rounded-xl overflow-hidden">
+                        <div class="max-h-[400px] overflow-y-auto">
+                            <table class="data-table w-full">
+                                <thead class="sticky top-0 z-10">
+                                    <tr class="bg-gray-50">
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Row</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Action</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Data</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="r in importResults" :key="r.row">
+                                        <tr class="border-t" :class="r.errors.length > 0 ? 'bg-red-50/50' : ''">
+                                            <td class="px-3 py-2 text-sm font-mono" x-text="r.row"></td>
+                                            <td class="px-3 py-2">
+                                                <span class="badge text-xs" :class="r.action==='create' ? 'badge-success' : 'badge-info'" x-text="r.action"></span>
+                                            </td>
+                                            <td class="px-3 py-2 text-sm text-gray-600">
+                                                <template x-for="(val, key) in r.data" :key="key">
+                                                    <span class="inline-block mr-2">
+                                                        <span class="font-medium text-gray-700" x-text="key + ': '"></span>
+                                                        <span x-text="val || '-'"></span>
+                                                    </span>
+                                                </template>
+                                            </td>
+                                            <td class="px-3 py-2">
+                                                <template x-if="r.errors.length === 0">
+                                                    <span class="text-green-600 text-sm font-medium">OK</span>
+                                                </template>
+                                                <template x-if="r.errors.length > 0">
+                                                    <div class="text-red-600 text-xs space-y-0.5">
+                                                        <template x-for="err in r.errors" :key="err">
+                                                            <div x-text="err"></div>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {{-- Confirm button --}}
+                    <div class="flex items-center gap-4 mt-4">
+                        <button @click="confirmImport()" class="btn-primary px-6 py-2.5 text-sm font-semibold rounded-xl"
+                            :disabled="importSummary.errors > 0 || importConfirming">
+                            <span x-show="importConfirming" class="spinner mr-1"></span>
+                            Confirm & Import
+                        </button>
+                        <p x-show="importSummary.errors > 0" class="text-sm text-red-600">Fix all errors before importing.</p>
+                    </div>
+                </div>
+
+                {{-- Import success --}}
+                <div x-show="importDone" x-cloak class="bg-green-50 border border-green-200 rounded-xl p-5">
+                    <div class="flex items-center gap-3">
+                        <svg class="w-8 h-8 text-green-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>
+                            <h4 class="font-semibold text-green-800" x-text="importDoneMessage"></h4>
+                            <p class="text-sm text-green-700 mt-1">You can now verify the imported data in the Master Data tab.</p>
+                        </div>
+                    </div>
+                    <button @click="resetImport(); $refs.importFileInput.value=''" class="btn-secondary mt-3 text-sm">Import Another File</button>
+                </div>
+            </div>
+        </div>
+
+        {{-- Download sample templates --}}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="text-lg font-semibold">Sample Templates</h3>
+                <p class="text-sm text-gray-500 mt-1">Download a sample CSV template for each data type.</p>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <template x-for="t in importTemplates" :key="t.type">
+                        <button @click="downloadTemplate(t.type)" class="flex items-center gap-2 p-3 rounded-xl border border-gray-200 hover:border-primary-300 hover:bg-primary-50/50 transition-colors text-left">
+                            <svg class="w-5 h-5 text-primary-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <div>
+                                <div class="text-sm font-medium text-gray-800" x-text="t.label"></div>
+                                <div class="text-xs text-gray-500">CSV Template</div>
+                            </div>
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Test Notification Modal --}}
     <div x-show="showTestNotifyModal" class="modal-overlay" x-cloak @click.self="showTestNotifyModal=false">
         <div class="modal-container">
@@ -1308,6 +1478,19 @@ function settingsPage() {
     return {
         tab: 'general', saving: false, iconFile: null, previewIcon: '',
         settings: {}, settingKeys: ['shop_name','shop_address','shop_phone','shop_email','shop_slogan','currency_symbol','invoice_prefix','repair_prefix','low_stock_threshold'],
+        // Import state
+        importType: '', importFile: null, importValidating: false, importConfirming: false,
+        importResults: null, importSummary: { total: 0, creates: 0, updates: 0, errors: 0 },
+        importDone: false, importDoneMessage: '',
+        importTemplates: [
+            { type: 'brands', label: 'Brands', columns: ['name'] },
+            { type: 'categories', label: 'Categories', columns: ['name', 'description'] },
+            { type: 'customers', label: 'Customers', columns: ['name', 'mobile_number', 'email', 'address', 'notes'] },
+            { type: 'products', label: 'Products', columns: ['name', 'sku', 'barcode', 'category', 'brand', 'purchase_price', 'mrp', 'selling_price', 'description'] },
+            { type: 'parts', label: 'Parts', columns: ['name', 'sku', 'cost_price', 'selling_price'] },
+            { type: 'vendors', label: 'Vendors', columns: ['name', 'phone', 'address', 'specialization'] },
+            { type: 'recharge_providers', label: 'Recharge Providers', columns: ['name', 'provider_type', 'commission_percentage'] },
+        ],
         appearanceThemes: [
             {
                 id: 'atelier',
@@ -1436,6 +1619,93 @@ function settingsPage() {
                 };
                 reader.readAsDataURL(file);
             }
+        },
+        getExpectedColumns() {
+            const t = this.importTemplates.find(t => t.type === this.importType);
+            return t ? t.columns.join(', ') : '';
+        },
+        getUniqueKeyLabel() {
+            const keys = { brands: 'name', categories: 'name', customers: 'mobile_number', products: 'sku', parts: 'sku', vendors: 'name', recharge_providers: 'name' };
+            return keys[this.importType] || '';
+        },
+        resetImport() {
+            this.importFile = null;
+            this.importResults = null;
+            this.importSummary = { total: 0, creates: 0, updates: 0, errors: 0 };
+            this.importDone = false;
+            this.importDoneMessage = '';
+        },
+        async validateImport() {
+            if (!this.importType || !this.importFile) return;
+            this.importValidating = true;
+            this.importResults = null;
+            this.importDone = false;
+
+            const formData = new FormData();
+            formData.append('type', this.importType);
+            formData.append('file', this.importFile);
+
+            try {
+                const response = await fetch('/import/validate', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    },
+                    body: formData
+                });
+                const r = await response.json();
+                this.importValidating = false;
+
+                if (r.success === false) {
+                    RepairBox.toast(r.message || 'Validation failed', 'error');
+                    return;
+                }
+
+                this.importResults = r.results;
+                this.importSummary = { total: r.total, creates: r.creates, updates: r.updates, errors: r.errors };
+
+                if (r.errors === 0) {
+                    RepairBox.toast('Validation passed! Review and click Confirm to import.', 'success');
+                } else {
+                    RepairBox.toast(`${r.errors} row(s) have errors. Fix your CSV and re-upload.`, 'error');
+                }
+            } catch (err) {
+                this.importValidating = false;
+                RepairBox.toast('Error validating file: ' + err.message, 'error');
+            }
+        },
+        async confirmImport() {
+            this.importConfirming = true;
+            try {
+                const r = await RepairBox.ajax('/import/confirm', 'POST');
+                this.importConfirming = false;
+                const msg = r.message || (r.data && r.data.message);
+
+                if (r.success !== false) {
+                    this.importResults = null;
+                    this.importDone = true;
+                    this.importDoneMessage = msg || 'Import completed successfully.';
+                    RepairBox.toast(msg || 'Import completed successfully.', 'success');
+                } else {
+                    RepairBox.toast(msg || 'Import failed', 'error');
+                }
+            } catch (err) {
+                this.importConfirming = false;
+                RepairBox.toast('Import failed: ' + err.message, 'error');
+            }
+        },
+        downloadTemplate(type) {
+            const t = this.importTemplates.find(t => t.type === type);
+            if (!t) return;
+            const csv = t.columns.join(',') + '\n';
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${type}_template.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
         },
         async saveSettings() {
             this.saving = true;
