@@ -202,7 +202,7 @@
     {{-- ============ ROW 1: Main Nav Cards + Reminders ============ --}}
     {{-- Navigation Cards --}}
     <div style="margin-bottom:28px;">
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {{-- Sales / POS --}}
             <a href="/pos" class="nav-card" style="background:linear-gradient(135deg,#22c55e,#15803d);">
                 <div class="nav-card-icon">
@@ -234,14 +234,6 @@
                 </div>
                 <span class="nav-card-label">Expenses</span>
                 <span class="nav-card-sub">Track Costs</span>
-            </a>
-            {{-- Invoices --}}
-            <a href="/invoices" class="nav-card" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">
-                <div class="nav-card-icon">
-                    <svg style="width:28px;height:28px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                </div>
-                <span class="nav-card-label">Invoices</span>
-                <span class="nav-card-sub">Bills & Receipts</span>
             </a>
             {{-- PO --}}
             <a href="/po" class="nav-card" style="background:linear-gradient(135deg,#f59e0b,#b45309);">

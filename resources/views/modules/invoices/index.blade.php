@@ -65,6 +65,7 @@
                         class="form-input-custom pl-9 text-sm w-full" title="To date">
                 </div>
             </div>
+            </div>
 
             <div class="mobile-scroll sm:overflow-visible">
             <div class="flex gap-1.5 items-center pb-1 sm:pb-0">
@@ -101,9 +102,8 @@
                 </button>
             </div>
             </div>
-        </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-gray-100">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-gray-100">
             <div class="flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-2.5">
                 <div class="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0">
                     <svg class="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,6 +149,7 @@
                     <p class="text-base font-bold text-red-600" x-text="pageStats.unpaid"></p>
                 </div>
             </div>
+        </div>
         </div>
     </x-ui.filter-bar>
 
