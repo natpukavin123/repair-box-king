@@ -114,19 +114,19 @@
                     placeholder="Search by name, SKU, barcode..." class="form-input-custom sales-field flex-1" autofocus>
                 <div class="sales-segmented inline-flex w-full overflow-x-auto sm:w-auto">
                     <button type="button"
-                        @click="itemType = 'product'; searchProducts()"
+                        @click="switchTab('product'); searchProducts()"
                         :class="itemType === 'product' ? 'bg-white text-primary-700 shadow-sm border-primary-200' : 'text-gray-600 hover:text-gray-800'"
                         class="px-3 py-1.5 text-sm font-medium rounded-md border border-transparent transition-all">
                         Product
                     </button>
                     <button type="button"
-                        @click="itemType = 'service'"
+                        @click="switchTab('service')"
                         :class="itemType === 'service' ? 'bg-white text-primary-700 shadow-sm border-primary-200' : 'text-gray-600 hover:text-gray-800'"
                         class="px-3 py-1.5 text-sm font-medium rounded-md border border-transparent transition-all">
                         Service
                     </button>
                     <button type="button"
-                        @click="itemType = 'manual'"
+                        @click="switchTab('manual')"
                         :class="itemType === 'manual' ? 'bg-white text-primary-700 shadow-sm border-primary-200' : 'text-gray-600 hover:text-gray-800'"
                         class="px-3 py-1.5 text-sm font-medium rounded-md border border-transparent transition-all">
                         Manual Entry
@@ -761,7 +761,7 @@ function posBilling() {
         searchResults: [],
         allServices: [],
         cart: [],
-        itemType: 'product',
+        itemType: new URLSearchParams(window.location.search).get('type') || 'product',
         saving: false,
         paying: false,
 
@@ -801,7 +801,20 @@ function posBilling() {
         canViewCostPrice: {{ $canViewCostPrice ? 'true' : 'false' }},
 
         async init() {
+            const validTypes = ['product', 'service', 'manual'];
+            if (!validTypes.includes(this.itemType)) this.itemType = 'product';
+            window.addEventListener('popstate', () => {
+                const type = new URLSearchParams(window.location.search).get('type') || 'product';
+                this.itemType = validTypes.includes(type) ? type : 'product';
+            });
             await Promise.all([this.searchProducts(), this.loadServices(), this.loadFilterData()]);
+        },
+
+        switchTab(type) {
+            this.itemType = type;
+            const url = new URL(window.location);
+            url.searchParams.set('type', type);
+            history.pushState(null, '', url);
         },
 
         get allFilterSubcategories() {
