@@ -14,7 +14,6 @@
     <div class="secondary-tabs">
         <button @click="tab='general'; updateUrl()" :class="tab==='general' ? 'secondary-tab is-active' : 'secondary-tab'">General</button>
         <button @click="tab='master-data'; updateUrl()" :class="tab==='master-data' ? 'secondary-tab is-active' : 'secondary-tab'">Master Data</button>
-        <button @click="tab='recharge-providers'; updateUrl()" :class="tab==='recharge-providers' ? 'secondary-tab is-active' : 'secondary-tab'">Recharge Providers</button>
         <button @click="tab='email-templates'; updateUrl()" :class="tab==='email-templates' ? 'secondary-tab is-active' : 'secondary-tab'">Email Templates</button>
         <button @click="tab='notifications'; updateUrl(); loadNotifications()" :class="tab==='notifications' ? 'secondary-tab is-active' : 'secondary-tab'">Notifications</button>
         <button @click="tab='print-settings'; updateUrl()" :class="tab==='print-settings' ? 'secondary-tab is-active' : 'secondary-tab'">Print Settings</button>
@@ -141,6 +140,12 @@
                             <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                         </div>
                         <span>Customers</span>
+                    </button>
+                    <button @click="switchSection('recharge-providers')" :class="mdSection==='recharge-providers' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
+                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">
+                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <span>Recharge Providers</span>
                     </button>
                 </div>
             </div>
@@ -471,6 +476,44 @@
                             </table>
                         </template>
 
+                        {{-- Recharge Providers Table --}}
+                        <template x-if="mdSection==='recharge-providers'">
+                            <table class="data-table w-full">
+                                <thead class="sticky top-0 z-10">
+                                    <tr class="bg-gray-50">
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Type</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Commission %</th>
+                                        <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-for="(item, idx) in mdItems" :key="item.id">
+                                        <tr class="border-t border-gray-100 hover:bg-gray-50/60 transition cursor-pointer" @click="openMdEdit(item)">
+                                            <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
+                                            <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
+                                            <td class="px-3 py-2 text-sm" x-text="item.provider_type"></td>
+                                            <td class="px-3 py-2 text-sm" x-text="item.commission_percentage + '%'"></td>
+                                            <td class="px-3 py-2 text-center" @click.stop>
+                                                <button @click="openMdEdit(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition" title="Edit">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                </button>
+                                                <button @click="deleteMdItem(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition" title="Delete">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="mdItems.length === 0 && !mdLoading">
+                                        <td colspan="5" class="text-center py-12">
+                                            <p class="text-gray-400 font-medium">No recharge providers found</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </template>
+
                         </div>
                     </div>
                 </div>
@@ -618,6 +661,25 @@
                                 <textarea x-model="mdForm.reason" class="form-input-custom" rows="2" placeholder="Reason for adjustment"></textarea></div>
                         </div>
                     </template>
+
+                    {{-- Recharge Provider Form --}}
+                    <template x-if="mdSection==='recharge-providers'">
+                        <div class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                                <input x-model="mdForm.name" type="text" class="form-input-custom" placeholder="Provider name"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Type *</label>
+                                <select x-model="mdForm.provider_type" class="form-select-custom">
+                                    <option value="">Select</option>
+                                    <option value="mobile">Mobile</option>
+                                    <option value="dth">DTH</option>
+                                    <option value="data_card">Data Card</option>
+                                    <option value="electricity">Electricity</option>
+                                </select>
+                            </div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Commission % *</label>
+                                <input x-model="mdForm.commission_percentage" type="number" step="0.01" min="0" max="100" class="form-input-custom" placeholder="e.g. 3.5"></div>
+                        </div>
+                    </template>
                 </div>
                 <div class="modal-footer">
                     <button @click="showMdModal=false" class="btn-secondary">Cancel</button>
@@ -751,23 +813,6 @@
             <div class="mt-6">
                 <button @click="saveSettings()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save Settings</button>
             </div>
-        </div>
-    </div>
-
-    {{-- Recharge Providers --}}
-    <div x-show="tab==='recharge-providers'" class="card">
-        <div class="card-header flex items-center justify-between">
-            <h3 class="text-lg font-semibold">Recharge Providers</h3>
-            <button @click="rpForm={name:'',provider_type:'',commission_percentage:''}; showRpModal=true" class="btn-primary text-sm">Add Provider</button>
-        </div>
-        <div class="card-body p-0">
-            <table class="data-table">
-                <thead><tr><th>Name</th><th>Type</th><th>Commission %</th></tr></thead>
-                <tbody>
-                    <template x-for="rp in rechargeProviders" :key="rp.id"><tr><td class="font-medium" x-text="rp.name"></td><td x-text="rp.provider_type"></td><td x-text="rp.commission_percentage + '%'"></td></tr></template>
-                    <tr x-show="rechargeProviders.length===0"><td colspan="3" class="text-center text-gray-400 py-6">No providers</td></tr>
-                </tbody>
-            </table>
         </div>
     </div>
 
@@ -1240,21 +1285,6 @@
         </div>
     </div>
 
-    {{-- Recharge Provider Modal --}}
-    <div x-show="showRpModal" class="modal-overlay" x-cloak @click.self="showRpModal=false">
-        <div class="modal-container">
-            <div class="modal-header"><h3 class="text-lg font-semibold">Add Recharge Provider</h3><button @click="showRpModal=false" class="text-gray-400 hover:text-gray-600">&times;</button></div>
-            <div class="modal-body space-y-4">
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label><input x-model="rpForm.name" type="text" class="form-input-custom"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Type *</label>
-                    <select x-model="rpForm.provider_type" class="form-select-custom"><option value="">Select</option><option value="mobile">Mobile</option><option value="dth">DTH</option><option value="data_card">Data Card</option><option value="electricity">Electricity</option></select>
-                </div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Commission % *</label><input x-model="rpForm.commission_percentage" type="number" step="0.01" min="0" max="100" class="form-input-custom" placeholder="e.g. 3.5"></div>
-            </div>
-            <div class="modal-footer"><button @click="showRpModal=false" class="btn-secondary">Cancel</button><button @click="saveRechargeProvider()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save</button></div>
-        </div>
-    </div>
-
     {{-- Email Template Modal --}}
     <div x-show="showEtModal" class="modal-overlay" x-cloak @click.self="showEtModal=false">
         <div class="modal-container modal-lg">
@@ -1299,7 +1329,6 @@ function settingsPage() {
             }
         ],
         notificationSettingKeys: ['notify_email_received','notify_email_completed','notify_whatsapp_received','notify_whatsapp_completed','whatsapp_api_url','whatsapp_api_token','whatsapp_from_number','whatsapp_template_received','whatsapp_template_completed'],
-        rechargeProviders: [], showRpModal: false, rpForm: {},
         emailTemplates: [], showEtModal: false, etEditing: null, etForm: {},
         backups: [],
         showTestNotifyModal: false, testTicket: '', testType: 'received', testChannel: 'email', testResult: null,
@@ -1309,7 +1338,11 @@ function settingsPage() {
                 window.location.href = '/service-types';
                 return;
             }
-            if (p.has('tab')) this.tab = p.get('tab');
+            if (p.get('tab') === 'recharge-providers') {
+                this.tab = 'master-data';
+            } else if (p.has('tab')) {
+                this.tab = p.get('tab');
+            }
             this.load();
         },
         updateUrl() {
@@ -1319,15 +1352,15 @@ function settingsPage() {
             history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
         },
         async load() {
-            const [s, rp, et, b] = await Promise.all([
+            const [s, et, b] = await Promise.all([
                 RepairBox.ajax('/settings'),
-                RepairBox.ajax('/recharge-providers'), RepairBox.ajax('/email-templates'),
+                RepairBox.ajax('/email-templates'),
                 RepairBox.ajax('/backups')
             ]);
             if (s.data) this.settings = { ui_theme: 'atelier', ui_motion: 'enhanced', ...s.data };
             else this.settings = { ui_theme: 'atelier', ui_motion: 'enhanced' };
             this.applyAppearancePreview();
-            if(rp.data) this.rechargeProviders = rp.data; if(et.data) this.emailTemplates = et.data;
+            if(et.data) this.emailTemplates = et.data;
             if(b.data) this.backups = b.data;
         },
         loadNotifications() {
@@ -1454,11 +1487,6 @@ function settingsPage() {
             this.previewIcon = '';
             this.iconFile = null;
         },
-        async saveRechargeProvider() {
-            this.saving = true;
-            const r = await RepairBox.ajax('/recharge-providers', 'POST', this.rpForm);
-            this.saving = false; if(r.success !== false) { RepairBox.toast('Saved', 'success'); this.showRpModal = false; const rp = await RepairBox.ajax('/recharge-providers'); if(rp.data) this.rechargeProviders = rp.data; }
-        },
         async saveEmailTemplate() {
             this.saving = true;
             const r = await RepairBox.ajax(`/email-templates/${this.etEditing.id}`, 'PUT', this.etForm);
@@ -1480,6 +1508,7 @@ function masterDataPanel() {
         parts:      { label: 'Parts',             singular: 'Part',     url: '/parts',      deleteUrl: '/parts' },
         products:   { label: 'Products',          singular: 'Product',  url: '/products',   deleteUrl: '/products' },
         customers:  { label: 'Customers',         singular: 'Customer', url: '/customers',  deleteUrl: '/customers' },
+        'recharge-providers': { label: 'Recharge Providers', singular: 'Provider', url: '/recharge-providers', deleteUrl: '/recharge-providers' },
     };
 
     return {
@@ -1556,6 +1585,7 @@ function masterDataPanel() {
                 case 'products': return { name: '', sku: '', category_id: '', brand_id: '', purchase_price: '', mrp: '', selling_price: '', description: '' };
                 case 'customers': return { name: '', mobile_number: '', email: '', address: '' };
                 case 'inventory': return { product_id: '', adjustment_type: 'addition', quantity: '', reason: '' };
+                case 'recharge-providers': return { name: '', provider_type: '', commission_percentage: '' };
                 default: return {};
             }
         },

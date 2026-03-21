@@ -203,6 +203,19 @@ class SettingController extends Controller
         return response()->json(['success' => true, 'data' => $rp]);
     }
 
+    public function updateRechargeProvider(Request $request, RechargeProvider $rechargeProvider)
+    {
+        $data = $request->validate(['name' => 'required|string|max:150', 'provider_type' => 'required|string|max:50', 'commission_percentage' => 'required|numeric|min:0|max:100']);
+        $rechargeProvider->update($data);
+        return response()->json(['success' => true, 'data' => $rechargeProvider]);
+    }
+
+    public function destroyRechargeProvider(RechargeProvider $rechargeProvider)
+    {
+        $rechargeProvider->delete();
+        return response()->json(['success' => true]);
+    }
+
     // Vendors
     public function vendors()
     {
