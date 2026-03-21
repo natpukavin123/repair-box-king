@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\{CustomerReturn, SupplierReturn, Refund};
+use App\Models\{CustomerReturn, Refund};
 use Illuminate\Http\Request;
 
 class ReturnController extends Controller
@@ -10,16 +10,9 @@ class ReturnController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            $type = request('type', 'customer');
-            if ($type === 'customer') {
-                $data = CustomerReturn::with('invoice.customer', 'product')
-                    ->when(request('status'), fn($q, $s) => $q->where('status', $s))
-                    ->latest()->paginate(15);
-            } else {
-                $data = SupplierReturn::with('supplier', 'product')
-                    ->when(request('status'), fn($q, $s) => $q->where('status', $s))
-                    ->latest()->paginate(15);
-            }
+            $data = CustomerReturn::with('invoice.customer', 'product')
+                ->when(request('status'), fn($q, $s) => $q->where('status', $s))
+                ->latest()->paginate(15);
             return response()->json($data);
         }
         return view('modules.returns.index');
@@ -38,22 +31,10 @@ class ReturnController extends Controller
         return response()->json(['success' => true, 'data' => $return, 'message' => 'Return recorded']);
     }
 
-    public function storeSupplierReturn(Request $request)
-    {
-        $data = $request->validate([
-            'supplier_id' => 'required|exists:suppliers,id',
-            'product_id' => 'nullable|exists:products,id',
-            'quantity' => 'required|integer|min:1',
-            'return_amount' => 'required|numeric|min:0',
-        ]);
-        $return = SupplierReturn::create($data);
-        return response()->json(['success' => true, 'data' => $return, 'message' => 'Supplier return recorded']);
-    }
-
     public function updateStatus(Request $request, $type, $id)
     {
         $status = $request->validate(['status' => 'required|string'])['status'];
-        $model = $type === 'customer' ? CustomerReturn::findOrFail($id) : SupplierReturn::findOrFail($id);
+        $model = CustomerReturn::findOrFail($id);
         $model->update(['status' => $status]);
         return response()->json(['success' => true, 'message' => 'Status updated']);
     }

@@ -3,9 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
     AuthController, DashboardController, CategoryController, SubcategoryController,
-    BrandController, ProductController, InventoryController, SupplierController,
-    PurchaseController, InvoiceController, RepairController, CustomerController,
-    RechargeController, ServiceController, ExpenseController, LedgerController,
+    BrandController, ProductController, InventoryController,
+    InvoiceController, RepairController, CustomerController,
+    RechargeController, ExpenseController, LedgerController,
     PoRequestController, UserController, SettingController, ReportController,
     PartController, RepairReturnController, RoleController, MenuController,
     CreditNoteController, SetupController, DevToolsController
@@ -60,10 +60,6 @@ Route::middleware('auth')->group(function () {
     Route::post('inventory/adjust', [InventoryController::class, 'adjust']);
     Route::get('inventory/adjustments', [InventoryController::class, 'adjustments']);
 
-    // Suppliers & Purchases
-    Route::resource('suppliers', SupplierController::class)->except(['edit']);
-    Route::resource('purchases', PurchaseController::class)->except(['edit', 'update']);
-
     // POS & Invoices
     Route::get('pos', [InvoiceController::class, 'create'])->name('pos');
     Route::resource('invoices', InvoiceController::class)->except(['create', 'edit', 'update', 'destroy']);
@@ -99,9 +95,6 @@ Route::middleware('auth')->group(function () {
 
     // Recharges
     Route::resource('recharges', RechargeController::class)->except(['create', 'edit', 'update', 'destroy']);
-
-    // Services
-    Route::resource('services', ServiceController::class)->except(['edit', 'show']);
 
     // Expenses – category routes MUST come before the resource to avoid {expense} swallowing "categories"
     Route::get('expenses/categories', [ExpenseController::class, 'categories'])->name('expenses.categories');
@@ -150,7 +143,7 @@ Route::middleware('auth')->group(function () {
     // Settings
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
     Route::put('settings', [SettingController::class, 'update']);
-    Route::get('service-types', [SettingController::class, 'serviceTypes']);
+    Route::get('service-types', [SettingController::class, 'serviceTypes'])->name('service-types.index');
     Route::get('service-types-search', [SettingController::class, 'searchServiceTypes']);
     Route::get('vendors-search', [SettingController::class, 'searchVendors']);
     Route::post('service-types', [SettingController::class, 'storeServiceType']);

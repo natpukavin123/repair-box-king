@@ -12,9 +12,4 @@ class Vendor extends Model
     {
         return $this->hasMany(RepairVendor::class);
     }
-
-    public function services()
-    {
-        return $this->hasMany(Service::class);
-    }
 }

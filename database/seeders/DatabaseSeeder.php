@@ -4,10 +4,10 @@ namespace Database\Seeders;
 
 use App\Models\{
     Role, Permission, User, Category, Subcategory, Brand, ServiceType,
-    RechargeProvider, Vendor, Customer, Product, Inventory, Supplier,
-    Purchase, PurchaseItem, Invoice, InvoiceItem, InvoicePayment,
+    RechargeProvider, Vendor, Customer, Product, Inventory,
+    Invoice, InvoiceItem, InvoicePayment,
     Repair, RepairStatusHistory, RepairPart, RepairPayment, RepairServiceItem,
-    Recharge, Service, ExpenseCategory, Expense, Setting,
+    Recharge, ExpenseCategory, Expense, Setting,
     EmailTemplate, LedgerTransaction, ActivityLog, Part
 };
 use Illuminate\Database\Seeder;
@@ -24,8 +24,8 @@ class DatabaseSeeder extends Seeder
         $billing = Role::create(['name' => 'Billing Staff', 'description' => 'POS and billing']);
 
         // === PERMISSIONS ===
-        $modules = ['dashboard', 'categories', 'products', 'inventory', 'purchases', 'suppliers',
-            'pos', 'invoices', 'repairs', 'recharges', 'services', 'customers', 'po',
+        $modules = ['dashboard', 'categories', 'products', 'inventory',
+            'pos', 'invoices', 'repairs', 'recharges', 'customers', 'po',
             'ledger', 'expenses', 'reports', 'users', 'settings', 'backups', 'notifications'];
         $actions = ['view', 'create', 'edit', 'delete'];
         $permIds = [];
@@ -38,7 +38,7 @@ class DatabaseSeeder extends Seeder
         // Admin gets all
         $admin->permissions()->attach(Permission::pluck('id'));
         // Stock Manager gets inventory-related
-        foreach (['dashboard', 'categories', 'products', 'inventory', 'purchases', 'suppliers'] as $m) {
+        foreach (['dashboard', 'categories', 'products', 'inventory'] as $m) {
             $stockMgr->permissions()->attach($permIds[$m]);
         }
         // Technician gets repairs
@@ -46,7 +46,7 @@ class DatabaseSeeder extends Seeder
             $tech->permissions()->attach($permIds[$m]);
         }
         // Billing gets POS
-        foreach (['dashboard', 'pos', 'invoices', 'customers', 'products', 'recharges', 'services'] as $m) {
+        foreach (['dashboard', 'pos', 'invoices', 'customers', 'products', 'recharges'] as $m) {
             $billing->permissions()->attach($permIds[$m]);
         }
 
@@ -153,16 +153,6 @@ class DatabaseSeeder extends Seeder
             $createdProducts[] = $prod;
             Inventory::create(['product_id' => $prod->id, 'current_stock' => rand(5, 50), 'reserved_stock' => 0]);
         }
-
-        // === SUPPLIERS ===
-        $sup1 = Supplier::create(['name' => 'MobileTech Distributors', 'contact_person' => 'Suresh Mehta', 'phone' => '9888000001', 'email' => 'suresh@mobiletech.com', 'address' => 'Nehru Place, Delhi']);
-        $sup2 = Supplier::create(['name' => 'SpareHub India', 'contact_person' => 'Ravi Kapoor', 'phone' => '9888000002', 'email' => 'ravi@sparehub.com', 'address' => 'Lamington Road, Mumbai']);
-
-        // === PURCHASES ===
-        $pur1 = Purchase::create(['supplier_id' => $sup1->id, 'purchase_date' => now()->subDays(30), 'invoice_number' => 'SUP-INV-001', 'total_amount' => 85000]);
-        $pi1 = PurchaseItem::create(['purchase_id' => $pur1->id, 'product_id' => $createdProducts[0]->id, 'quantity' => 10, 'purchase_price' => 8500, 'remaining_quantity' => 8]);
-        $pur2 = Purchase::create(['supplier_id' => $sup2->id, 'purchase_date' => now()->subDays(15), 'invoice_number' => 'SUP-INV-002', 'total_amount' => 24000]);
-        PurchaseItem::create(['purchase_id' => $pur2->id, 'product_id' => $createdProducts[5]->id, 'quantity' => 20, 'purchase_price' => 1200, 'remaining_quantity' => 15]);
 
         // === INVOICES ===
         $inv1 = Invoice::create([
@@ -340,9 +330,6 @@ class DatabaseSeeder extends Seeder
         Recharge::create(['customer_id' => $cust1->id, 'provider_id' => 1, 'mobile_number' => '9876500001', 'plan_name' => 'Jio 299 Plan', 'recharge_amount' => 299, 'commission' => 8.97, 'payment_method' => 'cash', 'status' => 'success']);
         Recharge::create(['customer_id' => $cust5->id, 'provider_id' => 2, 'mobile_number' => '9876500005', 'plan_name' => 'Airtel 199 Plan', 'recharge_amount' => 199, 'commission' => 5.97, 'payment_method' => 'upi', 'status' => 'success']);
 
-        // === SERVICES ===
-        Service::create(['service_type_id' => 1, 'customer_id' => $cust2->id, 'description' => 'Screen protector application', 'vendor_cost' => 0, 'customer_charge' => 200, 'profit' => 200, 'status' => 'completed']);
-
         // === EXPENSE CATEGORIES ===
         $expCat1 = ExpenseCategory::create(['name' => 'Rent', 'description' => 'Shop rent']);
         $expCat2 = ExpenseCategory::create(['name' => 'Utilities', 'description' => 'Electricity, water, internet']);
@@ -357,7 +344,6 @@ class DatabaseSeeder extends Seeder
         // === LEDGER ===
         LedgerTransaction::create(['transaction_type' => 'sale', 'reference_module' => 'invoices', 'reference_id' => $inv1->id, 'amount' => 13998, 'payment_method' => 'split', 'direction' => 'IN', 'description' => 'Invoice INV-000001', 'created_by' => 1]);
         LedgerTransaction::create(['transaction_type' => 'sale', 'reference_module' => 'invoices', 'reference_id' => $inv2->id, 'amount' => 1799, 'payment_method' => 'card', 'direction' => 'IN', 'description' => 'Invoice INV-000002', 'created_by' => 1]);
-        LedgerTransaction::create(['transaction_type' => 'purchase', 'reference_module' => 'purchases', 'reference_id' => $pur1->id, 'amount' => 85000, 'payment_method' => 'bank', 'direction' => 'OUT', 'description' => 'Purchase SUP-INV-001', 'created_by' => 1]);
         LedgerTransaction::create(['transaction_type' => 'expense', 'reference_module' => 'expenses', 'reference_id' => 1, 'amount' => 25000, 'payment_method' => 'bank', 'direction' => 'OUT', 'description' => 'Shop rent', 'created_by' => 1]);
         LedgerTransaction::create(['transaction_type' => 'repair', 'reference_module' => 'repairs', 'reference_id' => $rep1->id, 'amount' => 1500, 'payment_method' => 'cash', 'direction' => 'IN', 'description' => 'Repair advance RPR-000001', 'created_by' => 1]);
         LedgerTransaction::create(['transaction_type' => 'repair', 'reference_module' => 'repairs', 'reference_id' => $rep5->id, 'amount' => 650, 'payment_method' => 'split', 'direction' => 'IN', 'description' => 'Repair payment RPR-000005', 'created_by' => 1]);

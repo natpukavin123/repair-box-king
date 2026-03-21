@@ -30,9 +30,4 @@ class Customer extends Model
     {
         return $this->hasMany(Recharge::class);
     }
-
-    public function services()
-    {
-        return $this->hasMany(Service::class);
-    }
 }

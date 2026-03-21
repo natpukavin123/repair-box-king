@@ -14,7 +14,6 @@
     <div class="secondary-tabs">
         <button @click="tab='general'; updateUrl()" :class="tab==='general' ? 'secondary-tab is-active' : 'secondary-tab'">General</button>
         <button @click="tab='master-data'; updateUrl()" :class="tab==='master-data' ? 'secondary-tab is-active' : 'secondary-tab'">Master Data</button>
-        <button @click="tab='service-types'; updateUrl()" :class="tab==='service-types' ? 'secondary-tab is-active' : 'secondary-tab'">Service Types</button>
         <button @click="tab='recharge-providers'; updateUrl()" :class="tab==='recharge-providers' ? 'secondary-tab is-active' : 'secondary-tab'">Recharge Providers</button>
         <button @click="tab='email-templates'; updateUrl()" :class="tab==='email-templates' ? 'secondary-tab is-active' : 'secondary-tab'">Email Templates</button>
         <button @click="tab='notifications'; updateUrl(); loadNotifications()" :class="tab==='notifications' ? 'secondary-tab is-active' : 'secondary-tab'">Notifications</button>
@@ -23,136 +22,610 @@
     </div>
 
     {{-- Master Data --}}
-    <div x-show="tab==='master-data'">
+    <div x-show="tab==='master-data'" x-data="masterDataPanel()" x-init="switchSection(mdSection)">
         <style>
-            .md-card {
-                display: flex; align-items: center; gap: 14px; padding: 16px 20px;
-                background: #fff; border: 1px solid #e5e7eb; border-radius: 14px;
-                text-decoration: none; transition: all 0.2s ease;
+            .md-workspace { gap: 0.7rem; }
+            .md-workspace .md-panel {
+                border-radius: 1.35rem;
+                border: 1px solid rgba(148, 163, 184, 0.16);
+                background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(250,252,255,0.82));
+                box-shadow: 0 26px 60px -42px rgba(15,23,42,0.38);
             }
-            .md-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px -4px rgba(0,0,0,0.1); border-color: #d1d5db; }
-            .md-icon {
-                width: 42px; height: 42px; border-radius: 12px;
+            .md-workspace .md-panel .card-header {
+                padding: 0.9rem 1rem;
+                background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(241,245,255,0.48));
+            }
+            .md-workspace .md-menu-item {
+                display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+                border-radius: 0.85rem; cursor: pointer; transition: all 0.2s ease;
+                border: 1px solid transparent; font-size: 0.88rem; font-weight: 500; color: #475569;
+            }
+            .md-workspace .md-menu-item:hover { background: rgba(37,99,235,0.04); color: #1e293b; }
+            .md-workspace .md-menu-item.is-active {
+                background: linear-gradient(135deg, rgba(37,99,235,0.08), rgba(99,102,241,0.06));
+                border-color: rgba(37,99,235,0.15); color: #2563eb; font-weight: 600;
+            }
+            .md-workspace .md-menu-icon {
+                width: 34px; height: 34px; border-radius: 9px;
                 display: flex; align-items: center; justify-content: center; flex-shrink: 0;
             }
-            .md-label { font-size: 14px; font-weight: 600; color: #1f2937; }
-            .md-desc { font-size: 11px; color: #6b7280; margin-top: 2px; }
+            .md-workspace .md-table-shell { padding: 0.35rem 0.4rem 0.15rem; }
+            .md-workspace .md-table-shell .data-table thead {
+                background: linear-gradient(180deg, rgba(248,250,252,0.98), rgba(238,242,255,0.9));
+            }
+            .md-workspace .md-table-shell .data-table th {
+                padding: 0.75rem 0.9rem; font-size: 0.65rem; letter-spacing: 0.14em;
+            }
+            .md-workspace .md-table-shell .data-table td {
+                padding: 0.8rem 0.9rem; font-size: 0.88rem;
+            }
+            .md-workspace .md-table-shell .data-table tbody tr {
+                border-top-color: rgba(226,232,240,0.92);
+            }
+            .md-workspace .md-table-shell .data-table tbody tr:hover {
+                background: rgba(37,99,235,0.04);
+            }
+            .md-workspace .md-search-input,
+            .md-workspace .md-form-input {
+                min-height: 2.7rem; border-radius: 0.95rem;
+                border-color: rgba(148,163,184,0.22);
+                background: rgba(255,255,255,0.94);
+                box-shadow: inset 0 1px 0 rgba(255,255,255,0.7), 0 12px 28px -24px rgba(15,23,42,0.28);
+            }
+            .md-workspace .md-toolbar {
+                border: 1px solid rgba(148,163,184,0.18); border-radius: 1.2rem;
+                background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(244,247,255,0.88));
+                box-shadow: 0 18px 42px -34px rgba(15,23,42,0.34);
+                backdrop-filter: blur(16px); padding: 0.55rem;
+            }
+            .md-workspace .md-form-scroll > div { padding: 0.95rem 1rem; }
+            @media (max-width: 1023px) {
+                .md-workspace { gap: 0.6rem; }
+                .md-workspace .md-panel .card-header,
+                .md-workspace .md-table-shell .data-table th,
+                .md-workspace .md-table-shell .data-table td { padding-left: 0.75rem; padding-right: 0.75rem; }
+            }
+            @media (max-width: 767px) {
+                .md-workspace { gap: 0.5rem; }
+                .md-workspace .md-panel { border-radius: 1.1rem; }
+                .md-workspace .md-search-input, .md-workspace .md-form-input { min-height: 2.5rem; border-radius: 0.82rem; }
+            }
         </style>
 
-        {{-- Data Management --}}
-        <div class="mb-6">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Data Management</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                <a href="/customers" class="md-card">
-                    <div class="md-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a);">
-                        <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        <div class="md-workspace" style="display:grid; grid-template-columns: 260px 1fr; gap: 0.8rem; min-height: 70vh;">
+
+            {{-- ===== LEFT: Menu Sidebar ===== --}}
+            <div class="md-panel flex flex-col" style="height: fit-content; position: sticky; top: 1rem;">
+                <div class="card-header flex shrink-0 items-center justify-between py-1.5">
+                    <h3 class="font-semibold text-gray-800 text-sm">Master Data</h3>
+                </div>
+                <div class="p-2 space-y-0.5">
+                    <button @click="switchSection('vendors')" :class="mdSection==='vendors' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
+                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#f97316,#c2410c);">
+                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                        </div>
+                        <span>Vendor Management</span>
+                    </button>
+                    <button @click="switchSection('inventory')" :class="mdSection==='inventory' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
+                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);">
+                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+                        </div>
+                        <span>Inventory</span>
+                    </button>
+                    <button @click="switchSection('brands')" :class="mdSection==='brands' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
+                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#ec4899,#db2777);">
+                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>
+                        </div>
+                        <span>Brands</span>
+                    </button>
+                    <button @click="switchSection('categories')" :class="mdSection==='categories' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
+                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#14b8a6,#0d9488);">
+                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                        </div>
+                        <span>Categories</span>
+                    </button>
+                    <button @click="switchSection('parts')" :class="mdSection==='parts' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
+                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#f97316,#ea580c);">
+                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        </div>
+                        <span>Parts</span>
+                    </button>
+                    <button @click="switchSection('products')" :class="mdSection==='products' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
+                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);">
+                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                        </div>
+                        <span>Products</span>
+                    </button>
+                    <button @click="switchSection('customers')" :class="mdSection==='customers' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
+                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a);">
+                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        </div>
+                        <span>Customers</span>
+                    </button>
+                </div>
+            </div>
+
+            {{-- ===== RIGHT: Content Area ===== --}}
+            <div class="flex flex-col gap-3">
+
+                {{-- Search toolbar --}}
+                <div class="md-toolbar flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
+                    <div class="relative flex-1">
+                        <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        <input x-model="mdSearch" @input.debounce.400ms="loadMdData()" type="text"
+                            class="form-input-custom md-search-input pl-10 pr-10 w-full text-sm" :placeholder="'Search ' + mdSectionLabel + '...'">
+                        <button x-show="mdSearch" @click="mdSearch = ''; loadMdData()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
                     </div>
-                    <div><div class="md-label">Customers</div><div class="md-desc">Manage customer details</div></div>
-                </a>
-                <a href="/suppliers" class="md-card">
-                    <div class="md-icon" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">
-                        <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <button @click="openMdAdd()" class="btn-primary px-4 py-2.5 text-sm font-semibold rounded-xl whitespace-nowrap">
+                        <svg class="w-4 h-4 inline mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        Add <span x-text="mdSectionLabelSingular"></span>
+                    </button>
+                </div>
+
+                {{-- Data Table --}}
+                <div class="card md-panel relative flex min-h-0 flex-1 flex-col" style="z-index:0;">
+                    {{-- Overlay loader --}}
+                    <div x-show="mdLoading" x-cloak x-transition.opacity
+                        class="absolute inset-0 bg-white/70 flex items-center justify-center rounded-xl" style="z-index:10">
+                        <div class="flex flex-col items-center gap-2">
+                            <svg class="w-7 h-7 text-primary-500 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                            <span class="text-xs text-gray-400 font-medium">Loading...</span>
+                        </div>
                     </div>
-                    <div><div class="md-label">Suppliers</div><div class="md-desc">Manage suppliers</div></div>
-                </a>
-                <a href="/products" class="md-card">
-                    <div class="md-icon" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);">
-                        <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+
+                    <div class="card-header flex shrink-0 items-center justify-between py-1.5">
+                        <h3 class="font-semibold text-gray-800 text-sm">
+                            <span x-text="mdSectionLabel"></span> (<span x-text="mdItems.length"></span>)
+                        </h3>
+                        <button @click="loadMdData()" class="text-xs text-primary-600 hover:text-primary-800 font-medium">Refresh</button>
                     </div>
-                    <div><div class="md-label">Products</div><div class="md-desc">Add & edit products</div></div>
-                </a>
-                <a href="/parts" class="md-card">
-                    <div class="md-icon" style="background:linear-gradient(135deg,#f97316,#ea580c);">
-                        <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+
+                    <div class="md-table-shell min-h-0 flex-1 overflow-hidden">
+                        <div class="h-full overflow-y-auto overscroll-contain" style="max-height: 60vh;">
+
+                        {{-- Vendors Table --}}
+                        <template x-if="mdSection==='vendors'">
+                            <table class="data-table w-full">
+                                <thead class="sticky top-0 z-10">
+                                    <tr class="bg-gray-50">
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Phone</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Specialization</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Status</th>
+                                        <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <template x-for="(item, idx) in mdItems" :key="item.id">
+                                        <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openMdEdit(item)">
+                                            <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
+                                            <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
+                                            <td class="px-3 py-2 text-sm" x-text="item.phone || '-'"></td>
+                                            <td class="px-3 py-2 text-sm" x-text="item.specialization || '-'"></td>
+                                            <td class="px-3 py-2">
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
+                                                    :class="(item.status||'active')==='active' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'"
+                                                    x-text="item.status||'active'"></span>
+                                            </td>
+                                            <td class="px-3 py-2 text-center" @click.stop>
+                                                <button @click="openMdEdit(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition" title="Edit">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="mdItems.length === 0 && !mdLoading">
+                                        <td colspan="6" class="text-center py-12">
+                                            <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                                            <p class="text-gray-400 font-medium">No vendors found</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </template>
+
+                        {{-- Inventory Table --}}
+                        <template x-if="mdSection==='inventory'">
+                            <table class="data-table w-full">
+                                <thead class="sticky top-0 z-10">
+                                    <tr class="bg-gray-50">
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Product</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Stock</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Reserved</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Status</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Last Updated</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <template x-for="(item, idx) in mdItems" :key="item.id">
+                                        <tr class="hover:bg-gray-50/50 transition-colors">
+                                            <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
+                                            <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.product ? item.product.name : (item.name || '-')"></td>
+                                            <td class="px-3 py-2 text-sm" x-text="item.current_stock ?? item.stock ?? 0"></td>
+                                            <td class="px-3 py-2 text-sm" x-text="item.reserved_stock ?? 0"></td>
+                                            <td class="px-3 py-2">
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
+                                                    :class="(item.current_stock ?? item.stock ?? 0) > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'"
+                                                    x-text="(item.current_stock ?? item.stock ?? 0) > 0 ? 'In Stock' : 'Out of Stock'"></span>
+                                            </td>
+                                            <td class="px-3 py-2 text-sm text-gray-500" x-text="item.updated_at ? new Date(item.updated_at).toLocaleDateString() : '-'"></td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="mdItems.length === 0 && !mdLoading">
+                                        <td colspan="6" class="text-center py-12">
+                                            <p class="text-gray-400 font-medium">No inventory data found</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </template>
+
+                        {{-- Brands Table --}}
+                        <template x-if="mdSection==='brands'">
+                            <table class="data-table w-full">
+                                <thead class="sticky top-0 z-10">
+                                    <tr class="bg-gray-50">
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Logo</th>
+                                        <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <template x-for="(item, idx) in mdItems" :key="item.id">
+                                        <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openMdEdit(item)">
+                                            <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
+                                            <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
+                                            <td class="px-3 py-2">
+                                                <template x-if="item.logo_url">
+                                                    <img :src="item.logo_url" class="w-8 h-8 rounded object-contain">
+                                                </template>
+                                                <template x-if="!item.logo_url">
+                                                    <span class="text-gray-300 text-sm">-</span>
+                                                </template>
+                                            </td>
+                                            <td class="px-3 py-2 text-center" @click.stop>
+                                                <button @click="openMdEdit(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition" title="Edit">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                </button>
+                                                <button @click="deleteMdItem(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition" title="Delete">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="mdItems.length === 0 && !mdLoading">
+                                        <td colspan="4" class="text-center py-12">
+                                            <p class="text-gray-400 font-medium">No brands found</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </template>
+
+                        {{-- Categories Table --}}
+                        <template x-if="mdSection==='categories'">
+                            <table class="data-table w-full">
+                                <thead class="sticky top-0 z-10">
+                                    <tr class="bg-gray-50">
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Description</th>
+                                        <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <template x-for="(item, idx) in mdItems" :key="item.id">
+                                        <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openMdEdit(item)">
+                                            <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
+                                            <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
+                                            <td class="px-3 py-2 text-sm text-gray-500" x-text="item.description || '-'"></td>
+                                            <td class="px-3 py-2 text-center" @click.stop>
+                                                <button @click="openMdEdit(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition" title="Edit">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                </button>
+                                                <button @click="deleteMdItem(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition" title="Delete">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="mdItems.length === 0 && !mdLoading">
+                                        <td colspan="4" class="text-center py-12">
+                                            <p class="text-gray-400 font-medium">No categories found</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </template>
+
+                        {{-- Parts Table --}}
+                        <template x-if="mdSection==='parts'">
+                            <table class="data-table w-full">
+                                <thead class="sticky top-0 z-10">
+                                    <tr class="bg-gray-50">
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">SKU</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Cost Price</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Selling Price</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Status</th>
+                                        <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <template x-for="(item, idx) in mdItems" :key="item.id">
+                                        <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openMdEdit(item)">
+                                            <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
+                                            <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
+                                            <td class="px-3 py-2 text-sm" x-text="item.sku || '-'"></td>
+                                            <td class="px-3 py-2 text-sm" x-text="item.cost_price ? RepairBox.formatCurrency(item.cost_price) : '-'"></td>
+                                            <td class="px-3 py-2 text-sm" x-text="item.selling_price ? RepairBox.formatCurrency(item.selling_price) : '-'"></td>
+                                            <td class="px-3 py-2">
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
+                                                    :class="(item.status||'active')==='active' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'"
+                                                    x-text="item.status||'active'"></span>
+                                            </td>
+                                            <td class="px-3 py-2 text-center" @click.stop>
+                                                <button @click="openMdEdit(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition" title="Edit">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                </button>
+                                                <button @click="deleteMdItem(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition" title="Delete">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="mdItems.length === 0 && !mdLoading">
+                                        <td colspan="7" class="text-center py-12">
+                                            <p class="text-gray-400 font-medium">No parts found</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </template>
+
+                        {{-- Products Table --}}
+                        <template x-if="mdSection==='products'">
+                            <table class="data-table w-full">
+                                <thead class="sticky top-0 z-10">
+                                    <tr class="bg-gray-50">
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">SKU</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Category</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">MRP</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Sale Price</th>
+                                        <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <template x-for="(item, idx) in mdItems" :key="item.id">
+                                        <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openMdEdit(item)">
+                                            <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
+                                            <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
+                                            <td class="px-3 py-2 text-sm" x-text="item.sku || '-'"></td>
+                                            <td class="px-3 py-2 text-sm" x-text="item.category ? item.category.name : '-'"></td>
+                                            <td class="px-3 py-2 text-sm" x-text="item.mrp ? RepairBox.formatCurrency(item.mrp) : '-'"></td>
+                                            <td class="px-3 py-2 text-sm" x-text="item.selling_price ? RepairBox.formatCurrency(item.selling_price) : '-'"></td>
+                                            <td class="px-3 py-2 text-center" @click.stop>
+                                                <button @click="openMdEdit(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition" title="Edit">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                </button>
+                                                <button @click="deleteMdItem(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition" title="Delete">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="mdItems.length === 0 && !mdLoading">
+                                        <td colspan="7" class="text-center py-12">
+                                            <p class="text-gray-400 font-medium">No products found</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </template>
+
+                        {{-- Customers Table --}}
+                        <template x-if="mdSection==='customers'">
+                            <table class="data-table w-full">
+                                <thead class="sticky top-0 z-10">
+                                    <tr class="bg-gray-50">
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Mobile</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Email</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Loyalty Pts</th>
+                                        <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <template x-for="(item, idx) in mdItems" :key="item.id">
+                                        <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openMdEdit(item)">
+                                            <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
+                                            <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
+                                            <td class="px-3 py-2 text-sm" x-text="item.mobile_number || '-'"></td>
+                                            <td class="px-3 py-2 text-sm" x-text="item.email || '-'"></td>
+                                            <td class="px-3 py-2 text-sm" x-text="item.loyalty_points || 0"></td>
+                                            <td class="px-3 py-2 text-center" @click.stop>
+                                                <button @click="openMdEdit(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition" title="Edit">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                </button>
+                                                <button @click="deleteMdItem(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition" title="Delete">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="mdItems.length === 0 && !mdLoading">
+                                        <td colspan="6" class="text-center py-12">
+                                            <p class="text-gray-400 font-medium">No customers found</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </template>
+
+                        </div>
                     </div>
-                    <div><div class="md-label">Parts</div><div class="md-desc">Repair spare parts</div></div>
-                </a>
-                <a href="/categories" class="md-card">
-                    <div class="md-icon" style="background:linear-gradient(135deg,#14b8a6,#0d9488);">
-                        <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                    </div>
-                    <div><div class="md-label">Categories</div><div class="md-desc">Product categories</div></div>
-                </a>
-                <a href="/brands" class="md-card">
-                    <div class="md-icon" style="background:linear-gradient(135deg,#ec4899,#db2777);">
-                        <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>
-                    </div>
-                    <div><div class="md-label">Brands</div><div class="md-desc">Product brands</div></div>
-                </a>
-                <a href="/inventory" class="md-card">
-                    <div class="md-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);">
-                        <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
-                    </div>
-                    <div><div class="md-label">Inventory</div><div class="md-desc">Stock levels</div></div>
-                </a>
-                <a href="/purchases" class="md-card">
-                    <div class="md-icon" style="background:linear-gradient(135deg,#6366f1,#4f46e5);">
-                        <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
-                    </div>
-                    <div><div class="md-label">Purchases</div><div class="md-desc">Purchase orders</div></div>
-                </a>
-                <a href="/services" class="md-card">
-                    <div class="md-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
-                        <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                    </div>
-                    <div><div class="md-label">Services</div><div class="md-desc">Service records</div></div>
-                </a>
+                </div>
             </div>
         </div>
 
-        {{-- Finance & Reports --}}
-        <div class="mb-6">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Finance & Reports</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                <a href="/ledger" class="md-card">
-                    <div class="md-icon" style="background:linear-gradient(135deg,#10b981,#059669);">
-                        <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </div>
-                    <div><div class="md-label">Ledger</div><div class="md-desc">Financial transactions</div></div>
-                </a>
-                <a href="/reports" class="md-card">
-                    <div class="md-icon" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);">
-                        <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                    </div>
-                    <div><div class="md-label">Reports</div><div class="md-desc">Business analytics</div></div>
-                </a>
-            </div>
-        </div>
+        {{-- Add/Edit Modal --}}
+        <div x-show="showMdModal" class="modal-overlay" x-cloak @click.self="showMdModal=false" style="z-index:50;">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h3 class="text-lg font-semibold" x-text="mdEditing ? 'Edit ' + mdSectionLabelSingular : 'Add ' + mdSectionLabelSingular"></h3>
+                    <button @click="showMdModal=false" class="text-gray-400 hover:text-gray-600">&times;</button>
+                </div>
+                <div class="modal-body space-y-4">
+                    {{-- Vendor Form --}}
+                    <template x-if="mdSection==='vendors'">
+                        <div class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                                <input x-model="mdForm.name" type="text" class="form-input-custom" placeholder="Vendor name"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                                <input x-model="mdForm.phone" type="text" class="form-input-custom" placeholder="Phone number"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Specialization</label>
+                                <input x-model="mdForm.specialization" type="text" class="form-input-custom" placeholder="e.g. Mobile repair"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                <textarea x-model="mdForm.address" class="form-input-custom" rows="2" placeholder="Address"></textarea></div>
+                            <template x-if="mdEditing">
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                    <select x-model="mdForm.status" class="form-select-custom"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+                            </template>
+                        </div>
+                    </template>
 
-        {{-- System --}}
-        <div class="mb-6">
-            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">System</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                <a href="/users" class="md-card">
-                    <div class="md-icon" style="background:linear-gradient(135deg,#64748b,#475569);">
-                        <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                    </div>
-                    <div><div class="md-label">Users</div><div class="md-desc">User accounts</div></div>
-                </a>
-                <a href="/roles" class="md-card">
-                    <div class="md-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);">
-                        <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                    </div>
-                    <div><div class="md-label">Roles & Permissions</div><div class="md-desc">Access control</div></div>
-                </a>
-                <a href="/vendors" class="md-card">
-                    <div class="md-icon" style="background:linear-gradient(135deg,#f97316,#c2410c);">
-                        <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                    </div>
-                    <div><div class="md-label">Vendors</div><div class="md-desc">Repair vendors</div></div>
-                </a>
-                <a href="/menus" class="md-card">
-                    <div class="md-icon" style="background:linear-gradient(135deg,#334155,#1e293b);">
-                        <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                    </div>
-                    <div><div class="md-label">Menus</div><div class="md-desc">Navigation manager</div></div>
-                </a>
-                <a href="/activity-logs" class="md-card">
-                    <div class="md-icon" style="background:linear-gradient(135deg,#78716c,#57534e);">
-                        <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-                    </div>
-                    <div><div class="md-label">Activity Logs</div><div class="md-desc">System activity</div></div>
-                </a>
+                    {{-- Brand Form --}}
+                    <template x-if="mdSection==='brands'">
+                        <div class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                                <input x-model="mdForm.name" type="text" class="form-input-custom" placeholder="Brand name"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
+                                <input x-model="mdForm.logo_url" type="text" class="form-input-custom" placeholder="https://..."></div>
+                        </div>
+                    </template>
+
+                    {{-- Category Form --}}
+                    <template x-if="mdSection==='categories'">
+                        <div class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                                <input x-model="mdForm.name" type="text" class="form-input-custom" placeholder="Category name"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                <textarea x-model="mdForm.description" class="form-input-custom" rows="2" placeholder="Description"></textarea></div>
+                        </div>
+                    </template>
+
+                    {{-- Parts Form --}}
+                    <template x-if="mdSection==='parts'">
+                        <div class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                                <input x-model="mdForm.name" type="text" class="form-input-custom" placeholder="Part name"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">SKU</label>
+                                <input x-model="mdForm.sku" type="text" class="form-input-custom" placeholder="SKU code"></div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Cost Price</label>
+                                    <input x-model="mdForm.cost_price" type="number" step="0.01" class="form-input-custom" placeholder="0.00"></div>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Selling Price</label>
+                                    <input x-model="mdForm.selling_price" type="number" step="0.01" class="form-input-custom" placeholder="0.00"></div>
+                            </div>
+                            <template x-if="mdEditing">
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                    <select x-model="mdForm.status" class="form-select-custom"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+                            </template>
+                        </div>
+                    </template>
+
+                    {{-- Products Form --}}
+                    <template x-if="mdSection==='products'">
+                        <div class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                                <input x-model="mdForm.name" type="text" class="form-input-custom" placeholder="Product name"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">SKU</label>
+                                <input x-model="mdForm.sku" type="text" class="form-input-custom" placeholder="SKU code"></div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                    <select x-model="mdForm.category_id" class="form-select-custom">
+                                        <option value="">Select</option>
+                                        <template x-for="cat in mdCategories" :key="cat.id">
+                                            <option :value="cat.id" x-text="cat.name"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Brand</label>
+                                    <select x-model="mdForm.brand_id" class="form-select-custom">
+                                        <option value="">Select</option>
+                                        <template x-for="b in mdBrands" :key="b.id">
+                                            <option :value="b.id" x-text="b.name"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-3">
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Purchase Price *</label>
+                                    <input x-model="mdForm.purchase_price" type="number" step="0.01" class="form-input-custom" placeholder="0.00"></div>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">MRP *</label>
+                                    <input x-model="mdForm.mrp" type="number" step="0.01" class="form-input-custom" placeholder="0.00"></div>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Selling Price *</label>
+                                    <input x-model="mdForm.selling_price" type="number" step="0.01" class="form-input-custom" placeholder="0.00"></div>
+                            </div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                <textarea x-model="mdForm.description" class="form-input-custom" rows="2" placeholder="Description"></textarea></div>
+                        </div>
+                    </template>
+
+                    {{-- Customers Form --}}
+                    <template x-if="mdSection==='customers'">
+                        <div class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                                <input x-model="mdForm.name" type="text" class="form-input-custom" placeholder="Customer name"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Mobile *</label>
+                                <input x-model="mdForm.mobile_number" type="text" class="form-input-custom" placeholder="10-digit mobile number"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                <input x-model="mdForm.email" type="email" class="form-input-custom" placeholder="Email address"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                                <textarea x-model="mdForm.address" class="form-input-custom" rows="2" placeholder="Address"></textarea></div>
+                        </div>
+                    </template>
+
+                    {{-- Inventory Form --}}
+                    <template x-if="mdSection==='inventory'">
+                        <div class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Product *</label>
+                                <select x-model="mdForm.product_id" class="form-select-custom">
+                                    <option value="">Select product</option>
+                                    <template x-for="p in mdProducts" :key="p.id">
+                                        <option :value="p.id" x-text="p.name"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Adjustment Type *</label>
+                                <select x-model="mdForm.adjustment_type" class="form-select-custom">
+                                    <option value="addition">Addition</option>
+                                    <option value="subtraction">Subtraction</option>
+                                </select>
+                            </div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Quantity *</label>
+                                <input x-model="mdForm.quantity" type="number" min="1" class="form-input-custom" placeholder="Qty"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                                <textarea x-model="mdForm.reason" class="form-input-custom" rows="2" placeholder="Reason for adjustment"></textarea></div>
+                        </div>
+                    </template>
+                </div>
+                <div class="modal-footer">
+                    <button @click="showMdModal=false" class="btn-secondary">Cancel</button>
+                    <button @click="saveMdItem()" class="btn-primary" :disabled="mdSaving">
+                        <span x-show="mdSaving" class="spinner mr-1"></span>
+                        <span x-text="mdEditing ? 'Update' : 'Save'"></span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -278,40 +751,6 @@
             <div class="mt-6">
                 <button @click="saveSettings()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save Settings</button>
             </div>
-        </div>
-    </div>
-
-    {{-- Service Types --}}
-    <div x-show="tab==='service-types'" class="card">
-        <div class="card-header flex items-center justify-between">
-            <h3 class="text-lg font-semibold">Service Types</h3>
-            <button @click="stForm={name:'',default_price:'',description:''}; stEditing=null; stImageFile=null; stImagePreview=null; stThumbFile=null; stThumbPreview=null; showStModal=true" class="btn-primary text-sm">Add Type</button>
-        </div>
-        <div class="card-body p-0">
-            <table class="data-table">
-                <thead><tr><th>Image</th><th>Name</th><th>Default Price</th><th>Status</th><th>Actions</th></tr></thead>
-                <tbody>
-                    <template x-for="st in serviceTypes" :key="st.id">
-                        <tr>
-                            <td>
-                                <template x-if="st.thumbnail">
-                                    <img :src="'/storage/' + st.thumbnail" class="w-10 h-10 rounded-lg object-cover border border-gray-200 shadow-sm">
-                                </template>
-                                <template x-if="!st.thumbnail">
-                                    <div class="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
-                                        <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                    </div>
-                                </template>
-                            </td>
-                            <td class="font-medium" x-text="st.name"></td>
-                            <td x-text="st.default_price ? RepairBox.formatCurrency(st.default_price) : '-'"></td>
-                            <td><span class="badge" :class="st.status==='active' ? 'badge-success' : 'badge-danger'" x-text="st.status || 'active'"></span></td>
-                            <td><button @click="openEditSt(st)" class="text-primary-600 hover:text-primary-800"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button></td>
-                        </tr>
-                    </template>
-                    <tr x-show="serviceTypes.length===0"><td colspan="5" class="text-center text-gray-400 py-6">No service types</td></tr>
-                </tbody>
-            </table>
         </div>
     </div>
 
@@ -762,93 +1201,6 @@
         </div>
     </div>
 
-    {{-- Service Type Modal --}}
-    <div x-show="showStModal" class="modal-overlay" x-cloak @click.self="showStModal=false">
-        <div class="modal-container">
-            <div class="modal-header">
-                <h3 class="text-lg font-semibold" x-text="stEditing ? 'Edit Service Type' : 'Add Service Type'"></h3>
-                <button @click="showStModal=false" class="text-gray-400 hover:text-gray-600">&times;</button>
-            </div>
-            <div class="modal-body space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-                    <input x-model="stForm.name" type="text" class="form-input-custom">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Default Price</label>
-                    <input x-model="stForm.default_price" type="number" step="0.01" class="form-input-custom">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                    <textarea x-model="stForm.description" class="form-input-custom" rows="2"></textarea>
-                </div>
-
-                {{-- Image Upload --}}
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Service Images</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <p class="text-xs text-gray-500 mb-1.5 font-medium">Main Image</p>
-                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-all"
-                                 @click="$refs.stImageInput.click()" @dragover.prevent @drop.prevent="stHandleFileDrop('image', $event)">
-                                <template x-if="stImagePreview">
-                                    <div class="relative">
-                                        <img :src="stImagePreview" class="max-h-28 mx-auto rounded-lg object-contain">
-                                        <button type="button" @click.stop="stImageFile=null; stImagePreview=null; $refs.stImageInput.value=''"
-                                                class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">✕</button>
-                                    </div>
-                                </template>
-                                <template x-if="!stImagePreview">
-                                    <div class="py-3">
-                                        <svg class="w-8 h-8 text-gray-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                        <p class="text-xs text-gray-400">Click to upload</p>
-                                    </div>
-                                </template>
-                                <input x-ref="stImageInput" type="file" accept="image/*" class="hidden" @change="stHandleFilePick('image', $event)">
-                            </div>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-500 mb-1.5 font-medium">Thumbnail <span class="text-gray-400">(auto if not set)</span></p>
-                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-all"
-                                 @click="$refs.stThumbInput.click()" @dragover.prevent @drop.prevent="stHandleFileDrop('thumb', $event)">
-                                <template x-if="stThumbPreview">
-                                    <div class="relative">
-                                        <img :src="stThumbPreview" class="max-h-28 mx-auto rounded-lg object-contain">
-                                        <button type="button" @click.stop="stThumbFile=null; stThumbPreview=null; $refs.stThumbInput.value=''"
-                                                class="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">✕</button>
-                                    </div>
-                                </template>
-                                <template x-if="!stThumbPreview">
-                                    <div class="py-3">
-                                        <svg class="w-8 h-8 text-gray-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                        <p class="text-xs text-gray-400">Click to upload</p>
-                                    </div>
-                                </template>
-                                <input x-ref="stThumbInput" type="file" accept="image/*" class="hidden" @change="stHandleFilePick('thumb', $event)">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <template x-if="stEditing">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                        <select x-model="stForm.status" class="form-select-custom">
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
-                    </div>
-                </template>
-            </div>
-            <div class="modal-footer">
-                <button @click="showStModal=false" class="btn-secondary">Cancel</button>
-                <button @click="saveServiceType()" class="btn-primary" :disabled="saving">
-                    <span x-show="saving" class="spinner mr-1"></span> Save
-                </button>
-            </div>
-        </div>
-    </div>
-
     {{-- Test Notification Modal --}}
     <div x-show="showTestNotifyModal" class="modal-overlay" x-cloak @click.self="showTestNotifyModal=false">
         <div class="modal-container">
@@ -947,14 +1299,16 @@ function settingsPage() {
             }
         ],
         notificationSettingKeys: ['notify_email_received','notify_email_completed','notify_whatsapp_received','notify_whatsapp_completed','whatsapp_api_url','whatsapp_api_token','whatsapp_from_number','whatsapp_template_received','whatsapp_template_completed'],
-        serviceTypes: [], showStModal: false, stEditing: null, stForm: {},
-        stImageFile: null, stImagePreview: null, stThumbFile: null, stThumbPreview: null,
         rechargeProviders: [], showRpModal: false, rpForm: {},
         emailTemplates: [], showEtModal: false, etEditing: null, etForm: {},
         backups: [],
         showTestNotifyModal: false, testTicket: '', testType: 'received', testChannel: 'email', testResult: null,
         init() {
             const p = new URLSearchParams(window.location.search);
+            if (p.get('tab') === 'service-types') {
+                window.location.href = '/service-types';
+                return;
+            }
             if (p.has('tab')) this.tab = p.get('tab');
             this.load();
         },
@@ -965,15 +1319,14 @@ function settingsPage() {
             history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
         },
         async load() {
-            const [s, st, rp, et, b] = await Promise.all([
-                RepairBox.ajax('/settings'), RepairBox.ajax('/service-types'),
+            const [s, rp, et, b] = await Promise.all([
+                RepairBox.ajax('/settings'),
                 RepairBox.ajax('/recharge-providers'), RepairBox.ajax('/email-templates'),
                 RepairBox.ajax('/backups')
             ]);
             if (s.data) this.settings = { ui_theme: 'atelier', ui_motion: 'enhanced', ...s.data };
             else this.settings = { ui_theme: 'atelier', ui_motion: 'enhanced' };
             this.applyAppearancePreview();
-            if(st.data) this.serviceTypes = st.data;
             if(rp.data) this.rechargeProviders = rp.data; if(et.data) this.emailTemplates = et.data;
             if(b.data) this.backups = b.data;
         },
@@ -1101,40 +1454,6 @@ function settingsPage() {
             this.previewIcon = '';
             this.iconFile = null;
         },
-        async saveServiceType() {
-            this.saving = true;
-            const r = await RepairBox.ajax(this.stEditing ? `/service-types/${this.stEditing}` : '/service-types', this.stEditing ? 'PUT' : 'POST', this.stForm);
-            if (r.success !== false && r.data) {
-                const id = r.data.id || this.stEditing;
-                if (this.stImageFile || this.stThumbFile) {
-                    const fd = new FormData();
-                    if (this.stImageFile) fd.append('image', this.stImageFile);
-                    if (this.stThumbFile) fd.append('thumbnail', this.stThumbFile);
-                    await RepairBox.upload(`/service-types/${id}/upload-image`, fd);
-                }
-                RepairBox.toast('Saved', 'success'); this.showStModal = false;
-                const st = await RepairBox.ajax('/service-types'); if(st.data) this.serviceTypes = st.data;
-            }
-            this.saving = false;
-        },
-        openEditSt(st) {
-            this.stEditing = st.id;
-            this.stForm = { name: st.name, default_price: st.default_price || '', description: st.description || '', status: st.status || 'active' };
-            this.stImageFile = null; this.stThumbFile = null;
-            this.stImagePreview = st.image ? '/storage/' + st.image : null;
-            this.stThumbPreview = st.thumbnail ? '/storage/' + st.thumbnail : null;
-            this.showStModal = true;
-        },
-        stHandleFilePick(type, e) {
-            const file = e.target.files[0]; if (!file) return;
-            if (type === 'image') { this.stImageFile = file; const r = new FileReader(); r.onload = ev => this.stImagePreview = ev.target.result; r.readAsDataURL(file); }
-            else { this.stThumbFile = file; const r = new FileReader(); r.onload = ev => this.stThumbPreview = ev.target.result; r.readAsDataURL(file); }
-        },
-        stHandleFileDrop(type, e) {
-            const file = e.dataTransfer.files[0]; if (!file || !file.type.startsWith('image/')) return;
-            if (type === 'image') { this.stImageFile = file; const r = new FileReader(); r.onload = ev => this.stImagePreview = ev.target.result; r.readAsDataURL(file); }
-            else { this.stThumbFile = file; const r = new FileReader(); r.onload = ev => this.stThumbPreview = ev.target.result; r.readAsDataURL(file); }
-        },
         async saveRechargeProvider() {
             this.saving = true;
             const r = await RepairBox.ajax('/recharge-providers', 'POST', this.rpForm);
@@ -1149,6 +1468,158 @@ function settingsPage() {
             this.saving = true;
             const r = await RepairBox.ajax('/backups', 'POST');
             this.saving = false; if(r.success !== false) { RepairBox.toast('Backup created', 'success'); const b = await RepairBox.ajax('/backups'); if(b.data) this.backups = b.data; }
+        }
+    };
+}
+function masterDataPanel() {
+    const sectionConfig = {
+        vendors:    { label: 'Vendor Management', singular: 'Vendor',   url: '/vendors',    deleteUrl: null },
+        inventory:  { label: 'Inventory',         singular: 'Stock Adjustment', url: '/inventory', deleteUrl: null },
+        brands:     { label: 'Brands',            singular: 'Brand',    url: '/brands',     deleteUrl: '/brands' },
+        categories: { label: 'Categories',        singular: 'Category', url: '/categories', deleteUrl: '/categories' },
+        parts:      { label: 'Parts',             singular: 'Part',     url: '/parts',      deleteUrl: '/parts' },
+        products:   { label: 'Products',          singular: 'Product',  url: '/products',   deleteUrl: '/products' },
+        customers:  { label: 'Customers',         singular: 'Customer', url: '/customers',  deleteUrl: '/customers' },
+    };
+
+    return {
+        mdSection: 'vendors',
+        mdItems: [],
+        mdLoading: false,
+        mdSaving: false,
+        mdSearch: '',
+        mdEditing: null,
+        mdForm: {},
+        showMdModal: false,
+        mdCategories: [],
+        mdBrands: [],
+        mdProducts: [],
+
+        get mdSectionLabel() { return sectionConfig[this.mdSection]?.label || ''; },
+        get mdSectionLabelSingular() { return sectionConfig[this.mdSection]?.singular || ''; },
+
+        switchSection(section) {
+            this.mdSection = section;
+            this.mdSearch = '';
+            this.mdEditing = null;
+            this.mdForm = {};
+            this.loadMdData();
+        },
+
+        async loadMdData() {
+            this.mdLoading = true;
+            const cfg = sectionConfig[this.mdSection];
+            const params = {};
+            if (this.mdSearch) params.search = this.mdSearch;
+
+            const r = await RepairBox.ajax(cfg.url, 'GET', params);
+            if (Array.isArray(r)) {
+                this.mdItems = r;
+            } else if (r.data) {
+                this.mdItems = Array.isArray(r.data) ? r.data : [];
+            } else {
+                this.mdItems = [];
+            }
+            this.mdLoading = false;
+        },
+
+        openMdAdd() {
+            this.mdEditing = null;
+            this.mdForm = this.getDefaultForm();
+
+            if (this.mdSection === 'products') {
+                this.loadDropdowns();
+            }
+            if (this.mdSection === 'inventory') {
+                this.loadProducts();
+            }
+            this.showMdModal = true;
+        },
+
+        openMdEdit(item) {
+            if (this.mdSection === 'inventory') return;
+            this.mdEditing = item.id;
+            this.mdForm = { ...item };
+
+            if (this.mdSection === 'products') {
+                this.loadDropdowns();
+            }
+            this.showMdModal = true;
+        },
+
+        getDefaultForm() {
+            switch(this.mdSection) {
+                case 'vendors': return { name: '', phone: '', specialization: '', address: '' };
+                case 'brands': return { name: '', logo_url: '' };
+                case 'categories': return { name: '', description: '' };
+                case 'parts': return { name: '', sku: '', cost_price: '', selling_price: '' };
+                case 'products': return { name: '', sku: '', category_id: '', brand_id: '', purchase_price: '', mrp: '', selling_price: '', description: '' };
+                case 'customers': return { name: '', mobile_number: '', email: '', address: '' };
+                case 'inventory': return { product_id: '', adjustment_type: 'addition', quantity: '', reason: '' };
+                default: return {};
+            }
+        },
+
+        async loadDropdowns() {
+            const [cats, brands] = await Promise.all([
+                RepairBox.ajax('/categories'),
+                RepairBox.ajax('/brands')
+            ]);
+            this.mdCategories = Array.isArray(cats) ? cats : (cats.data || []);
+            this.mdBrands = Array.isArray(brands) ? brands : (brands.data || []);
+        },
+
+        async loadProducts() {
+            const r = await RepairBox.ajax('/products');
+            this.mdProducts = Array.isArray(r) ? r : (r.data || []);
+        },
+
+        async saveMdItem() {
+            if (!this.mdForm.name && this.mdSection !== 'inventory') {
+                return RepairBox.toast('Name is required', 'error');
+            }
+            if (this.mdSection === 'inventory' && (!this.mdForm.product_id || !this.mdForm.quantity)) {
+                return RepairBox.toast('Product and quantity are required', 'error');
+            }
+
+            this.mdSaving = true;
+            const cfg = sectionConfig[this.mdSection];
+
+            if (this.mdSection === 'inventory') {
+                const r = await RepairBox.ajax('/inventory/adjust', 'POST', this.mdForm);
+                this.mdSaving = false;
+                if (r.success !== false) {
+                    RepairBox.toast('Stock adjusted', 'success');
+                    this.showMdModal = false;
+                    await this.loadMdData();
+                }
+                return;
+            }
+
+            const url = this.mdEditing ? `${cfg.url}/${this.mdEditing}` : cfg.url;
+            const method = this.mdEditing ? 'PUT' : 'POST';
+            const r = await RepairBox.ajax(url, method, this.mdForm);
+            this.mdSaving = false;
+
+            if (r.success !== false) {
+                RepairBox.toast(this.mdEditing ? `${cfg.singular} updated` : `${cfg.singular} added`, 'success');
+                this.showMdModal = false;
+                this.mdEditing = null;
+                this.mdForm = {};
+                await this.loadMdData();
+            }
+        },
+
+        async deleteMdItem(item) {
+            const cfg = sectionConfig[this.mdSection];
+            if (!cfg.deleteUrl) return;
+            if (!confirm(`Delete this ${cfg.singular.toLowerCase()}?`)) return;
+
+            const r = await RepairBox.ajax(`${cfg.deleteUrl}/${item.id}`, 'DELETE');
+            if (r.success !== false) {
+                RepairBox.toast(`${cfg.singular} deleted`, 'success');
+                await this.loadMdData();
+            }
         }
     };
 }

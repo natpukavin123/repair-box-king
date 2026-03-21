@@ -44,7 +44,6 @@ class DevToolsController extends Controller
                 'credit_note_refunds',
                 'credit_notes',
                 'customer_returns',
-                'supplier_returns',
                 // Services & recharges
                 'services',
                 'recharges',
@@ -57,7 +56,6 @@ class DevToolsController extends Controller
                 'inventories',
                 'products',
                 'parts',
-                'suppliers',
                 // Notifications & activity
                 'notifications',
                 'activity_logs',

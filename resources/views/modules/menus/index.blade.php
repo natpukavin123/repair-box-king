@@ -113,7 +113,6 @@
                                 <option value="Sales">Sales</option>
                                 <option value="Repair">Repair</option>
                                 <option value="Products">Products</option>
-                                <option value="Purchases">Purchases</option>
                                 <option value="Services">Services</option>
                                 <option value="Finance">Finance</option>
                                 <option value="System">System</option>

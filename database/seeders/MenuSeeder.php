@@ -90,10 +90,7 @@ class MenuSeeder extends Seeder
             ['name' => 'Products', 'route' => '/products', 'module' => 'products'],
             ['name' => 'Inventory', 'route' => '/inventory', 'module' => 'inventory'],
             ['name' => 'Parts', 'route' => '/parts', 'module' => 'products'],
-            ['name' => 'Suppliers', 'route' => '/suppliers', 'module' => 'suppliers'],
-            ['name' => 'Purchases', 'route' => '/purchases', 'module' => 'purchases'],
             ['name' => 'Customers', 'route' => '/customers', 'module' => 'customers'],
-            ['name' => 'Services', 'route' => '/services', 'module' => 'services'],
             ['name' => 'Ledger', 'route' => '/ledger', 'module' => 'ledger'],
             ['name' => 'Reports', 'route' => '/reports', 'module' => 'reports'],
             ['name' => 'Users', 'route' => '/users', 'module' => 'users'],
@@ -101,6 +98,7 @@ class MenuSeeder extends Seeder
             ['name' => 'Vendors', 'route' => '/vendors', 'module' => 'settings'],
             ['name' => 'Menus', 'route' => '/menus', 'module' => 'settings'],
             ['name' => 'Activity Logs', 'route' => '/activity-logs', 'module' => 'settings'],
+            ['name' => 'Service Types', 'route' => '/service-types', 'module' => 'settings'],
         ];
 
         foreach ($masterDataItems as $item) {

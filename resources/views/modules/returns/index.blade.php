@@ -6,14 +6,13 @@
     <div class="page-header-inline">
         <div class="page-header-inline-copy">
             <h2 class="page-header-inline-title">Returns &amp; Refunds</h2>
-            <p class="page-header-inline-description">Track customer returns, supplier returns, and refund actions from one compact workflow.</p>
+            <p class="page-header-inline-description">Track customer returns and refund actions from one compact workflow.</p>
         </div>
     </div>
 
     <!-- Tabs -->
     <div class="secondary-tabs">
         <button @click="tab = 'customer'; updateUrl()" :class="tab === 'customer' ? 'secondary-tab is-active' : 'secondary-tab'">Customer Returns</button>
-        <button @click="tab = 'supplier'; updateUrl()" :class="tab === 'supplier' ? 'secondary-tab is-active' : 'secondary-tab'">Supplier Returns</button>
         <button @click="tab = 'refunds'; loadRefunds(); updateUrl()" :class="tab === 'refunds' ? 'secondary-tab is-active' : 'secondary-tab'">Refunds</button>
     </div>
 
@@ -47,36 +46,6 @@
                                 </tr>
                             </template>
                             <tr x-show="customerReturns.length === 0"><td colspan="8" class="text-center text-gray-400 py-8">No customer returns</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Supplier Returns -->
-    <div x-show="tab === 'supplier'">
-        <div class="flex justify-end mb-3">
-            <button @click="showSuppReturn = true; suppReturnForm = {purchase_id:'',product_id:'',quantity:1,reason:''}" class="btn-primary text-sm">+ Supplier Return</button>
-        </div>
-        <div class="card">
-            <div class="card-body p-0">
-                <div class="overflow-x-auto">
-                    <table class="data-table">
-                        <thead><tr><th>#</th><th>Purchase</th><th>Product</th><th>Qty</th><th>Reason</th><th>Status</th><th>Date</th></tr></thead>
-                        <tbody>
-                            <template x-for="(r, i) in supplierReturns" :key="r.id">
-                                <tr>
-                                    <td x-text="i+1"></td>
-                                    <td x-text="r.purchase_id"></td>
-                                    <td x-text="r.product ? r.product.name : '-'"></td>
-                                    <td x-text="r.quantity"></td>
-                                    <td x-text="r.reason || '-'"></td>
-                                    <td><span class="badge" :class="r.status === 'approved' ? 'badge-success' : r.status === 'rejected' ? 'badge-danger' : 'badge-warning'" x-text="r.status"></span></td>
-                                    <td x-text="new Date(r.created_at).toLocaleDateString()"></td>
-                                </tr>
-                            </template>
-                            <tr x-show="supplierReturns.length === 0"><td colspan="7" class="text-center text-gray-400 py-8">No supplier returns</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -136,21 +105,6 @@
         </div>
     </div>
 
-    <!-- Supplier Return Modal -->
-    <div x-show="showSuppReturn" class="modal-overlay" x-cloak @click.self="showSuppReturn = false">
-        <div class="modal-container">
-            <div class="modal-header"><h3 class="text-lg font-semibold">Supplier Return</h3><button @click="showSuppReturn = false" class="text-gray-400 hover:text-gray-600">&times;</button></div>
-            <div class="modal-body">
-                <div class="space-y-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Purchase ID *</label><input x-model="suppReturnForm.purchase_id" type="number" class="form-input-custom"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Product ID *</label><input x-model="suppReturnForm.product_id" type="number" class="form-input-custom"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Quantity *</label><input x-model="suppReturnForm.quantity" type="number" min="1" class="form-input-custom"></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Reason</label><textarea x-model="suppReturnForm.reason" class="form-input-custom" rows="2"></textarea></div>
-                </div>
-            </div>
-            <div class="modal-footer"><button @click="showSuppReturn = false" class="btn-secondary">Cancel</button><button @click="saveSuppReturn()" class="btn-primary">Submit</button></div>
-        </div>
-    </div>
 </div>
 @endsection
 
@@ -158,9 +112,9 @@
 <script>
 function returnsPage() {
     return {
-        tab: 'customer', customerReturns: [], supplierReturns: [], refunds: [],
-        showCustReturn: false, showSuppReturn: false,
-        custReturnForm: {}, suppReturnForm: {},
+        tab: 'customer', customerReturns: [], refunds: [],
+        showCustReturn: false,
+        custReturnForm: {},
         init() {
             const p = new URLSearchParams(window.location.search);
             if (p.has('tab')) this.tab = p.get('tab');
@@ -174,21 +128,13 @@ function returnsPage() {
             history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
         },
         async load() {
-            const [cr, sr] = await Promise.all([
-                RepairBox.ajax('/returns?type=customer'),
-                RepairBox.ajax('/returns?type=supplier')
-            ]);
+            const cr = await RepairBox.ajax('/returns');
             if(cr.data) this.customerReturns = cr.data;
-            if(sr.data) this.supplierReturns = sr.data;
         },
         async loadRefunds() { const r = await RepairBox.ajax('/returns/refunds'); if(r.data) this.refunds = r.data; },
         async saveCustReturn() {
             const r = await RepairBox.ajax('/returns/customer', 'POST', this.custReturnForm);
             if(r.success !== false) { RepairBox.toast('Return submitted', 'success'); this.showCustReturn = false; this.load(); }
-        },
-        async saveSuppReturn() {
-            const r = await RepairBox.ajax('/returns/supplier', 'POST', this.suppReturnForm);
-            if(r.success !== false) { RepairBox.toast('Return submitted', 'success'); this.showSuppReturn = false; this.load(); }
         },
         async updateStatus(type, id, status) {
             const r = await RepairBox.ajax(`/returns/${type}/${id}/status`, 'PUT', {status});
