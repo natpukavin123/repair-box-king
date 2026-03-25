@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('page-title', 'POS Billing')
+@section('content-class', 'workspace-content')
 
 @php
     $canViewCostPrice = $canViewCostPrice ?? false;
@@ -100,13 +101,19 @@
             padding-right: 0.85rem;
         }
     }
+
+    @media (min-width: 1024px) {
+        .pos-main-grid {
+            grid-template-columns: 3fr 1fr;
+        }
+    }
 </style>
 
 <div x-data="posBilling()" x-init="init()" class="sales-workspace h-full">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
+    <div class="pos-main-grid grid grid-cols-1 gap-4 h-full" style="max-height: calc(100vh - 80px);">
 
         {{-- LEFT: Product / Service Search --}}
-        <div class="lg:col-span-2 flex flex-col">
+        <div class="flex flex-col">
 
             {{-- Search bar + type selector --}}
             <div class="sales-toolbar mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -341,10 +348,10 @@
         </div>
 
         {{-- RIGHT: Cart & Customer --}}
-        <div class="relative flex flex-col gap-3 order-first lg:order-none" :style="custOpen ? 'z-index:95;' : 'z-index:10;'">
+        <div class="relative flex flex-col gap-3 order-first lg:order-none overflow-hidden" :style="custOpen ? 'z-index:95;' : 'z-index:10;'">
 
             {{-- Customer selector --}}
-            <div class="card sales-panel relative" :style="custOpen ? 'overflow:visible; z-index:110;' : 'overflow:visible; z-index:10;'">
+            <div class="card sales-panel relative shrink-0" :style="custOpen ? 'overflow:visible; z-index:110;' : 'overflow:visible; z-index:10;'">
                 <div class="card-body py-3" style="overflow:visible">
                     <div class="flex items-start justify-between gap-3">
                         <div>
@@ -394,8 +401,8 @@
             </div>
 
             {{-- Cart --}}
-            <div class="card sales-panel relative flex-1 flex flex-col" style="z-index:0;">
-                <div class="card-header py-2 flex items-center justify-between">
+            <div class="card sales-panel relative flex-1 flex flex-col min-h-0" style="z-index:0;">
+                <div class="card-header py-2 flex items-center justify-between shrink-0">
                     <h3 class="font-semibold text-gray-800 text-sm">
                         Cart (<span x-text="cart.length"></span> item<span x-show="cart.length !== 1">s</span>)
                     </h3>
@@ -403,7 +410,7 @@
                         class="text-xs text-red-400 hover:text-red-600">Clear</button>
                 </div>
 
-                <div class="flex-1 overflow-y-auto max-h-[34vh] lg:max-h-[38vh]">
+                <div class="flex-1 overflow-y-auto min-h-0">
                     <template x-for="(item, idx) in cart" :key="idx">
                         <div class="sales-cart-row border-b last:border-0 hover:bg-gray-50/50 transition-colors">
                             <div class="flex items-start gap-2">
@@ -460,7 +467,7 @@
                 </div>
 
                 {{-- Summary --}}
-                <div class="sales-summary border-t px-4 py-3 space-y-1.5 text-sm bg-gray-50/50">
+                <div class="sales-summary border-t px-4 py-3 space-y-1.5 text-sm bg-gray-50/50 shrink-0">
                     <div class="flex justify-between text-gray-600">
                         <span>Subtotal</span>
                         <span x-text="'₹' + subtotal().toFixed(2)"></span>
@@ -477,7 +484,7 @@
                 </div>
 
                 {{-- Create Invoice button --}}
-                <div class="sales-actionbar border-t px-4 py-3">
+                <div class="sales-actionbar border-t px-4 py-3 shrink-0">
                     <button @click="createInvoiceDraft()"
                         class="btn-primary w-full py-3 text-base font-semibold"
                         :disabled="saving || cart.length === 0 || grandTotal() <= 0">

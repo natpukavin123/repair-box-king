@@ -353,14 +353,32 @@
 
                 <div class="exp-form-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain">
                     <div class="px-4 py-2 space-y-2">
-                        <div>
+                        <div x-data="categoryAutocomplete('form')" @click.away="open = false" class="relative">
                             <label class="text-xs font-medium text-gray-600 mb-1 block">Category *</label>
-                            <select x-model="form.category_id" class="form-select-custom exp-form-input text-sm">
-                                <option value="">Select Category</option>
-                                <template x-for="c in categories" :key="c.id">
-                                    <option :value="c.id" x-text="c.name"></option>
+                            <input type="text" x-model="search" @focus="open = true" @input="open = true"
+                                @keydown.arrow-down.prevent="highlightNext()" @keydown.arrow-up.prevent="highlightPrev()"
+                                @keydown.enter.prevent="selectHighlighted()" @keydown.escape="open = false"
+                                class="form-input-custom exp-form-input text-sm w-full" placeholder="Type to search or create...">
+                            <div x-show="open && (filtered.length || search.trim())" x-cloak x-transition.origin.top
+                                class="absolute left-0 right-0 top-full mt-1 z-50 border border-gray-200 bg-white shadow-xl rounded-xl max-h-48 overflow-y-auto">
+                                <template x-for="(c, idx) in filtered" :key="c.id">
+                                    <button type="button" @click="selectCategory(c)" @mouseenter="highlighted = idx"
+                                        class="flex w-full items-center px-3 py-2 text-left text-sm transition-colors"
+                                        :class="highlighted === idx ? 'bg-primary-50 text-primary-700' : 'text-slate-700 hover:bg-slate-50'">
+                                        <span class="font-medium" x-text="c.name"></span>
+                                    </button>
                                 </template>
-                            </select>
+                                <template x-if="search.trim() && !exactMatch">
+                                    <button type="button" @click="createAndSelect()"
+                                        @mouseenter="highlighted = filtered.length"
+                                        class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm border-t border-gray-100 transition-colors"
+                                        :class="highlighted === filtered.length ? 'bg-green-50 text-green-700' : 'text-green-600 hover:bg-green-50'">
+                                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                        <span>Create "<span class="font-semibold" x-text="search.trim()"></span>"</span>
+                                    </button>
+                                </template>
+                                <div x-show="!filtered.length && !search.trim()" class="px-3 py-2 text-sm text-gray-400">No categories found</div>
+                            </div>
                         </div>
                         <div>
                             <label class="text-xs font-medium text-gray-600 mb-1 block">Amount *</label>
@@ -411,14 +429,31 @@
             </div>
             <div class="modal-body">
                 <div class="space-y-4">
-                    <div>
+                    <div x-data="categoryAutocomplete('editForm')" @click.away="open = false" class="relative">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                        <select x-model="editForm.category_id" class="form-select-custom">
-                            <option value="">Select</option>
-                            <template x-for="c in categories" :key="c.id">
-                                <option :value="c.id" x-text="c.name"></option>
+                        <input type="text" x-model="search" @focus="open = true" @input="open = true"
+                            @keydown.arrow-down.prevent="highlightNext()" @keydown.arrow-up.prevent="highlightPrev()"
+                            @keydown.enter.prevent="selectHighlighted()" @keydown.escape="open = false"
+                            class="form-input-custom text-sm w-full" placeholder="Type to search or create...">
+                        <div x-show="open && (filtered.length || search.trim())" x-cloak x-transition.origin.top
+                            class="absolute left-0 right-0 top-full mt-1 z-50 border border-gray-200 bg-white shadow-xl rounded-xl max-h-48 overflow-y-auto">
+                            <template x-for="(c, idx) in filtered" :key="c.id">
+                                <button type="button" @click="selectCategory(c)" @mouseenter="highlighted = idx"
+                                    class="flex w-full items-center px-3 py-2 text-left text-sm transition-colors"
+                                    :class="highlighted === idx ? 'bg-primary-50 text-primary-700' : 'text-slate-700 hover:bg-slate-50'">
+                                    <span class="font-medium" x-text="c.name"></span>
+                                </button>
                             </template>
-                        </select>
+                            <template x-if="search.trim() && !exactMatch">
+                                <button type="button" @click="createAndSelect()"
+                                    @mouseenter="highlighted = filtered.length"
+                                    class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm border-t border-gray-100 transition-colors"
+                                    :class="highlighted === filtered.length ? 'bg-green-50 text-green-700' : 'text-green-600 hover:bg-green-50'">
+                                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                    <span>Create "<span class="font-semibold" x-text="search.trim()"></span>"</span>
+                                </button>
+                            </template>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Amount *</label>
@@ -503,6 +538,87 @@
 
 @push('scripts')
 <script>
+function categoryAutocomplete(formKey) {
+    return {
+        search: '',
+        open: false,
+        highlighted: 0,
+
+        get filtered() {
+            const cats = this.categories || [];
+            if (!this.search.trim()) return cats;
+            const q = this.search.trim().toLowerCase();
+            return cats.filter(c => c.name.toLowerCase().includes(q));
+        },
+
+        get exactMatch() {
+            const q = this.search.trim().toLowerCase();
+            return (this.categories || []).some(c => c.name.toLowerCase() === q);
+        },
+
+        init() {
+            // Sync search text when category_id changes externally (e.g. edit, reset)
+            this.$watch(() => this[formKey]?.category_id, (val) => {
+                if (val) {
+                    const cat = (this.categories || []).find(c => c.id == val);
+                    this.search = cat ? cat.name : '';
+                } else {
+                    this.search = '';
+                }
+            });
+            // Set initial value
+            const id = this[formKey]?.category_id;
+            if (id) {
+                const cat = (this.categories || []).find(c => c.id == id);
+                this.search = cat ? cat.name : '';
+            }
+        },
+
+        selectCategory(c) {
+            this[formKey].category_id = c.id;
+            this.search = c.name;
+            this.open = false;
+        },
+
+        async createAndSelect() {
+            const name = this.search.trim();
+            if (!name) return;
+            const r = await RepairBox.ajax('/expenses/categories', 'POST', { name });
+            if (r.success !== false) {
+                RepairBox.toast('Category created', 'success');
+                // Reload categories
+                const c = await RepairBox.ajax('/expenses/categories');
+                this.categories = Array.isArray(c) ? c : (c.data || []);
+                // Find the newly created category and select it
+                const newCat = this.categories.find(cat => cat.name.toLowerCase() === name.toLowerCase());
+                if (newCat) {
+                    this[formKey].category_id = newCat.id;
+                    this.search = newCat.name;
+                }
+                this.open = false;
+            }
+        },
+
+        highlightNext() {
+            const max = this.filtered.length + (this.search.trim() && !this.exactMatch ? 1 : 0);
+            this.highlighted = (this.highlighted + 1) % max;
+        },
+
+        highlightPrev() {
+            const max = this.filtered.length + (this.search.trim() && !this.exactMatch ? 1 : 0);
+            this.highlighted = (this.highlighted - 1 + max) % max;
+        },
+
+        selectHighlighted() {
+            if (this.highlighted < this.filtered.length) {
+                this.selectCategory(this.filtered[this.highlighted]);
+            } else if (this.search.trim() && !this.exactMatch) {
+                this.createAndSelect();
+            }
+        }
+    };
+}
+
 function expensesPage() {
     return {
         items: [], categories: [], catList: [], showModal: false, showCat: false,
