@@ -1337,18 +1337,24 @@
         </div>
         <div class="card-body p-0">
             <table class="data-table">
-                <thead><tr><th>Type</th><th>File</th><th>Size</th><th>Status</th><th>Date</th></tr></thead>
+                <thead><tr><th>Type</th><th>File</th><th>Size</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
                 <tbody>
                     <template x-for="b in backups" :key="b.id">
                         <tr>
                             <td x-text="b.backup_type"></td>
                             <td class="text-sm" x-text="b.file_path"></td>
-                            <td x-text="b.file_size ? (b.file_size / 1024).toFixed(1)+' KB' : '-'"></td>
+                            <td x-text="b.file_size ? (b.file_size > 1048576 ? (b.file_size / 1048576).toFixed(1)+' MB' : (b.file_size / 1024).toFixed(1)+' KB') : '-'"></td>
                             <td><span class="badge badge-success" x-text="b.status"></span></td>
                             <td x-text="new Date(b.created_at).toLocaleString()"></td>
+                            <td>
+                                <a :href="'/backups/' + b.id + '/download'" class="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-800 transition-colors" title="Download Backup">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                    Download
+                                </a>
+                            </td>
                         </tr>
                     </template>
-                    <tr x-show="backups.length===0"><td colspan="5" class="text-center text-gray-400 py-6">No backups</td></tr>
+                    <tr x-show="backups.length===0"><td colspan="6" class="text-center text-gray-400 py-6">No backups</td></tr>
                 </tbody>
             </table>
         </div>

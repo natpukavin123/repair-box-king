@@ -165,6 +165,7 @@ Route::middleware('auth')->group(function () {
     Route::get('activity-logs', [SettingController::class, 'activityLogs'])->name('activity-logs.index');
     Route::get('backups', [SettingController::class, 'backups']);
     Route::post('backups', [SettingController::class, 'createBackup']);
+    Route::get('backups/{backup}/download', [SettingController::class, 'downloadBackup'])->name('backups.download');
 
     // Import
     Route::post('import/validate', [SettingController::class, 'validateImport']);

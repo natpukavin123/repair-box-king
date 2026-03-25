@@ -310,13 +310,66 @@ class SettingController extends Controller
 
     public function createBackup()
     {
+        $filename = 'db_' . now()->format('Y_m_d_His') . '.sql';
+        $relativePath = 'backups/' . $filename;
+        $fullPath = storage_path('app/' . $relativePath);
+
+        // Ensure directory exists
+        $dir = dirname($fullPath);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        // Build mysqldump command
+        $host = config('database.connections.mysql.host', '127.0.0.1');
+        $port = config('database.connections.mysql.port', '3306');
+        $database = config('database.connections.mysql.database');
+        $username = config('database.connections.mysql.username');
+        $password = config('database.connections.mysql.password', '');
+
+        $cmd = sprintf(
+            'mysqldump --host=%s --port=%s --user=%s %s %s > %s 2>&1',
+            escapeshellarg($host),
+            escapeshellarg($port),
+            escapeshellarg($username),
+            $password ? '--password=' . escapeshellarg($password) : '',
+            escapeshellarg($database),
+            escapeshellarg($fullPath)
+        );
+
+        exec($cmd, $output, $exitCode);
+
+        if ($exitCode !== 0 || !file_exists($fullPath) || filesize($fullPath) === 0) {
+            // Cleanup empty/failed file
+            if (file_exists($fullPath)) unlink($fullPath);
+            return response()->json([
+                'success' => false,
+                'message' => 'Backup failed: ' . implode("\n", $output),
+            ], 500);
+        }
+
         $backup = Backup::create([
             'backup_type' => 'database',
-            'file_path' => 'backups/db_' . now()->format('Y_m_d_His') . '.sql',
-            'file_size' => 0,
+            'file_path' => $relativePath,
+            'file_size' => filesize($fullPath),
             'status' => 'completed',
         ]);
-        return response()->json(['success' => true, 'data' => $backup, 'message' => 'Backup created']);
+
+        return response()->json(['success' => true, 'data' => $backup, 'message' => 'Backup created successfully']);
+    }
+
+    public function downloadBackup(Backup $backup)
+    {
+        $fullPath = storage_path('app/' . $backup->file_path);
+
+        if (!file_exists($fullPath)) {
+            if (request()->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Backup file not found on disk.'], 404);
+            }
+            abort(404, 'Backup file not found.');
+        }
+
+        return response()->download($fullPath, basename($backup->file_path));
     }
 
     // ── Test Notification ───────────────────────────────────────────────────────
