@@ -32,7 +32,7 @@ class CheckInstalled
         } else {
             // Installed — block access to setup wizard
             if ($isSetupRoute) {
-                return redirect('/dashboard');
+                return redirect('/admin/dashboard');
             }
         }
 

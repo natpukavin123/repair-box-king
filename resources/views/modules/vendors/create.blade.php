@@ -42,9 +42,9 @@ function createVendorPage() {
         form: { name: '', phone: '', address: '', specialization: '' },
         async save() {
             this.saving = true;
-            const r = await RepairBox.ajax('/vendors', 'POST', this.form);
+            const r = await RepairBox.ajax('/admin/vendors', 'POST', this.form);
             this.saving = false;
-            if (r.success !== false) { RepairBox.toast('Vendor created', 'success'); window.location.href = '/vendors'; }
+            if (r.success !== false) { RepairBox.toast('Vendor created', 'success'); window.location.href = '/admin/vendors'; }
         }
     };
 }

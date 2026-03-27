@@ -311,7 +311,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             <template x-for="r in paginatedItems" :key="r.id">
-                                <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="window.location.href = '/repairs/' + r.id">
+                                <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="window.location.href = '/admin/repairs/' + r.id">
                                     <td class="px-3 py-2">
                                         <span class="font-semibold text-primary-600 text-sm" x-text="r.ticket_number"></span>
                                     </td>
@@ -332,10 +332,10 @@
                                     </td>
                                     <td class="px-3 py-2 text-center" @click.stop>
                                         <div class="inline-flex items-center gap-1">
-                                            <a :href="'/repairs/' + r.id" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition" title="View">
+                                            <a :href="'/admin/repairs/' + r.id" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition" title="View">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                             </a>
-                                            <a :href="'/repairs/' + r.id + '/print'" target="_blank" class="p-1.5 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 transition" title="Print" @click.stop>
+                                            <a :href="'/admin/repairs/' + r.id + '/print'" target="_blank" class="p-1.5 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 transition" title="Print" @click.stop>
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                                             </a>
                                         </div>
@@ -399,7 +399,7 @@
                                     </div>
                                     <div class="min-h-0 flex-1 overflow-y-auto rounded-b-xl bg-gray-50 p-2 space-y-2">
                                         <template x-for="r in kanbanItems(colKey)" :key="r.id">
-                                            <a :href="'/repairs/' + r.id" class="block bg-white rounded-lg border border-gray-200 p-3 shadow-sm hover:shadow-md hover:border-primary-300 transition-all cursor-pointer group">
+                                            <a :href="'/admin/repairs/' + r.id" class="block bg-white rounded-lg border border-gray-200 p-3 shadow-sm hover:shadow-md hover:border-primary-300 transition-all cursor-pointer group">
                                                 <div class="flex items-start justify-between mb-2">
                                                     <span class="text-xs font-bold text-primary-600" x-text="r.ticket_number"></span>
                                                 </div>
@@ -639,11 +639,11 @@
                     </p>
                 </div>
                 <div class="flex gap-3 flex-wrap justify-center">
-                    <a :href="'/repairs/' + (createdRepair ? createdRepair.id : '') + '/print'" target="_blank" class="btn-secondary text-sm px-4">
+                    <a :href="'/admin/repairs/' + (createdRepair ? createdRepair.id : '') + '/print'" target="_blank" class="btn-secondary text-sm px-4">
                         <svg class="w-4 h-4 inline mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                         Print Ticket
                     </a>
-                    <a :href="'/repairs/' + (createdRepair ? createdRepair.id : '')" class="btn-secondary text-sm px-4">View Details</a>
+                    <a :href="'/admin/repairs/' + (createdRepair ? createdRepair.id : '')" class="btn-secondary text-sm px-4">View Details</a>
                     <button @click="newRepair()" class="btn-primary text-sm px-4">
                         <svg class="w-4 h-4 inline mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                         New Repair
@@ -776,7 +776,7 @@ function repairsPage() {
             if (this.dateTo) params.set('date_to', this.dateTo);
             if (this.paymentFilter) params.set('payment_status', this.paymentFilter);
             params.set('per_page', '500');
-            const r = await RepairBox.ajax('/repairs?' + params.toString());
+            const r = await RepairBox.ajax('/admin/repairs?' + params.toString());
             if (r.data) this.items = Array.isArray(r.data) ? r.data : (r.data.data || r.data);
             this.currentPage = 1;
             this.loading = false;
@@ -843,7 +843,7 @@ function repairsPage() {
             page = page || 1;
             if (page === 1) this.custPage = 1;
             this.custLoading = true;
-            const r = await RepairBox.ajax('/customers-search?page=' + page + '&q=' + encodeURIComponent(this.custSearch || ''));
+            const r = await RepairBox.ajax('/admin/customers-search?page=' + page + '&q=' + encodeURIComponent(this.custSearch || ''));
             this.custLoading = false;
             const rows = Array.isArray(r.data) ? r.data : [];
             this.custResults = page === 1 ? rows : this.custResults.concat(rows);
@@ -889,7 +889,7 @@ function repairsPage() {
             this.newCust = { ...this.newCust, ...validation.payload, email: validation.payload.email || '', address: validation.payload.address || '' };
             if (!validation.valid) return;
             this.customerSaving = true;
-            const r = await RepairBox.ajax('/customers', 'POST', validation.payload);
+            const r = await RepairBox.ajax('/admin/customers', 'POST', validation.payload);
             this.customerSaving = false;
             if (r.success !== false && r.data) {
                 this.selectCustomer(r.data);
@@ -922,7 +922,7 @@ function repairsPage() {
             if (!this.form.problem_description.trim()) { RepairBox.toast('Problem description is required', 'error'); return; }
 
             this.saving = true;
-            const r = await RepairBox.ajax('/repairs', 'POST', this.form);
+            const r = await RepairBox.ajax('/admin/repairs', 'POST', this.form);
             this.saving = false;
 
             if (r.success !== false) {

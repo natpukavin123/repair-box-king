@@ -171,13 +171,13 @@ function rolesPage() {
 
         async load() {
             this.loading = true;
-            const r = await RepairBox.ajax('/roles');
+            const r = await RepairBox.ajax('/admin/roles');
             if (r.data) this.items = r.data;
             this.loading = false;
         },
 
         async loadPermissions() {
-            const r = await RepairBox.ajax('/permissions/grouped');
+            const r = await RepairBox.ajax('/admin/permissions/grouped');
             if (r.data) {
                 this.permissionGroups = r.data;
                 this.totalPermissions = r.data.reduce((sum, g) => sum + g.permissions.length, 0);
@@ -250,7 +250,7 @@ function rolesPage() {
 
         async save() {
             this.saving = true;
-            const url = this.editing ? `/roles/${this.editing}` : '/roles';
+            const url = this.editing ? `/roles/${this.editing}` : '/admin/roles';
             const method = this.editing ? 'PUT' : 'POST';
             const r = await RepairBox.ajax(url, method, this.form);
             this.saving = false;

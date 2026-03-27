@@ -57,9 +57,9 @@ function createPartPage() {
 
         async save() {
             this.saving = true;
-            const r = await RepairBox.ajax('/parts', 'POST', this.form);
+            const r = await RepairBox.ajax('/admin/parts', 'POST', this.form);
             this.saving = false;
-            if (r.success !== false) { RepairBox.toast('Part created', 'success'); window.location.href = '/parts'; }
+            if (r.success !== false) { RepairBox.toast('Part created', 'success'); window.location.href = '/admin/parts'; }
         }
     };
 }

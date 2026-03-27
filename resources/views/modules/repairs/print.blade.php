@@ -161,7 +161,7 @@ body.lang-ta .inv-shop-name{font-size:18px;}
 
 <div class="toolbar">
     <div class="toolbar-left">
-        <a href="{{ url('/repairs') }}" class="back-btn">
+        <a href="{{ url('/admin/repairs') }}" class="back-btn">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
             Back
         </a>

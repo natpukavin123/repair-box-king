@@ -7,9 +7,9 @@
     <!-- Breadcrumb -->
     <div class="mb-5">
         <div class="flex items-center gap-2 text-sm mb-2">
-            <a href="/repairs" class="text-primary-600 hover:text-primary-800">Repairs</a>
+            <a href="/admin/repairs" class="text-primary-600 hover:text-primary-800">Repairs</a>
             <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            <a href="/repairs/{{ $repair->id }}" class="text-primary-600 hover:text-primary-800">{{ $repair->ticket_number }}</a>
+            <a href="/admin/repairs/{{ $repair->id }}" class="text-primary-600 hover:text-primary-800">{{ $repair->ticket_number }}</a>
             <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             <span class="text-gray-500">Create Return</span>
         </div>
@@ -22,7 +22,7 @@
                     {{ $repair->device_brand }} {{ $repair->device_model }}
                 </p>
             </div>
-            <a href="/repairs/{{ $repair->id }}" class="btn-secondary text-sm inline-flex items-center gap-1.5">
+            <a href="/admin/repairs/{{ $repair->id }}" class="btn-secondary text-sm inline-flex items-center gap-1.5">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                 Back
             </a>
@@ -38,7 +38,7 @@
         </h3>
         <div class="space-y-1.5">
             @foreach($repair->repairReturns as $prevReturn)
-            <a href="/repairs/{{ $repair->id }}/returns/{{ $prevReturn->id }}" class="flex items-center justify-between bg-white rounded-lg px-3 py-2 text-sm hover:bg-orange-100/50 transition border border-orange-100">
+            <a href="/admin/repairs/{{ $repair->id }}/returns/{{ $prevReturn->id }}" class="flex items-center justify-between bg-white rounded-lg px-3 py-2 text-sm hover:bg-orange-100/50 transition border border-orange-100">
                 <div class="flex items-center gap-2">
                     <span class="font-semibold text-orange-600">{{ $prevReturn->return_number }}</span>
                     @php
@@ -63,7 +63,7 @@
         <svg class="w-12 h-12 text-green-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <h3 class="text-lg font-bold text-green-700 mb-1">All Items Fully Returned</h3>
         <p class="text-sm text-green-600">All parts and services for this repair have already been returned. No further returns can be created.</p>
-        <a href="/repairs/{{ $repair->id }}" class="inline-flex items-center gap-1.5 mt-4 btn-secondary text-sm">
+        <a href="/admin/repairs/{{ $repair->id }}" class="inline-flex items-center gap-1.5 mt-4 btn-secondary text-sm">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
             Back to Repair
         </a>
@@ -342,7 +342,7 @@ function returnCreate() {
                 items.push({ type: 'service', id: s.id, quantity: 1, return_amount: Number(s.return_amount), reason: s.reason });
             });
 
-            const r = await RepairBox.ajax('/repairs/{{ $repair->id }}/returns', 'POST', { reason: this.returnReason, items });
+            const r = await RepairBox.ajax('/admin/repairs/{{ $repair->id }}/returns', 'POST', { reason: this.returnReason, items });
             this.saving = false;
             if (r.data?.redirect) {
                 window.location.href = r.data.redirect;

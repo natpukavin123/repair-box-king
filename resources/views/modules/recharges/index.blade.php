@@ -582,7 +582,7 @@ function rechargesPage() {
             this.dateTo   = p.get('date_to')   || now.toISOString().split('T')[0];
             if (p.has('search')) this.tableSearch = p.get('search');
             if (p.has('status')) this.filterStatus = p.get('status');
-            const r = await RepairBox.ajax('/recharge-providers');
+            const r = await RepairBox.ajax('/admin/recharge-providers');
             if (r.data) this.providers = r.data;
             if (p.has('customer_id')) await this.loadCustomerById(p.get('customer_id'));
             await this.loadHistory(1);
@@ -592,7 +592,7 @@ function rechargesPage() {
             page = page || 1;
             if (page === 1) this.custPage = 1;
             this.custLoading = true;
-            const r = await RepairBox.ajax('/customers-search?page=' + page + '&q=' + encodeURIComponent(this.custSearch || ''));
+            const r = await RepairBox.ajax('/admin/customers-search?page=' + page + '&q=' + encodeURIComponent(this.custSearch || ''));
             this.custLoading = false;
             const rows = Array.isArray(r.data) ? r.data : [];
             this.custResults = page === 1 ? rows : this.custResults.concat(rows);
@@ -661,7 +661,7 @@ function rechargesPage() {
             if (page < 1) return;
             this.histLoading = true;
             this.updateUrl();
-            let url = '/recharges?page=' + page + '&per_page=15';
+            let url = '/admin/recharges?page=' + page + '&per_page=15';
             if (this.selCust) url += '&customer_id=' + this.selCust.id;
             if (this.tableSearch) url += '&search=' + encodeURIComponent(this.tableSearch);
             if (this.filterStatus) url += '&status=' + this.filterStatus;
@@ -704,7 +704,7 @@ function rechargesPage() {
             if (!validation.valid) return;
 
             this.customerSaving = true;
-            const r = await RepairBox.ajax('/customers', 'POST', validation.payload);
+            const r = await RepairBox.ajax('/admin/customers', 'POST', validation.payload);
             this.customerSaving = false;
 
             if (r.success !== false && r.data) {
@@ -724,7 +724,7 @@ function rechargesPage() {
             if (!this.form.mobile_number) { RepairBox.toast('Mobile number is required', 'error'); return; }
             if (!this.form.recharge_amount || parseFloat(this.form.recharge_amount) <= 0) { RepairBox.toast('Enter a valid amount', 'error'); return; }
             this.saving = true;
-            const r = await RepairBox.ajax('/recharges', 'POST', this.form);
+            const r = await RepairBox.ajax('/admin/recharges', 'POST', this.form);
             this.saving = false;
             if (r.success !== false) {
                 RepairBox.toast('Recharge recorded successfully', 'success');
@@ -738,7 +738,7 @@ function rechargesPage() {
         },
 
         async loadCustomerById(id) {
-            const r = await RepairBox.ajax('/customers/' + id);
+            const r = await RepairBox.ajax('/admin/customers/' + id);
             const c = r.data || r;
             if (c && c.id) {
                 this.selCust = c;

@@ -8,7 +8,7 @@
             <h2 class="text-2xl font-bold text-gray-800">Add Customer</h2>
             <p class="text-sm text-gray-500 mt-0.5">Create a new customer record</p>
         </div>
-        <a href="/customers" class="btn-secondary inline-flex w-full items-center justify-center gap-1.5 sm:w-auto">
+        <a href="/admin/customers" class="btn-secondary inline-flex w-full items-center justify-center gap-1.5 sm:w-auto">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
             Back
         </a>
@@ -36,7 +36,7 @@
             </x-ui.form-section>
         </div>
         <div class="card-footer flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-            <a href="/customers" class="btn-secondary w-full text-center sm:w-auto">Cancel</a>
+            <a href="/admin/customers" class="btn-secondary w-full text-center sm:w-auto">Cancel</a>
             <button @click="save()" class="btn-primary inline-flex w-full items-center justify-center gap-2 sm:w-auto" :disabled="saving">
                 <span x-show="saving" class="spinner"></span>
                 Create Customer
@@ -71,9 +71,9 @@ function createCustomerPage() {
             }
 
             this.saving = true;
-            const r = await RepairBox.ajax('/customers', 'POST', validation.payload);
+            const r = await RepairBox.ajax('/admin/customers', 'POST', validation.payload);
             this.saving = false;
-            if (r.success !== false) { RepairBox.toast('Customer created', 'success'); window.location.href = '/customers'; return; }
+            if (r.success !== false) { RepairBox.toast('Customer created', 'success'); window.location.href = '/admin/customers'; return; }
             this.submitError = r.message || 'Unable to save customer. Please check the details and try again.';
         }
     };

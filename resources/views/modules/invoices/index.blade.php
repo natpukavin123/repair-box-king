@@ -22,7 +22,7 @@
 <div x-data="invoicesPage()" x-init="load()" class="workspace-screen invoices-workspace">
 
     <x-ui.action-bar title="Invoice Ledger" description="Billing, payment collection, and invoice review stay in the same contained workspace.">
-        <a href="/pos" class="btn-primary inline-flex w-full items-center justify-center gap-1.5 sm:w-auto">
+        <a href="/admin/pos" class="btn-primary inline-flex w-full items-center justify-center gap-1.5 sm:w-auto">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
             </svg>
@@ -226,7 +226,7 @@
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                                             Pay
                                         </button>
-                                        <a :href="'/invoices/' + inv.id + '/print'" target="_blank"
+                                        <a :href="'/admin/invoices/' + inv.id + '/print'" target="_blank"
                                             class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-gray-500 hover:text-green-600 hover:bg-green-50 transition-colors"
                                             title="Print">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
@@ -413,7 +413,7 @@
                 </div>
             </div>
             <div class="modal-footer flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
-                <a :href="'/invoices/' + viewData?.id + '/print'" target="_blank" class="btn-secondary text-xs flex items-center justify-center gap-1.5 w-full sm:w-auto">
+                <a :href="'/admin/invoices/' + viewData?.id + '/print'" target="_blank" class="btn-secondary text-xs flex items-center justify-center gap-1.5 w-full sm:w-auto">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                     Print
                 </a>
@@ -560,7 +560,7 @@ function invoicesPage() {
             if (this.filter.date_to)         params.append('date_to', this.filter.date_to);
             if (this.filter.payment_status)  params.append('payment_status', this.filter.payment_status);
 
-            const r = await RepairBox.ajax('/invoices?' + params.toString());
+            const r = await RepairBox.ajax('/admin/invoices?' + params.toString());
             // RepairBox.ajax returns { data: <array>, meta: {current_page, last_page, total}, success }
             // for paginated responses
             if (r.data) {
@@ -603,7 +603,7 @@ function invoicesPage() {
         },
 
         async view(inv) {
-            const r = await RepairBox.ajax('/invoices/' + inv.id);
+            const r = await RepairBox.ajax('/admin/invoices/' + inv.id);
             if (r.data) {
                 this.viewData = this.enrich(r.data);
                 this.showView = true;
@@ -637,7 +637,7 @@ function invoicesPage() {
             }
 
             this.paying = true;
-            const r = await RepairBox.ajax('/invoices/' + this.payTarget.id + '/pay', 'POST', { payments: this.payForm });
+            const r = await RepairBox.ajax('/admin/invoices/' + this.payTarget.id + '/pay', 'POST', { payments: this.payForm });
             this.paying = false;
 
             if (r.success !== false && r.data) {

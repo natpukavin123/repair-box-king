@@ -7,9 +7,9 @@
     <!-- Breadcrumb & Header -->
     <div class="mb-5">
         <div class="flex items-center gap-2 text-sm mb-2">
-            <a href="/repairs" class="text-primary-600 hover:text-primary-800">Repairs</a>
+            <a href="/admin/repairs" class="text-primary-600 hover:text-primary-800">Repairs</a>
             <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            <a href="/repairs/{{ $repair->id }}" class="text-primary-600 hover:text-primary-800">{{ $repair->ticket_number }}</a>
+            <a href="/admin/repairs/{{ $repair->id }}" class="text-primary-600 hover:text-primary-800">{{ $repair->ticket_number }}</a>
             <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             <span class="text-gray-500">Cost & Profit</span>
         </div>
@@ -22,7 +22,7 @@
                     {{ $repair->device_brand }} {{ $repair->device_model }}
                 </p>
             </div>
-            <a href="/repairs/{{ $repair->id }}" class="btn-secondary text-sm inline-flex items-center gap-1.5">
+            <a href="/admin/repairs/{{ $repair->id }}" class="btn-secondary text-sm inline-flex items-center gap-1.5">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                 Back to Repair
             </a>

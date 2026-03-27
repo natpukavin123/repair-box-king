@@ -26,7 +26,7 @@
                                                 <span x-text="item.subcategories.length + ' subcategories'"></span>
                                             </span>
                                         </template>
-                                        <a :href="'/categories/' + item.id + '/subcategories'" class="inline-flex items-center justify-center w-6 h-6 rounded-md text-primary-600 hover:text-white hover:bg-primary-600 bg-primary-50 transition-colors" title="Manage Subcategories">
+                                        <a :href="'/admin/categories/' + item.id + '/admin/subcategories'" class="inline-flex items-center justify-center w-6 h-6 rounded-md text-primary-600 hover:text-white hover:bg-primary-600 bg-primary-50 transition-colors" title="Manage Subcategories">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                                         </a>
                                     </div>
@@ -121,7 +121,7 @@ function categoriesPage() {
         showSubModal: false, editingSubId: null, subForm: { name: '' },
         async load() {
             this.loading = true;
-            const r = await RepairBox.ajax('/categories'); if(r.data) this.items = r.data;
+            const r = await RepairBox.ajax('/admin/categories'); if(r.data) this.items = r.data;
             this.loading = false;
         },
         edit(item) {
@@ -146,7 +146,7 @@ function categoriesPage() {
         async saveSub(item) {
             if (!this.newSubName.trim()) return;
             this.savingSub = true;
-            const r = await RepairBox.ajax('/subcategories', 'POST', { category_id: item.id, name: this.newSubName.trim() });
+            const r = await RepairBox.ajax('/admin/subcategories', 'POST', { category_id: item.id, name: this.newSubName.trim() });
             this.savingSub = false;
             if (r.success !== false) { RepairBox.toast('Subcategory added', 'success'); this.addingSubFor = null; this.newSubName = ''; this.load(); }
         },

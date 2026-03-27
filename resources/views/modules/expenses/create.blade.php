@@ -56,9 +56,9 @@ function createExpensePage() {
         form: { category_id: '', amount: '', expense_date: new Date().toISOString().split('T')[0], payment_method: 'cash', description: '' },
         async save() {
             this.saving = true;
-            const r = await RepairBox.ajax('/expenses', 'POST', this.form);
+            const r = await RepairBox.ajax('/admin/expenses', 'POST', this.form);
             this.saving = false;
-            if (r.success !== false) { RepairBox.toast('Expense recorded', 'success'); window.location.href = '/expenses'; }
+            if (r.success !== false) { RepairBox.toast('Expense recorded', 'success'); window.location.href = '/admin/expenses'; }
         }
     };
 }

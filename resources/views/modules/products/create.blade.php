@@ -139,7 +139,7 @@ function createProductPage() {
         },
         async save() {
             this.saving = true;
-            const r = await RepairBox.ajax('/products', 'POST', this.form);
+            const r = await RepairBox.ajax('/admin/products', 'POST', this.form);
             if (r.success !== false && r.data) {
                 const id = r.data.id;
                 if (this.imageFile || this.thumbFile) {
@@ -149,7 +149,7 @@ function createProductPage() {
                     await RepairBox.upload(`/products/${id}/upload-image`, fd);
                 }
                 RepairBox.toast('Product created', 'success');
-                window.location.href = '/products';
+                window.location.href = '/admin/products';
             }
             this.saving = false;
         }

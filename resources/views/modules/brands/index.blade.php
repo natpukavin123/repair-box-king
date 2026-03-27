@@ -65,7 +65,7 @@ function brandsPage() {
     return {
         items: [], showModal: false, editing: null, saving: false, loading: true,
         form: { name: '', logo_url: '' },
-        async load() { this.loading = true; const r = await RepairBox.ajax('/brands'); if(r.data) this.items = r.data; this.loading = false; },
+        async load() { this.loading = true; const r = await RepairBox.ajax('/admin/brands'); if(r.data) this.items = r.data; this.loading = false; },
         edit(item) { this.editing = item.id; this.form = { name: item.name, logo_url: item.logo_url || '' }; this.showModal = true; },
         async save() {
             this.saving = true;

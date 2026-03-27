@@ -204,7 +204,7 @@
     <div style="margin-bottom:28px;">
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {{-- Sales / POS --}}
-            <a href="/pos" class="nav-card" style="background:linear-gradient(135deg,#22c55e,#15803d);">
+            <a href="/admin/pos" class="nav-card" style="background:linear-gradient(135deg,#22c55e,#15803d);">
                 <div class="nav-card-icon">
                     <svg style="width:28px;height:28px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
                 </div>
@@ -212,7 +212,7 @@
                 <span class="nav-card-sub">POS Billing</span>
             </a>
             {{-- Repairs --}}
-            <a href="/repairs" class="nav-card" style="background:linear-gradient(135deg,#f97316,#c2410c);">
+            <a href="/admin/repairs" class="nav-card" style="background:linear-gradient(135deg,#f97316,#c2410c);">
                 <div class="nav-card-icon">
                     <svg style="width:28px;height:28px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 </div>
@@ -378,12 +378,12 @@
     <div style="margin-bottom:32px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
             <span class="section-title">Repair Tickets Activity</span>
-            <a href="/repairs" style="margin-left:auto;font-size:12px;font-weight:600;color:#4f46e5;text-decoration:none;">View All →</a>
+            <a href="/admin/repairs" style="margin-left:auto;font-size:12px;font-weight:600;color:#4f46e5;text-decoration:none;">View All →</a>
         </div>
         <div class="card-wrap" style="padding:24px;">
             <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;">
                 {{-- Received --}}
-                <a href="/repairs?status=received" class="pipeline-card" style="flex:1;min-width:130px;background:#eff6ff;border-color:#bfdbfe;text-decoration:none;">
+                <a href="/admin/repairs?status=received" class="pipeline-card" style="flex:1;min-width:130px;background:#eff6ff;border-color:#bfdbfe;text-decoration:none;">
                     <div style="display:flex;align-items:center;gap:12px;">
                         <div class="pipeline-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">
                             <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
@@ -399,7 +399,7 @@
                     <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                 </div>
                 {{-- In Progress --}}
-                <a href="/repairs?status=in_progress" class="pipeline-card" style="flex:1;min-width:130px;background:#fffbeb;border-color:#fde68a;text-decoration:none;">
+                <a href="/admin/repairs?status=in_progress" class="pipeline-card" style="flex:1;min-width:130px;background:#fffbeb;border-color:#fde68a;text-decoration:none;">
                     <div style="display:flex;align-items:center;gap:12px;">
                         <div class="pipeline-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
                             <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -414,7 +414,7 @@
                     <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                 </div>
                 {{-- Completed --}}
-                <a href="/repairs?status=completed" class="pipeline-card" style="flex:1;min-width:130px;background:#ecfdf5;border-color:#a7f3d0;text-decoration:none;">
+                <a href="/admin/repairs?status=completed" class="pipeline-card" style="flex:1;min-width:130px;background:#ecfdf5;border-color:#a7f3d0;text-decoration:none;">
                     <div style="display:flex;align-items:center;gap:12px;">
                         <div class="pipeline-icon" style="background:linear-gradient(135deg,#10b981,#059669);">
                             <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -429,7 +429,7 @@
                     <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                 </div>
                 {{-- Payment --}}
-                <a href="/repairs?status=payment" class="pipeline-card" style="flex:1;min-width:130px;background:#f5f3ff;border-color:#c4b5fd;text-decoration:none;">
+                <a href="/admin/repairs?status=payment" class="pipeline-card" style="flex:1;min-width:130px;background:#f5f3ff;border-color:#c4b5fd;text-decoration:none;">
                     <div style="display:flex;align-items:center;gap:12px;">
                         <div class="pipeline-icon" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);">
                             <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
@@ -444,7 +444,7 @@
                     <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                 </div>
                 {{-- Closed --}}
-                <a href="/repairs?status=closed" class="pipeline-card" style="flex:1;min-width:130px;background:#f8fafc;border-color:#cbd5e1;text-decoration:none;">
+                <a href="/admin/repairs?status=closed" class="pipeline-card" style="flex:1;min-width:130px;background:#f8fafc;border-color:#cbd5e1;text-decoration:none;">
                     <div style="display:flex;align-items:center;gap:12px;">
                         <div class="pipeline-icon" style="background:linear-gradient(135deg,#64748b,#475569);">
                             <svg style="width:20px;height:20px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
@@ -540,7 +540,7 @@ function dashboardPage() {
 
         async init() {
             try {
-                const res = await fetch('/dashboard', {
+                const res = await fetch('/admin/dashboard', {
                     headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
                 });
                 const data = await res.json();
@@ -707,7 +707,7 @@ function dashboardPage() {
         async addReminder() {
             if (!this.newReminder.title.trim()) return;
             try {
-                const res = await fetch('/dashboard/reminders', {
+                const res = await fetch('/admin/dashboard/reminders', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -52,9 +52,9 @@ function createUserPage() {
         form: { name: '', email: '', password: '', password_confirmation: '', role_id: '', status: 'active' },
         async save() {
             this.saving = true;
-            const r = await RepairBox.ajax('/users', 'POST', this.form);
+            const r = await RepairBox.ajax('/admin/users', 'POST', this.form);
             this.saving = false;
-            if (r.success !== false) { RepairBox.toast('User created', 'success'); window.location.href = '/users'; }
+            if (r.success !== false) { RepairBox.toast('User created', 'success'); window.location.href = '/admin/users'; }
         }
     };
 }

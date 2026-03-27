@@ -394,7 +394,7 @@ function serviceTypesPage() {
         // Data
         async load() {
             this.loading = true;
-            const r = await RepairBox.ajax('/service-types', 'GET', {
+            const r = await RepairBox.ajax('/admin/service-types', 'GET', {
                 search: this.filters.search || undefined
             });
             if (Array.isArray(r)) {
@@ -413,7 +413,7 @@ function serviceTypesPage() {
                 return RepairBox.toast('Name is required', 'error');
             }
             this.saving = true;
-            const url = this.editing ? `/service-types/${this.editing}` : '/service-types';
+            const url = this.editing ? `/service-types/${this.editing}` : '/admin/service-types';
             const method = this.editing ? 'PUT' : 'POST';
             const r = await RepairBox.ajax(url, method, this.form);
 

@@ -8,7 +8,7 @@ use App\Http\Controllers\{
     RechargeController, ExpenseController, LedgerController,
     PoRequestController, UserController, SettingController, ReportController,
     PartController, RepairReturnController, RoleController, MenuController,
-    CreditNoteController, SetupController, DevToolsController
+    CreditNoteController, SetupController, DevToolsController, HomeController
 };
 
 // ─── Setup Wizard (public — no auth needed) ────────────────────────────────
@@ -29,12 +29,16 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Repair tracking (public)
-Route::get('/track/{trackingId}', [RepairController::class, 'track']);
+// ─── Public pages ───────────────────────────────────────────────────────────
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Protected routes
-Route::middleware('auth')->group(function () {
-    Route::get('/', fn() => redirect('/dashboard'));
+// Repair tracking (public)
+Route::get('/track', [RepairController::class, 'trackingLanding'])->name('track.landing');
+Route::get('/track/{trackingId}', [RepairController::class, 'track'])->name('track.show');
+
+// ─── Admin (protected) routes ────────────────────────────────────────────────
+Route::prefix('admin')->middleware('auth')->group(function () {
+    Route::get('/', fn() => redirect('/admin/dashboard'));
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/dashboard/reminders', [DashboardController::class, 'storeReminder']);
     Route::put('/dashboard/reminders/{reminder}/toggle', [DashboardController::class, 'toggleReminder']);
@@ -179,4 +183,3 @@ Route::middleware('auth')->group(function () {
         Route::post('/reset-seed',[DevToolsController::class, 'resetAndSeed'])->name('reset-seed');
     });
 });
-

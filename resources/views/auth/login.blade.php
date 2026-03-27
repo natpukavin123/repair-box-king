@@ -263,7 +263,7 @@ function loginForm() {
                     body: JSON.stringify({email:this.email,password:this.password,remember:this.remember})
                 });
                 const data = await res.json();
-                if(data.success) { window.location.href = data.redirect || '/dashboard'; }
+                if(data.success) { window.location.href = data.redirect || '/admin/dashboard'; }
                 else { this.error = data.message || 'Invalid credentials'; this.loading = false; }
             } catch(e) { this.error = 'Login failed. Please try again.'; this.loading = false; }
         }

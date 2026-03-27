@@ -127,6 +127,6 @@
     @endif
 
     @if($hasReturnableItems)
-    <a href="/repairs/{{ $repair->id }}/returns/create" class="return-more-btn">↩ Return More Items</a>
+    <a href="/admin/repairs/{{ $repair->id }}/returns/create" class="return-more-btn">↩ Return More Items</a>
     @endif
 @endsection

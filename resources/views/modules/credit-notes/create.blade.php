@@ -18,7 +18,7 @@
                 @endif
             </p>
         </div>
-        <a href="{{ $sourceType === 'invoice' ? '/invoices' : '/repairs/' . $source->id }}" class="btn-secondary">← Back</a>
+        <a href="{{ $sourceType === 'invoice' ? '/admin/invoices' : '/admin/repairs/' . $source->id }}" class="btn-secondary">← Back</a>
     </div>
 
     <!-- Select Items -->
@@ -204,7 +204,7 @@ function createCreditNote() {
             }));
 
             this.saving = true;
-            const r = await RepairBox.ajax('/credit-notes', 'POST', {
+            const r = await RepairBox.ajax('/admin/credit-notes', 'POST', {
                 source_type: '{{ $sourceType }}',
                 source_id: {{ $source->id }},
                 reason: this.form.reason,

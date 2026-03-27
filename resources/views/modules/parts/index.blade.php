@@ -107,7 +107,7 @@ function partsPage() {
         },
         async load() {
             this.loading = true;
-            const r = await RepairBox.ajax('/parts?search=' + encodeURIComponent(this.search));
+            const r = await RepairBox.ajax('/admin/parts?search=' + encodeURIComponent(this.search));
             if (r.data) this.items = r.data;
             this.updateUrl();
             this.loading = false;

@@ -182,7 +182,7 @@ function menusPage() {
 
         async load() {
             this.loading = true;
-            const r = await RepairBox.ajax('/menus');
+            const r = await RepairBox.ajax('/admin/menus');
             if (r.data) {
                 this.items = r.data;
                 this.allMenus = r.data;
@@ -220,7 +220,7 @@ function menusPage() {
 
         async save() {
             this.saving = true;
-            const url = this.editing ? `/menus/${this.editing}` : '/menus';
+            const url = this.editing ? `/menus/${this.editing}` : '/admin/menus';
             const method = this.editing ? 'PUT' : 'POST';
             const data = {...this.form};
             if (!data.parent_id) data.parent_id = null;

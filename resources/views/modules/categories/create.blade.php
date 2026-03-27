@@ -40,9 +40,9 @@ function createCategoryPage() {
         form: { name: '', description: '' },
         async save() {
             this.saving = true;
-            const r = await RepairBox.ajax('/categories', 'POST', this.form);
+            const r = await RepairBox.ajax('/admin/categories', 'POST', this.form);
             this.saving = false;
-            if (r.success !== false) { RepairBox.toast('Category created', 'success'); window.location.href = '/categories'; }
+            if (r.success !== false) { RepairBox.toast('Category created', 'success'); window.location.href = '/admin/categories'; }
         }
     };
 }

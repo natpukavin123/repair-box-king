@@ -139,7 +139,7 @@
                         Manual Entry
                     </button>
                 </div>
-                <a href="/invoices" title="Invoices" class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-all border border-blue-200 shrink-0">
+                <a href="/admin/invoices" title="Invoices" class="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-all border border-blue-200 shrink-0">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 </a>
             </div>
@@ -701,7 +701,7 @@
                     </p>
                 </div>
                 <div class="flex gap-3 flex-wrap justify-center">
-                    <a :href="'/invoices/' + (createdInvoice ? createdInvoice.id : '') + '/print'" target="_blank"
+                    <a :href="'/admin/invoices/' + (createdInvoice ? createdInvoice.id : '') + '/print'" target="_blank"
                         class="btn-secondary text-sm px-4">
                         <svg class="w-4 h-4 inline mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                         Print Invoice
@@ -836,7 +836,7 @@ function posBilling() {
         },
 
         async loadFilterData() {
-            const r = await RepairBox.ajax('/products-filter-data');
+            const r = await RepairBox.ajax('/admin/products-filter-data');
             const d = r.data || r;
             if (d.categories) this.filterCategories = d.categories;
             if (d.brands)     this.filterBrands     = d.brands;
@@ -846,7 +846,7 @@ function posBilling() {
             const params = new URLSearchParams();
             if (this.selCategories.length)    params.set('category_id',    this.selCategories.join(','));
             if (this.selSubcategories.length) params.set('subcategory_id', this.selSubcategories.join(','));
-            const r = await RepairBox.ajax('/products-filter-data?' + params.toString());
+            const r = await RepairBox.ajax('/admin/products-filter-data?' + params.toString());
             const d = r.data || r;
             if (d.brands) this.filterBrands = d.brands;
             // Remove any selected brands no longer in the list
@@ -897,12 +897,12 @@ function posBilling() {
             if (this.selCategories.length)    params.set('category_id',    this.selCategories.join(','));
             if (this.selSubcategories.length) params.set('subcategory_id', this.selSubcategories.join(','));
             if (this.selBrands.length)        params.set('brand_id',       this.selBrands.join(','));
-            const r = await RepairBox.ajax('/products-search?' + params.toString());
+            const r = await RepairBox.ajax('/admin/products-search?' + params.toString());
             if (r.data) this.searchResults = r.data;
         },
 
         async loadServices() {
-            const r = await RepairBox.ajax('/service-types');
+            const r = await RepairBox.ajax('/admin/service-types');
             if (Array.isArray(r.data)) this.allServices = r.data.filter(s => s.status === 'active');
         },
 
@@ -989,7 +989,7 @@ function posBilling() {
             page = page || 1;
             if (page === 1) this.custPage = 1;
             this.custLoading = true;
-            const r = await RepairBox.ajax('/customers-search?page=' + page + '&q=' + encodeURIComponent(this.customerSearch || ''));
+            const r = await RepairBox.ajax('/admin/customers-search?page=' + page + '&q=' + encodeURIComponent(this.customerSearch || ''));
             this.custLoading = false;
             const rows = Array.isArray(r.data) ? r.data : [];
             this.customerResults = page === 1 ? rows : this.customerResults.concat(rows);
@@ -1050,7 +1050,7 @@ function posBilling() {
             }
 
             this.customerSaving = true;
-            const r = await RepairBox.ajax('/customers', 'POST', validation.payload);
+            const r = await RepairBox.ajax('/admin/customers', 'POST', validation.payload);
             this.customerSaving = false;
 
             if (r.success !== false && r.data) {
@@ -1100,7 +1100,7 @@ function posBilling() {
                 })),
             };
 
-            const r = await RepairBox.ajax('/invoices', 'POST', payload);
+            const r = await RepairBox.ajax('/admin/invoices', 'POST', payload);
             this.saving = false;
 
             if (r.success !== false && r.data) {
@@ -1127,7 +1127,7 @@ function posBilling() {
 
             this.paying = true;
             const r = await RepairBox.ajax(
-                '/invoices/' + this.createdInvoice.id + '/pay',
+                '/admin/invoices/' + this.createdInvoice.id + '/pay',
                 'POST',
                 { payments: this.payForm.payments }
             );

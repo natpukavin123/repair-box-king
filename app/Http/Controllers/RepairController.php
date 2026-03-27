@@ -399,12 +399,37 @@ class RepairController extends Controller
         }
     }
 
+    public function trackingLanding()
+    {
+        $shopName    = \App\Models\Setting::getValue('shop_name', 'RepairBox');
+        $shopPhone   = \App\Models\Setting::getValue('shop_phone', '');
+        $shopEmail   = \App\Models\Setting::getValue('shop_email', '');
+        $shopSlogan  = \App\Models\Setting::getValue('shop_slogan', 'Your Trusted Mobile Partner');
+        $shopIcon    = \App\Models\Setting::getValue('shop_icon', '');
+        return view('public.track', compact('shopName', 'shopPhone', 'shopEmail', 'shopSlogan', 'shopIcon'));
+    }
+
     public function track($trackingId)
     {
-        $repair = Repair::with('statusHistory', 'customer')
+        if (request()->wantsJson()) {
+            $repair = Repair::with('statusHistory', 'customer')
+                ->where('tracking_id', $trackingId)
+                ->firstOrFail();
+            return response()->json($repair);
+        }
+
+        $repair   = Repair::with(['statusHistory', 'customer', 'payments'])
             ->where('tracking_id', $trackingId)
-            ->firstOrFail();
-        return response()->json($repair);
+            ->first();
+        $notFound = $repair === null;
+
+        $shopName    = \App\Models\Setting::getValue('shop_name', 'RepairBox');
+        $shopPhone   = \App\Models\Setting::getValue('shop_phone', '');
+        $shopEmail   = \App\Models\Setting::getValue('shop_email', '');
+        $shopSlogan  = \App\Models\Setting::getValue('shop_slogan', 'Your Trusted Mobile Partner');
+        $shopIcon    = \App\Models\Setting::getValue('shop_icon', '');
+
+        return view('public.track', compact('repair', 'notFound', 'shopName', 'shopPhone', 'shopEmail', 'shopSlogan', 'shopIcon'));
     }
 
     public function print(Repair $repair)

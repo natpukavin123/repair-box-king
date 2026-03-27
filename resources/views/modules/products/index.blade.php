@@ -222,9 +222,9 @@ function productsPage() {
         async load() {
             this.loading = true;
             const [pr, cats, brs] = await Promise.all([
-                RepairBox.ajax('/products?search=' + encodeURIComponent(this.search)),
-                RepairBox.ajax('/categories'),
-                RepairBox.ajax('/brands'),
+                RepairBox.ajax('/admin/products?search=' + encodeURIComponent(this.search)),
+                RepairBox.ajax('/admin/categories'),
+                RepairBox.ajax('/admin/brands'),
             ]);
             if (pr.data) this.items = pr.data;
             if (cats.data) this.categories = cats.data;

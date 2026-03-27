@@ -23,7 +23,7 @@
 
 <div x-data="customersPage()" x-init="init()" class="workspace-screen customers-workspace">
     <x-ui.action-bar title="Customer Desk" description="Search, open, and update customers without leaving the page.">
-        <a href="/customers/create" class="btn-primary inline-flex w-full items-center justify-center sm:w-auto"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add Customer</a>
+        <a href="/admin/customers/create" class="btn-primary inline-flex w-full items-center justify-center sm:w-auto"><svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> Add Customer</a>
     </x-ui.action-bar>
 
     <x-ui.filter-bar>
@@ -147,7 +147,7 @@ function customersPage() {
         },
         async load() {
             this.loading = true;
-            const url = this.search ? `/customers?search=${encodeURIComponent(this.search)}` : '/customers';
+            const url = this.search ? `/customers?search=${encodeURIComponent(this.search)}` : '/admin/customers';
             const r = await RepairBox.ajax(url); if(r.data) this.items = r.data;
             this.updateUrl();
             this.loading = false;

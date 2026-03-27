@@ -9,7 +9,7 @@
             <h2 class="text-2xl font-bold text-slate-900">Create New Repair</h2>
             <p class="mt-1 text-sm text-slate-500">Fill only the needed details first. Optional details can be added in the last step.</p>
         </div>
-        <a href="/repairs" class="btn-secondary inline-flex w-full items-center justify-center gap-1.5 text-sm sm:w-auto">
+        <a href="/admin/repairs" class="btn-secondary inline-flex w-full items-center justify-center gap-1.5 text-sm sm:w-auto">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
             </svg>
@@ -206,7 +206,7 @@
             <div class="border-t border-slate-200 bg-white px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <button type="button" @click="previousStep()" class="btn-secondary w-full sm:w-auto" :disabled="currentStep === 1">Previous</button>
             <div class="flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
-                <a href="/repairs" class="btn-secondary w-full sm:w-auto text-center">Cancel</a>
+                <a href="/admin/repairs" class="btn-secondary w-full sm:w-auto text-center">Cancel</a>
                 <button type="button" x-show="currentStep < steps.length" @click="nextStep()" class="btn-primary w-full sm:w-auto">Continue</button>
                 <button type="button" x-show="currentStep === steps.length" @click="save()" :disabled="saving" class="btn-primary w-full sm:w-auto inline-flex items-center justify-center gap-2">
                     <span x-show="saving" class="spinner"></span>
@@ -369,7 +369,7 @@ function createRepairPage() {
             page = page || 1;
             if (page === 1) this.custPage = 1;
             this.custLoading = true;
-            const r = await RepairBox.ajax('/customers-search?page=' + page + '&q=' + encodeURIComponent(this.custSearch || ''));
+            const r = await RepairBox.ajax('/admin/customers-search?page=' + page + '&q=' + encodeURIComponent(this.custSearch || ''));
             this.custLoading = false;
             const rows = Array.isArray(r.data) ? r.data : [];
             this.custResults = page === 1 ? rows : this.custResults.concat(rows);
@@ -410,7 +410,7 @@ function createRepairPage() {
             }
 
             this.customerSaving = true;
-            const r = await RepairBox.ajax('/customers', 'POST', validation.payload);
+            const r = await RepairBox.ajax('/admin/customers', 'POST', validation.payload);
             this.customerSaving = false;
 
             if (r.success !== false && r.data) {
@@ -431,12 +431,12 @@ function createRepairPage() {
             if (!this.form.problem_description.trim()) { RepairBox.toast('Problem description is required', 'error'); this.currentStep = 2; return; }
 
             this.saving = true;
-            const r = await RepairBox.ajax('/repairs', 'POST', this.form);
+            const r = await RepairBox.ajax('/admin/repairs', 'POST', this.form);
             this.saving = false;
 
             if (r.success !== false) {
                 RepairBox.toast('Repair created: ' + r.data.ticket_number, 'success');
-                window.location.href = '/repairs/' + r.data.id;
+                window.location.href = '/admin/repairs/' + r.data.id;
             }
         }
     };

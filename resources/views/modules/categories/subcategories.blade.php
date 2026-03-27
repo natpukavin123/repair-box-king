@@ -121,7 +121,7 @@ function categorySubcategoriesPage() {
         async save() {
             if (!this.form.name.trim()) return RepairBox.toast('Name is required', 'error');
             this.saving = true;
-            let url = this.editing ? `/subcategories/${this.editing}` : '/subcategories';
+            let url = this.editing ? `/subcategories/${this.editing}` : '/admin/subcategories';
             let method = this.editing ? 'PUT' : 'POST';
             const r = await RepairBox.ajax(url, method, this.form);
             this.saving = false;

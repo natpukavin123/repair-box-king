@@ -1347,7 +1347,7 @@
                             <td><span class="badge badge-success" x-text="b.status"></span></td>
                             <td x-text="new Date(b.created_at).toLocaleString()"></td>
                             <td>
-                                <a :href="'/backups/' + b.id + '/download'" class="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-800 transition-colors" title="Download Backup">
+                                <a :href="'/admin/backups/' + b.id + '/download'" class="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-800 transition-colors" title="Download Backup">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                     Download
                                 </a>
@@ -1631,7 +1631,7 @@ function settingsPage() {
         init() {
             const p = new URLSearchParams(window.location.search);
             if (p.get('tab') === 'service-types') {
-                window.location.href = '/service-types';
+                window.location.href = '/admin/service-types';
                 return;
             }
             if (p.get('tab') === 'recharge-providers') {
@@ -1649,9 +1649,9 @@ function settingsPage() {
         },
         async load() {
             const [s, et, b] = await Promise.all([
-                RepairBox.ajax('/settings'),
-                RepairBox.ajax('/email-templates'),
-                RepairBox.ajax('/backups')
+                RepairBox.ajax('/admin/settings'),
+                RepairBox.ajax('/admin/email-templates'),
+                RepairBox.ajax('/admin/backups')
             ]);
             if (s.data) this.settings = { ui_theme: 'atelier', ui_motion: 'enhanced', ...s.data };
             else this.settings = { ui_theme: 'atelier', ui_motion: 'enhanced' };
@@ -1662,7 +1662,7 @@ function settingsPage() {
         loadNotifications() {
             // already loaded in load() — just ensure email templates are present
             if (this.emailTemplates.length === 0) {
-                RepairBox.ajax('/email-templates').then(r => { if(r.data) this.emailTemplates = r.data; });
+                RepairBox.ajax('/admin/email-templates').then(r => { if(r.data) this.emailTemplates = r.data; });
             }
         },
         async saveNotificationSettings() {
@@ -1676,7 +1676,7 @@ function settingsPage() {
                     if (this.settings[k] !== undefined && this.settings[k] !== null)
                         formData.append('settings['+k+']', this.settings[k]);
                 });
-                const r = await fetch('/settings', {
+                const r = await fetch('/admin/settings', {
                     method: 'POST',
                     headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
                     body: formData
@@ -1690,7 +1690,7 @@ function settingsPage() {
         async sendTestNotification() {
             if (!this.testTicket.trim()) { RepairBox.toast('Enter a ticket number', 'warning'); return; }
             this.saving = true; this.testResult = null;
-            const r = await RepairBox.ajax('/notifications/test', 'POST', { ticket: this.testTicket, type: this.testType, channel: this.testChannel });
+            const r = await RepairBox.ajax('/admin/notifications/test', 'POST', { ticket: this.testTicket, type: this.testType, channel: this.testChannel });
             this.saving = false;
             this.testResult = { success: r.success !== false, message: r.message || (r.success !== false ? 'Sent successfully!' : 'Failed to send.') };
         },
@@ -1759,7 +1759,7 @@ function settingsPage() {
             formData.append('file', this.importFile);
 
             try {
-                const response = await fetch('/import/validate', {
+                const response = await fetch('/admin/import/validate', {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -1791,7 +1791,7 @@ function settingsPage() {
         async confirmImport() {
             this.importConfirming = true;
             try {
-                const r = await RepairBox.ajax('/import/confirm', 'POST');
+                const r = await RepairBox.ajax('/admin/import/confirm', 'POST');
                 this.importConfirming = false;
                 const msg = r.message || (r.data && r.data.message);
 
@@ -1836,7 +1836,7 @@ function settingsPage() {
                     formData.append('shop_icon', this.iconFile);
                 }
 
-                const response = await fetch('/settings', {
+                const response = await fetch('/admin/settings', {
                     method: 'POST',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -1873,26 +1873,26 @@ function settingsPage() {
         async saveEmailTemplate() {
             this.saving = true;
             const r = await RepairBox.ajax(`/email-templates/${this.etEditing.id}`, 'PUT', this.etForm);
-            this.saving = false; if(r.success !== false) { RepairBox.toast('Saved', 'success'); this.showEtModal = false; const et = await RepairBox.ajax('/email-templates'); if(et.data) this.emailTemplates = et.data; }
+            this.saving = false; if(r.success !== false) { RepairBox.toast('Saved', 'success'); this.showEtModal = false; const et = await RepairBox.ajax('/admin/email-templates'); if(et.data) this.emailTemplates = et.data; }
         },
         async createBackup() {
             this.saving = true;
-            const r = await RepairBox.ajax('/backups', 'POST');
-            this.saving = false; if(r.success !== false) { RepairBox.toast('Backup created', 'success'); const b = await RepairBox.ajax('/backups'); if(b.data) this.backups = b.data; }
+            const r = await RepairBox.ajax('/admin/backups', 'POST');
+            this.saving = false; if(r.success !== false) { RepairBox.toast('Backup created', 'success'); const b = await RepairBox.ajax('/admin/backups'); if(b.data) this.backups = b.data; }
         }
     };
 }
 function masterDataPanel() {
     const sectionConfig = {
-        vendors:    { label: 'Vendor Management', singular: 'Vendor',   url: '/vendors',    deleteUrl: null },
-        inventory:  { label: 'Inventory',         singular: 'Stock Adjustment', url: '/inventory', deleteUrl: null },
-        brands:     { label: 'Brands',            singular: 'Brand',    url: '/brands',     deleteUrl: '/brands' },
-        categories: { label: 'Categories',        singular: 'Category', url: '/categories', deleteUrl: '/categories' },
-        parts:      { label: 'Parts',             singular: 'Part',     url: '/parts',      deleteUrl: '/parts' },
-        products:   { label: 'Products',          singular: 'Product',  url: '/products',   deleteUrl: '/products' },
-        customers:  { label: 'Customers',         singular: 'Customer', url: '/customers',  deleteUrl: '/customers' },
-        'recharge-providers': { label: 'Recharge Providers', singular: 'Provider', url: '/recharge-providers', deleteUrl: '/recharge-providers' },
-        services:  { label: 'Services', singular: 'Service', url: '/service-types', deleteUrl: '/service-types' },
+        vendors:    { label: 'Vendor Management', singular: 'Vendor',   url: '/admin/vendors',    deleteUrl: null },
+        inventory:  { label: 'Inventory',         singular: 'Stock Adjustment', url: '/admin/inventory', deleteUrl: null },
+        brands:     { label: 'Brands',            singular: 'Brand',    url: '/admin/brands',     deleteUrl: '/admin/brands' },
+        categories: { label: 'Categories',        singular: 'Category', url: '/admin/categories', deleteUrl: '/admin/categories' },
+        parts:      { label: 'Parts',             singular: 'Part',     url: '/admin/parts',      deleteUrl: '/admin/parts' },
+        products:   { label: 'Products',          singular: 'Product',  url: '/admin/products',   deleteUrl: '/admin/products' },
+        customers:  { label: 'Customers',         singular: 'Customer', url: '/admin/customers',  deleteUrl: '/admin/customers' },
+        'recharge-providers': { label: 'Recharge Providers', singular: 'Provider', url: '/admin/recharge-providers', deleteUrl: '/admin/recharge-providers' },
+        services:  { label: 'Services', singular: 'Service', url: '/admin/service-types', deleteUrl: '/admin/service-types' },
     };
 
     return {
@@ -1988,15 +1988,15 @@ function masterDataPanel() {
 
         async loadDropdowns() {
             const [cats, brands] = await Promise.all([
-                RepairBox.ajax('/categories'),
-                RepairBox.ajax('/brands')
+                RepairBox.ajax('/admin/categories'),
+                RepairBox.ajax('/admin/brands')
             ]);
             this.mdCategories = Array.isArray(cats) ? cats : (cats.data || []);
             this.mdBrands = Array.isArray(brands) ? brands : (brands.data || []);
         },
 
         async loadProducts() {
-            const r = await RepairBox.ajax('/products');
+            const r = await RepairBox.ajax('/admin/products');
             this.mdProducts = Array.isArray(r) ? r : (r.data || []);
         },
 
@@ -2012,7 +2012,7 @@ function masterDataPanel() {
             const cfg = sectionConfig[this.mdSection];
 
             if (this.mdSection === 'inventory') {
-                const r = await RepairBox.ajax('/inventory/adjust', 'POST', this.mdForm);
+                const r = await RepairBox.ajax('/admin/inventory/adjust', 'POST', this.mdForm);
                 this.mdSaving = false;
                 if (r.success !== false) {
                     RepairBox.toast('Stock adjusted', 'success');

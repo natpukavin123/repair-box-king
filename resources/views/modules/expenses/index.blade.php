@@ -583,11 +583,11 @@ function categoryAutocomplete(formKey) {
         async createAndSelect() {
             const name = this.search.trim();
             if (!name) return;
-            const r = await RepairBox.ajax('/expenses/categories', 'POST', { name });
+            const r = await RepairBox.ajax('/admin/expenses/categories', 'POST', { name });
             if (r.success !== false) {
                 RepairBox.toast('Category created', 'success');
                 // Reload categories
-                const c = await RepairBox.ajax('/expenses/categories');
+                const c = await RepairBox.ajax('/admin/expenses/categories');
                 this.categories = Array.isArray(c) ? c : (c.data || []);
                 // Find the newly created category and select it
                 const newCat = this.categories.find(cat => cat.name.toLowerCase() === name.toLowerCase());
@@ -649,8 +649,8 @@ function expensesPage() {
             if (this.filter.search) params.set('search', this.filter.search);
             const qs = params.toString() ? '?' + params.toString() : '';
             const [r, c] = await Promise.all([
-                RepairBox.ajax('/expenses' + qs),
-                RepairBox.ajax('/expenses/categories')
+                RepairBox.ajax('/admin/expenses' + qs),
+                RepairBox.ajax('/admin/expenses/categories')
             ]);
             if (r.data) this.items = r.data;
             if (Array.isArray(c)) this.categories = c;
@@ -660,7 +660,7 @@ function expensesPage() {
         },
 
         async loadCategories() {
-            const c = await RepairBox.ajax('/expenses/categories');
+            const c = await RepairBox.ajax('/admin/expenses/categories');
             if (Array.isArray(c)) this.catList = c;
             else if (c.data) this.catList = c.data;
         },
@@ -670,7 +670,7 @@ function expensesPage() {
             if (!this.form.amount || parseFloat(this.form.amount) <= 0) { RepairBox.toast('Enter a valid amount', 'error'); return; }
             if (!this.form.expense_date) { RepairBox.toast('Please select a date', 'error'); return; }
             this.saving = true;
-            const r = await RepairBox.ajax('/expenses', 'POST', this.form);
+            const r = await RepairBox.ajax('/admin/expenses', 'POST', this.form);
             this.saving = false;
             if (r.success !== false) {
                 RepairBox.toast('Expense recorded', 'success');
@@ -706,7 +706,7 @@ function expensesPage() {
 
         async saveCat() {
             if (!this.catForm.name.trim()) return;
-            const r = await RepairBox.ajax('/expenses/categories', 'POST', this.catForm);
+            const r = await RepairBox.ajax('/admin/expenses/categories', 'POST', this.catForm);
             if (r.success !== false) {
                 RepairBox.toast('Category added', 'success');
                 this.catForm = { name: '' };

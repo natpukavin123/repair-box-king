@@ -7,9 +7,9 @@
     <!-- Breadcrumb -->
     <div class="mb-5">
         <div class="flex items-center gap-2 text-sm mb-2">
-            <a href="/repairs" class="text-primary-600 hover:text-primary-800">Repairs</a>
+            <a href="/admin/repairs" class="text-primary-600 hover:text-primary-800">Repairs</a>
             <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            <a href="/repairs/{{ $repair->id }}" class="text-primary-600 hover:text-primary-800">{{ $repair->ticket_number }}</a>
+            <a href="/admin/repairs/{{ $repair->id }}" class="text-primary-600 hover:text-primary-800">{{ $repair->ticket_number }}</a>
             <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             <span class="text-gray-500">Return {{ $return->return_number }}</span>
         </div>
@@ -26,7 +26,7 @@
                 <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold {{ $statusClass }}">{{ ucfirst($return->status) }}</span>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-                <a href="/repairs/{{ $repair->id }}/returns/{{ $return->id }}/invoice" target="_blank" class="btn-secondary text-sm inline-flex items-center gap-1.5">
+                <a href="/admin/repairs/{{ $repair->id }}/returns/{{ $return->id }}/invoice" target="_blank" class="btn-secondary text-sm inline-flex items-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                     Print Return
                 </a>
@@ -48,12 +48,12 @@
                     $hasReturnableItems = $hasReturnableParts || $hasReturnableServices;
                 @endphp
                 @if($hasReturnableItems)
-                <a href="/repairs/{{ $repair->id }}/returns/create" class="btn-secondary text-sm inline-flex items-center gap-1.5 !border-orange-300 !text-orange-700 hover:!bg-orange-50">
+                <a href="/admin/repairs/{{ $repair->id }}/returns/create" class="btn-secondary text-sm inline-flex items-center gap-1.5 !border-orange-300 !text-orange-700 hover:!bg-orange-50">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
                     Return More Items
                 </a>
                 @endif
-                <a href="/repairs/{{ $repair->id }}" class="btn-secondary text-sm inline-flex items-center gap-1.5">
+                <a href="/admin/repairs/{{ $repair->id }}" class="btn-secondary text-sm inline-flex items-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                     Back to Repair
                 </a>
@@ -103,7 +103,7 @@
             <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Return Details</h3>
             <div class="space-y-2 text-sm">
                 <div class="flex justify-between"><span class="text-gray-500">Return #</span><span class="font-medium">{{ $return->return_number }}</span></div>
-                <div class="flex justify-between"><span class="text-gray-500">Repair #</span><a href="/repairs/{{ $repair->id }}" class="font-medium text-primary-600">{{ $repair->ticket_number }}</a></div>
+                <div class="flex justify-between"><span class="text-gray-500">Repair #</span><a href="/admin/repairs/{{ $repair->id }}" class="font-medium text-primary-600">{{ $repair->ticket_number }}</a></div>
                 <div class="flex justify-between"><span class="text-gray-500">Customer</span><span class="font-medium">{{ $return->customer?->name ?? 'Walk-in' }}</span></div>
                 <div class="flex justify-between"><span class="text-gray-500">Device</span><span class="font-medium">{{ $repair->device_brand }} {{ $repair->device_model }}</span></div>
                 <div class="flex justify-between"><span class="text-gray-500">Created</span><span class="font-medium">{{ $return->created_at->format('d M Y, h:i A') }}</span></div>

@@ -40,9 +40,9 @@ function createBrandPage() {
         form: { name: '', logo_url: '' },
         async save() {
             this.saving = true;
-            const r = await RepairBox.ajax('/brands', 'POST', this.form);
+            const r = await RepairBox.ajax('/admin/brands', 'POST', this.form);
             this.saving = false;
-            if (r.success !== false) { RepairBox.toast('Brand created', 'success'); window.location.href = '/brands'; }
+            if (r.success !== false) { RepairBox.toast('Brand created', 'success'); window.location.href = '/admin/brands'; }
         }
     };
 }

@@ -144,9 +144,9 @@ function inventoryPage() {
 
         async load() {
             this.loading = true;
-            let url = '/inventory';
+            let url = '/admin/inventory';
             if (this.search) url += '?search=' + encodeURIComponent(this.search);
-            const [r, p] = await Promise.all([RepairBox.ajax(url), RepairBox.ajax('/products')]);
+            const [r, p] = await Promise.all([RepairBox.ajax(url), RepairBox.ajax('/admin/products')]);
             if(r.data) this.items = r.data; if(p.data) this.products = p.data;
             this.updateUrl();
             this.loading = false;
@@ -164,7 +164,7 @@ function inventoryPage() {
         async adjust() {
             this.saving = true;
             const payload = { product_id: this.adjustForm.product_id, adjustment_type: this.adjustForm.adjustment_type, quantity: this.adjustForm.quantity, reason: this.adjustForm.reason };
-            const r = await RepairBox.ajax('/inventory/adjust', 'POST', payload);
+            const r = await RepairBox.ajax('/admin/inventory/adjust', 'POST', payload);
             this.saving = false;
             if (r.success !== false) { RepairBox.toast('Stock adjusted', 'success'); this.showAdjust = false; this.load(); }
         },
@@ -173,7 +173,7 @@ function inventoryPage() {
             this.historyProduct = item.product ? item.product.name : 'Unknown';
             this.historyItems = [];
             this.showHistory = true;
-            const r = await RepairBox.ajax('/inventory/adjustments?product_id=' + item.product_id);
+            const r = await RepairBox.ajax('/admin/inventory/adjustments?product_id=' + item.product_id);
             if (r.data) this.historyItems = r.data;
         }
     };

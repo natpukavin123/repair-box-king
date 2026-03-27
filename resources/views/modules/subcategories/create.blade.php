@@ -48,9 +48,9 @@ function createSubcategoryPage() {
         form: { name: '', category_id: '' },
         async save() {
             this.saving = true;
-            const r = await RepairBox.ajax('/subcategories', 'POST', this.form);
+            const r = await RepairBox.ajax('/admin/subcategories', 'POST', this.form);
             this.saving = false;
-            if (r.success !== false) { RepairBox.toast('Subcategory created', 'success'); window.location.href = '/subcategories'; }
+            if (r.success !== false) { RepairBox.toast('Subcategory created', 'success'); window.location.href = '/admin/subcategories'; }
         }
     };
 }

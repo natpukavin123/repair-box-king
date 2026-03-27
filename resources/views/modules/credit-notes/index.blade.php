@@ -50,7 +50,7 @@
                 </thead>
                 <tbody>
                     <template x-for="cn in items" :key="cn.id">
-                        <tr class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" @click="window.location.href = '/credit-notes/' + cn.id">
+                        <tr class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" @click="window.location.href = '/admin/credit-notes/' + cn.id">
                             <td class="px-4 py-3">
                                 <span class="font-semibold text-primary-600" x-text="cn.credit_note_number"></span>
                             </td>
@@ -72,7 +72,7 @@
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-500" x-text="new Date(cn.created_at).toLocaleDateString('en-IN')"></td>
                             <td class="px-4 py-3 text-center">
-                                <a :href="'/credit-notes/' + cn.id" class="text-primary-600 hover:text-primary-800 text-sm font-medium" @click.stop>View</a>
+                                <a :href="'/admin/credit-notes/' + cn.id" class="text-primary-600 hover:text-primary-800 text-sm font-medium" @click.stop>View</a>
                             </td>
                         </tr>
                     </template>
@@ -116,7 +116,7 @@ function creditNotesPage() {
                 page: this.pagination.currentPage,
                 ...Object.fromEntries(Object.entries(this.filters).filter(([,v]) => v))
             });
-            const r = await RepairBox.ajax('/credit-notes?' + params);
+            const r = await RepairBox.ajax('/admin/credit-notes?' + params);
             if (r.data) {
                 this.items = r.data.data || r.data;
                 this.pagination.currentPage = r.data.current_page || 1;

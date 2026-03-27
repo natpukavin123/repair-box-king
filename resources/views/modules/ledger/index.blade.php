@@ -62,7 +62,7 @@ function ledgerPage() {
         items: [], summary: {}, loading: true,
         async load() {
             this.loading = true;
-            const [r, s] = await Promise.all([RepairBox.ajax('/ledger'), RepairBox.ajax('/ledger/summary')]);
+            const [r, s] = await Promise.all([RepairBox.ajax('/admin/ledger'), RepairBox.ajax('/admin/ledger/summary')]);
             if(r.data) this.items = r.data; if(s.data) this.summary = s.data;
             this.loading = false;
         }

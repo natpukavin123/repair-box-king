@@ -69,7 +69,7 @@
 
     <!-- ===== BREADCRUMB & HEADER ===== -->
     <div class="mb-5">
-        <a href="/repairs" class="text-sm text-primary-600 hover:text-primary-800 inline-flex items-center gap-1 mb-2">
+        <a href="/admin/repairs" class="text-sm text-primary-600 hover:text-primary-800 inline-flex items-center gap-1 mb-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
             Back to Repairs
         </a>
@@ -92,11 +92,11 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                     Edit Intake
                 </button>
-                <a :href="'/repairs/' + repair.id + '/print'" target="_blank" class="btn-secondary text-sm inline-flex items-center gap-1.5">
+                <a :href="'/admin/repairs/' + repair.id + '/print'" target="_blank" class="btn-secondary text-sm inline-flex items-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                     Print
                 </a>
-                <a x-show="repair.is_fully_paid" :href="'/repairs/' + repair.id + '/invoice'" target="_blank" class="btn-primary text-sm inline-flex items-center gap-1.5">
+                <a x-show="repair.is_fully_paid" :href="'/admin/repairs/' + repair.id + '/invoice'" target="_blank" class="btn-primary text-sm inline-flex items-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                     Invoice
                 </a>
@@ -188,7 +188,7 @@
                             <p class="text-sm text-green-600">This repair is complete and payment is settled.</p>
                         </div>
                     </div>
-                    <a :href="'/repairs/' + repair.id + '/invoice'" target="_blank" class="btn-primary !bg-green-600 hover:!bg-green-700 !border-0 shadow-sm inline-flex items-center gap-2 text-sm px-4 py-2 whitespace-nowrap">
+                    <a :href="'/admin/repairs/' + repair.id + '/invoice'" target="_blank" class="btn-primary !bg-green-600 hover:!bg-green-700 !border-0 shadow-sm inline-flex items-center gap-2 text-sm px-4 py-2 whitespace-nowrap">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         Download Invoice
                     </a>
@@ -680,7 +680,7 @@
                         <!-- Admin Actions -->
                         <div x-show="repair.is_fully_paid && repair.has_returnable_items" class="border-t border-gray-200 pt-3">
                             <label class="text-xs font-bold text-gray-600 uppercase block mb-2.5">Actions</label>
-                            <a :href="'/repairs/' + repair.id + '/returns/create'" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200 transition">
+                            <a :href="'/admin/repairs/' + repair.id + '/returns/create'" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200 transition">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
                                 <span>Return Items</span>
                             </a>
@@ -849,7 +849,7 @@
                     <div class="bg-gray-50 px-4 py-3 border-b"><h3 class="font-semibold text-sm text-gray-600">Related Repairs</h3></div>
                     <div class="p-3">
                         <template x-for="child in repair.child_repairs" :key="child.id">
-                            <a :href="'/repairs/' + child.id" class="flex items-center justify-between py-2.5 border-b last:border-0 text-sm hover:bg-gray-50 rounded px-2 -mx-2 transition">
+                            <a :href="'/admin/repairs/' + child.id" class="flex items-center justify-between py-2.5 border-b last:border-0 text-sm hover:bg-gray-50 rounded px-2 -mx-2 transition">
                                 <div class="flex items-center gap-2">
                                     <span class="font-medium text-primary-600" x-text="child.ticket_number"></span>
                                     <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-blue-100 text-blue-600" x-text="child.record_type"></span>
@@ -878,7 +878,7 @@
                     </div>
                     <div class="p-3">
                         <template x-for="ret in repair.repair_returns" :key="ret.id">
-                            <a :href="'/repairs/' + repair.id + '/returns/' + ret.id" class="flex items-center justify-between py-2.5 border-b last:border-0 text-sm hover:bg-gray-50 rounded px-2 -mx-2 transition">
+                            <a :href="'/admin/repairs/' + repair.id + '/returns/' + ret.id" class="flex items-center justify-between py-2.5 border-b last:border-0 text-sm hover:bg-gray-50 rounded px-2 -mx-2 transition">
                                 <div class="flex items-center gap-2">
                                     <span class="font-medium text-orange-600" x-text="ret.return_number"></span>
                                     <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded"
@@ -1227,7 +1227,7 @@ function repairDetail() {
 
         // Reload repair data from server
         async reload() {
-            const r = await RepairBox.ajax('/repairs/' + this.repair.id);
+            const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id);
             if (r.data) {
                 this.repair = r.data;
                 this.serviceChargeInput = this.repair.service_charge || '';
@@ -1263,7 +1263,7 @@ function repairDetail() {
             page = page || 1;
             if (page === 1) this.editCustPage = 1;
             this.editCustLoading = true;
-            const r = await RepairBox.ajax('/customers-search?page=' + page + '&q=' + encodeURIComponent(this.editCustSearch || ''));
+            const r = await RepairBox.ajax('/admin/customers-search?page=' + page + '&q=' + encodeURIComponent(this.editCustSearch || ''));
             this.editCustLoading = false;
             const rows = Array.isArray(r.data) ? r.data : [];
             this.editCustResults = page === 1 ? rows : this.editCustResults.concat(rows);
@@ -1294,7 +1294,7 @@ function repairDetail() {
             if (!this.editForm.problem_description) { RepairBox.toast('Problem description is required', 'error'); return; }
 
             this.savingEdit = true;
-            const r = await RepairBox.ajax('/repairs/' + this.repair.id, 'PUT', this.editForm);
+            const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id, 'PUT', this.editForm);
             this.savingEdit = false;
 
             if (r.success !== false) {
@@ -1344,7 +1344,7 @@ function repairDetail() {
             if (!status) return;
             if (status === 'cancelled' && !this.statusForm.cancel_reason) { RepairBox.toast('Please provide a cancellation reason', 'error'); return; }
             this.statusForm.status = status;
-            const r = await RepairBox.ajax('/repairs/' + this.repair.id + '/status', 'PUT', this.statusForm);
+            const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/status', 'PUT', this.statusForm);
             if (r.success !== false) {
                 RepairBox.toast('Status updated to ' + this.statusLabel(status), 'success');
                 this.pendingTransition = null;
@@ -1352,7 +1352,7 @@ function repairDetail() {
             }
         },
         async confirmCompleted() {
-            const r = await RepairBox.ajax('/repairs/' + this.repair.id + '/status', 'PUT', { status: 'completed', notes: this.statusForm.notes || 'Repair completed', confirm: true });
+            const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/status', 'PUT', { status: 'completed', notes: this.statusForm.notes || 'Repair completed', confirm: true });
             if (r.success !== false) {
                 RepairBox.toast('Repair marked as completed', 'success');
                 this.showCompletedConfirm = false;
@@ -1365,7 +1365,7 @@ function repairDetail() {
             page = page || 1;
             if (page === 1) { this.partResults = []; this.partPage = 1; }
             this.partLoading = true;
-            const r = await RepairBox.ajax('/parts-search?q=' + encodeURIComponent(this.partSearch || '') + '&page=' + page);
+            const r = await RepairBox.ajax('/admin/parts-search?q=' + encodeURIComponent(this.partSearch || '') + '&page=' + page);
             this.partLoading = false;
             if (r.data) {
                 this.partResults = page === 1 ? r.data : this.partResults.concat(r.data);
@@ -1389,7 +1389,7 @@ function repairDetail() {
         },
         async addPart() {
             if (!this.partForm.part_id) { RepairBox.toast('Please search & select a part', 'error'); return; }
-            const r = await RepairBox.ajax('/repairs/' + this.repair.id + '/parts', 'POST', { part_id: this.partForm.part_id, quantity: this.partForm.quantity, cost_price: this.partForm.cost_price });
+            const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/admin/parts', 'POST', { part_id: this.partForm.part_id, quantity: this.partForm.quantity, cost_price: this.partForm.cost_price });
             if (r.success !== false) {
                 RepairBox.toast('Part added', 'success');
                 this.partForm = { part_id: null, _name: '', quantity: 1, cost_price: '' };
@@ -1398,7 +1398,7 @@ function repairDetail() {
         },
         async removePart(partId) {
             if (!confirm('Remove this part?')) return;
-            const r = await RepairBox.ajax('/repairs/' + this.repair.id + '/parts/' + partId, 'DELETE');
+            const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/admin/parts/' + partId, 'DELETE');
             if (r.success !== false) { RepairBox.toast('Part removed', 'success'); await this.reload(); }
         },
 
@@ -1407,7 +1407,7 @@ function repairDetail() {
             page = page || 1;
             if (page === 1) { this.svcTypeResults = []; this.svcTypePage = 1; }
             this.svcTypeLoading = true;
-            const r = await RepairBox.ajax('/service-types-search?q=' + encodeURIComponent(this.svcForm.service_type_name || '') + '&page=' + page);
+            const r = await RepairBox.ajax('/admin/service-types-search?q=' + encodeURIComponent(this.svcForm.service_type_name || '') + '&page=' + page);
             this.svcTypeLoading = false;
             if (r.data) {
                 this.svcTypeResults = page === 1 ? r.data : this.svcTypeResults.concat(r.data);
@@ -1432,7 +1432,7 @@ function repairDetail() {
             page = page || 1;
             if (page === 1) { this.vendorResults = []; this.vendorPage = 1; }
             this.vendorLoading = true;
-            const r = await RepairBox.ajax('/vendors-search?q=' + encodeURIComponent(this.vendorSearch || '') + '&page=' + page);
+            const r = await RepairBox.ajax('/admin/vendors-search?q=' + encodeURIComponent(this.vendorSearch || '') + '&page=' + page);
             this.vendorLoading = false;
             if (r.data) {
                 this.vendorResults = page === 1 ? r.data : this.vendorResults.concat(r.data);
@@ -1456,7 +1456,7 @@ function repairDetail() {
         async addService() {
             if (!this.svcForm.service_type_name) { RepairBox.toast('Please enter a service type', 'error'); return; }
             if (!this.svcForm.customer_charge || Number(this.svcForm.customer_charge) < 0) { RepairBox.toast('Please enter customer charge', 'error'); return; }
-            const r = await RepairBox.ajax('/repairs/' + this.repair.id + '/services', 'POST', {
+            const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/services', 'POST', {
                 service_type_id: this.svcForm.service_type_id,
                 service_type_name: this.svcForm.service_type_name,
                 vendor_id: this.svcForm.vendor_id,
@@ -1473,7 +1473,7 @@ function repairDetail() {
         },
         async removeService(serviceId) {
             if (!confirm('Remove this service?')) return;
-            const r = await RepairBox.ajax('/repairs/' + this.repair.id + '/services/' + serviceId, 'DELETE');
+            const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/services/' + serviceId, 'DELETE');
             if (r.success !== false) { RepairBox.toast('Service removed', 'success'); await this.reload(); }
         },
 
@@ -1481,14 +1481,14 @@ function repairDetail() {
         // ===== SERVICE CHARGE =====
         async saveServiceCharge() {
             if (this.serviceChargeInput === '' || Number(this.serviceChargeInput) < 0) { RepairBox.toast('Enter valid service charge', 'error'); return; }
-            const r = await RepairBox.ajax('/repairs/' + this.repair.id + '/service-charge', 'PUT', { service_charge: this.serviceChargeInput });
+            const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/service-charge', 'PUT', { service_charge: this.serviceChargeInput });
             if (r.success !== false) { RepairBox.toast('Service charge saved', 'success'); await this.reload(); }
         },
 
         // ===== PAYMENTS =====
         async collectPayment() {
             if (!this.payForm.amount || Number(this.payForm.amount) <= 0) { RepairBox.toast('Enter payment amount', 'error'); return; }
-            const r = await RepairBox.ajax('/repairs/' + this.repair.id + '/payment', 'POST', { payment_type: 'final', payment_method: this.payForm.payment_method, amount: this.payForm.amount });
+            const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/payment', 'POST', { payment_type: 'final', payment_method: this.payForm.payment_method, amount: this.payForm.amount });
             if (r.success !== false) {
                 RepairBox.toast('Payment collected', 'success');
                 this.payForm = { payment_type: 'final', payment_method: 'cash', amount: '' };
@@ -1501,13 +1501,13 @@ function repairDetail() {
         async handleCancel() {
             if (!this.cancelForm.reason) { RepairBox.toast('Please provide a reason', 'error'); return; }
 
-            let endpoint = '/repairs/' + this.repair.id + '/cancel';
+            let endpoint = '/admin/repairs/' + this.repair.id + '/cancel';
             let successMsg = 'Repair cancelled';
             let payload = { reason: this.cancelForm.reason };
 
             // If payment exists, it's a refund flow
             if (this.repair.net_paid > 0) {
-                endpoint = '/repairs/' + this.repair.id + '/cancel-refund';
+                endpoint = '/admin/repairs/' + this.repair.id + '/cancel-refund';
                 successMsg = 'Repair cancelled and refund processed';
                 payload = this.cancelForm; // includes refund_method and parts_action
             }
@@ -1522,10 +1522,10 @@ function repairDetail() {
         // ===== DUPLICATE =====
         async duplicateRepair() {
             if (!confirm('Create a duplicate of this repair?')) return;
-            const r = await RepairBox.ajax('/repairs/' + this.repair.id + '/duplicate', 'POST');
+            const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/duplicate', 'POST');
             if (r.success !== false) {
                 RepairBox.toast('Duplicate created: ' + r.data.ticket_number, 'success');
-                window.location.href = '/repairs/' + r.data.id;
+                window.location.href = '/admin/repairs/' + r.data.id;
             }
         },
 

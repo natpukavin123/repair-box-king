@@ -128,10 +128,10 @@ function subcategoriesPage() {
         },
 
         async load() {
-            let url = '/subcategories?per_page=200';
+            let url = '/admin/subcategories?per_page=200';
             if (this.search) url += '&search=' + encodeURIComponent(this.search);
             if (this.filterCat) url += '&category_id=' + this.filterCat;
-            const [r, c] = await Promise.all([RepairBox.ajax(url), RepairBox.ajax('/categories')]);
+            const [r, c] = await Promise.all([RepairBox.ajax(url), RepairBox.ajax('/admin/categories')]);
             if (r.data) this.items = r.data;
             if (c.data) this.categories = c.data;
             // Auto-open all groups on first load

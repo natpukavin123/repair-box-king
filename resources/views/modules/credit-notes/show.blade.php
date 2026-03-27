@@ -24,10 +24,10 @@
             <p class="text-sm text-gray-500 mt-1">
                 Source:
                 @if($creditNote->source_type === 'invoice')
-                <a href="/invoices" class="text-primary-600 hover:underline">Invoice #{{
+                <a href="/admin/invoices" class="text-primary-600 hover:underline">Invoice #{{
                     $creditNote->sourceInvoice?->invoice_number }}</a>
                 @else
-                <a href="/repairs/{{ $creditNote->source_id }}" class="text-primary-600 hover:underline">Repair #{{
+                <a href="/admin/repairs/{{ $creditNote->source_id }}" class="text-primary-600 hover:underline">Repair #{{
                     $creditNote->sourceRepair?->ticket_number }}</a>
                 @endif
                 &bull; Created {{ $creditNote->created_at->format('d M Y, h:i A') }}
@@ -167,10 +167,10 @@
                                 <p class="text-xs text-gray-500 mt-1">{{ $refund->notes }}</p>
                                 @endif
                                 @if($refund->reference_id && $refund->reference_type === 'repairs')
-                                <a href="/repairs/{{ $refund->reference_id }}"
+                                <a href="/admin/repairs/{{ $refund->reference_id }}"
                                     class="text-xs text-blue-600 hover:underline mt-1 inline-block">→ View Repair</a>
                                 @elseif($refund->reference_id && $refund->reference_type === 'invoices')
-                                <a href="/invoices" class="text-xs text-purple-600 hover:underline mt-1 inline-block">→
+                                <a href="/admin/invoices" class="text-xs text-purple-600 hover:underline mt-1 inline-block">→
                                     View Invoice</a>
                                 @endif
                             </div>
@@ -392,7 +392,7 @@
             async approve() {
                 if (!await RepairBox.confirm('Approve this credit note? This will allow resolutions to be processed.')) return;
                 this.processing = true;
-                const r = await RepairBox.ajax('/credit-notes/{{ $creditNote->id }}/approve', 'POST');
+                const r = await RepairBox.ajax('/admin/credit-notes/{{ $creditNote->id }}/approve', 'POST');
                 this.processing = false;
                 if (r.success !== false) { RepairBox.toast('Credit note approved', 'success'); location.reload(); }
             },
@@ -400,7 +400,7 @@
             async cancel() {
                 if (!await RepairBox.confirm('Cancel this credit note? This action cannot be undone.')) return;
                 this.processing = true;
-                const r = await RepairBox.ajax('/credit-notes/{{ $creditNote->id }}/cancel', 'POST');
+                const r = await RepairBox.ajax('/admin/credit-notes/{{ $creditNote->id }}/cancel', 'POST');
                 this.processing = false;
                 if (r.success !== false) { RepairBox.toast('Credit note cancelled', 'success'); location.reload(); }
             },
@@ -408,14 +408,14 @@
             async processRefund() {
                 if (!await RepairBox.confirm(`Process refund of ₹${this.refundForm.amount}?`)) return;
                 this.processing = true;
-                const r = await RepairBox.ajax('/credit-notes/{{ $creditNote->id }}/refund', 'POST', this.refundForm);
+                const r = await RepairBox.ajax('/admin/credit-notes/{{ $creditNote->id }}/refund', 'POST', this.refundForm);
                 this.processing = false;
                 if (r.success !== false) { RepairBox.toast(r.message || 'Refund processed', 'success'); location.reload(); }
             },
 
             async searchRepairs() {
                 if (this.repairSearch.length < 2) { this.repairResults = []; return; }
-                const r = await RepairBox.ajax('/repairs?search=' + encodeURIComponent(this.repairSearch) + '&per_page=10');
+                const r = await RepairBox.ajax('/admin/repairs?search=' + encodeURIComponent(this.repairSearch) + '&per_page=10');
                 this.repairResults = r.data?.data || r.data || [];
             },
 
@@ -428,7 +428,7 @@
             async applyToRepair() {
                 if (!await RepairBox.confirm(`Apply ₹${this.repairForm.amount} to this repair?`)) return;
                 this.processing = true;
-                const r = await RepairBox.ajax('/credit-notes/{{ $creditNote->id }}/apply-repair', 'POST', this.repairForm);
+                const r = await RepairBox.ajax('/admin/credit-notes/{{ $creditNote->id }}/apply-repair', 'POST', this.repairForm);
                 this.processing = false;
                 if (r.success !== false) {
                     RepairBox.toast(r.message || 'Applied to repair', 'success');
@@ -439,7 +439,7 @@
 
             async searchInvoices() {
                 if (this.invoiceSearch.length < 2) { this.invoiceResults = []; return; }
-                const r = await RepairBox.ajax('/invoices?search=' + encodeURIComponent(this.invoiceSearch) + '&per_page=10');
+                const r = await RepairBox.ajax('/admin/invoices?search=' + encodeURIComponent(this.invoiceSearch) + '&per_page=10');
                 this.invoiceResults = r.data?.data || r.data || [];
             },
 
@@ -452,7 +452,7 @@
             async applyToInvoice() {
                 if (!await RepairBox.confirm(`Apply ₹${this.invoiceForm.amount} to this invoice?`)) return;
                 this.processing = true;
-                const r = await RepairBox.ajax('/credit-notes/{{ $creditNote->id }}/apply-invoice', 'POST', this.invoiceForm);
+                const r = await RepairBox.ajax('/admin/credit-notes/{{ $creditNote->id }}/apply-invoice', 'POST', this.invoiceForm);
                 this.processing = false;
                 if (r.success !== false) { RepairBox.toast(r.message || 'Applied to invoice', 'success'); location.reload(); }
             }

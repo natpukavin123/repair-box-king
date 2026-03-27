@@ -632,7 +632,7 @@ function poPage() {
             page = page || 1;
             if (page === 1) this.custPage = 1;
             this.custLoading = true;
-            const r = await RepairBox.ajax('/customers-search?page=' + page + '&q=' + encodeURIComponent(this.custSearch || ''));
+            const r = await RepairBox.ajax('/admin/customers-search?page=' + page + '&q=' + encodeURIComponent(this.custSearch || ''));
             this.custLoading = false;
             const rows = Array.isArray(r.data) ? r.data : [];
             this.custResults = page === 1 ? rows : this.custResults.concat(rows);
@@ -699,7 +699,7 @@ function poPage() {
             }
 
             this.customerSaving = true;
-            const r = await RepairBox.ajax('/customers', 'POST', validation.payload);
+            const r = await RepairBox.ajax('/admin/customers', 'POST', validation.payload);
             this.customerSaving = false;
 
             if (r.success !== false && r.data) {
@@ -757,7 +757,7 @@ function poPage() {
             if (this.filters.date_from) params.date_from = this.filters.date_from;
             if (this.filters.date_to) params.date_to = this.filters.date_to;
 
-            const r = await RepairBox.ajax('/po', 'GET', params);
+            const r = await RepairBox.ajax('/admin/po', 'GET', params);
             if (r.data) this.items = r.data;
             if (r.meta) { this.lastPage = r.meta.last_page; this.total = r.meta.total; }
             if (r.counts) {
@@ -775,7 +775,7 @@ function poPage() {
                 return RepairBox.toast('Please select or enter a customer', 'error');
             }
             this.saving = true;
-            const r = await RepairBox.ajax('/po', 'POST', { ...this.form });
+            const r = await RepairBox.ajax('/admin/po', 'POST', { ...this.form });
             this.saving = false;
             if (r.success === false) return;
 

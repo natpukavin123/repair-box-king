@@ -100,9 +100,9 @@ function usersPage() {
     return {
         items: [], roles: [], showModal: false, editing: null, saving: false, loading: true,
         form: { name: '', email: '', password: '', password_confirmation: '', role_id: '', status: 'active' },
-        async load() { this.loading = true; const r = await RepairBox.ajax('/users'); if(r.data) this.items = r.data.data || r.data; this.loading = false; },
+        async load() { this.loading = true; const r = await RepairBox.ajax('/admin/users'); if(r.data) this.items = r.data.data || r.data; this.loading = false; },
         async edit(u) {
-            const r = await RepairBox.ajax('/roles'); if(r.data) this.roles = r.data;
+            const r = await RepairBox.ajax('/admin/roles'); if(r.data) this.roles = r.data;
             this.editing = u.id; this.form = { name: u.name, email: u.email, password: '', password_confirmation: '', role_id: u.role_id, status: u.status || 'active' }; this.showModal = true;
         },
         async save() {

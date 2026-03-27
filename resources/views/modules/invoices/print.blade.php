@@ -196,7 +196,7 @@ table.sum-tbl .row-full td{color:#000;font-weight:900;text-align:center;border-b
 
 <div class="toolbar">
     <div class="toolbar-left">
-        <a href="{{ url('/invoices') }}" class="back-btn">
+        <a href="{{ url('/admin/invoices') }}" class="back-btn">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
             Back
         </a>
