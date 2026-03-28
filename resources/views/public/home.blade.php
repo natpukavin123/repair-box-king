@@ -235,7 +235,6 @@ a{text-decoration:none;}
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
                 Track Now
             </a>
-            <a href="/login" class="nav-login">Staff Login</a>
         </div>
         <button class="mobile-menu-btn" onclick="document.getElementById('navMobile').style.display = document.getElementById('navMobile').style.display === 'block' ? 'none' : 'block'">
             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -246,7 +245,6 @@ a{text-decoration:none;}
         <a href="#track" onclick="document.getElementById('navMobile').style.display='none'">Track Repair</a>
         <a href="#contact" onclick="document.getElementById('navMobile').style.display='none'">Contact</a>
         <a href="{{ route('track.landing') }}" style="color:#60a5fa;font-weight:700;">Track Your Repair &rarr;</a>
-        <a href="/login" style="color:#64748b;">Staff Login</a>
     </div>
 </nav>
 
@@ -599,7 +597,6 @@ a{text-decoration:none;}
                     <a href="#services">Our Services</a>
                     <a href="{{ route('track.landing') }}">Track Repair</a>
                     <a href="#contact">Find Us</a>
-                    <a href="/login">Staff Login</a>
                 </div>
             </div>
             <div>
