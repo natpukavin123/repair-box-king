@@ -1382,6 +1382,7 @@
                             <option value="parts">Parts</option>
                             <option value="vendors">Vendors</option>
                             <option value="recharge_providers">Recharge Providers</option>
+                            <option value="service_types">Services</option>
                         </select>
                     </div>
                     <div>
@@ -1603,6 +1604,7 @@ function settingsPage() {
             { type: 'parts', label: 'Parts', columns: ['name', 'sku', 'cost_price', 'selling_price'] },
             { type: 'vendors', label: 'Vendors', columns: ['name', 'phone', 'address', 'specialization'] },
             { type: 'recharge_providers', label: 'Recharge Providers', columns: ['name', 'provider_type', 'commission_percentage'] },
+            { type: 'service_types', label: 'Services', columns: ['name', 'default_price', 'description'] },
         ],
         appearanceThemes: [
             {
@@ -1738,7 +1740,7 @@ function settingsPage() {
             return t ? t.columns.join(', ') : '';
         },
         getUniqueKeyLabel() {
-            const keys = { brands: 'name', categories: 'name', customers: 'mobile_number', products: 'sku', parts: 'sku', vendors: 'name', recharge_providers: 'name' };
+            const keys = { brands: 'name', categories: 'name', customers: 'mobile_number', products: 'sku', parts: 'sku', vendors: 'name', recharge_providers: 'name', service_types: 'name' };
             return keys[this.importType] || '';
         },
         resetImport() {

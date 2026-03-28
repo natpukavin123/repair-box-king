@@ -8,10 +8,29 @@
 
 @section('content')
 <style>
+    @keyframes search-pulse {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.45); }
+        50%       { box-shadow: 0 0 0 6px rgba(99, 102, 241, 0); }
+    }
+    .search-glow {
+        animation: search-pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes search-idle-ring {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.12), inset 0 1px 0 rgba(255,255,255,0.6); }
+        50%       { box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.06), inset 0 1px 0 rgba(255,255,255,0.6); }
+    }
+    .search-idle-ring {
+        animation: search-idle-ring 3s ease-in-out infinite;
+    }
+
     .sales-workspace {
         --sales-panel-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 249, 255, 0.88));
         --sales-panel-border: rgba(148, 163, 184, 0.18);
         --sales-shadow: 0 22px 48px -34px rgba(15, 23, 42, 0.34);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
     }
 
     .sales-workspace .sales-toolbar,
@@ -74,6 +93,11 @@
 
     .sales-workspace .sales-item-card {
         border-radius: 1rem;
+        height: 100%;
+    }
+
+    .sales-workspace .sales-item-grid {
+        grid-auto-rows: 148px;
     }
 
     .sales-workspace .sales-item-card:hover {
@@ -102,6 +126,12 @@
         }
     }
 
+    .pos-main-grid {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+    }
+
     @media (min-width: 1024px) {
         .pos-main-grid {
             grid-template-columns: 3fr 1fr;
@@ -110,15 +140,30 @@
 </style>
 
 <div x-data="posBilling()" x-init="init()" class="sales-workspace h-full">
-    <div class="pos-main-grid grid grid-cols-1 gap-4 h-full" style="max-height: calc(100vh - 80px);">
+    <div class="pos-main-grid grid grid-cols-1 gap-4">
 
         {{-- LEFT: Product / Service Search --}}
-        <div class="flex flex-col">
+        <div class="flex flex-col min-h-0" style="height:100%">
 
             {{-- Search bar + type selector --}}
             <div class="sales-toolbar mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-                <input x-model="searchQuery" @input.debounce.250ms="searchProducts()" type="text"
-                    placeholder="Search by name, SKU, barcode..." class="form-input-custom sales-field flex-1" autofocus>
+                <div class="flex items-center flex-1 gap-0" style="position:relative;">
+                    <span class="pointer-events-none text-gray-400" style="position:absolute; left:0.75rem; top:50%; transform:translateY(-50%); z-index:2; line-height:0;">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </span>
+                    <input x-model="searchQuery" @input.debounce.250ms="searchProducts()" type="text"
+                        placeholder="Search by name, SKU, barcode..."
+                        :class="searchQuery ? 'ring-2 ring-primary-400 border-primary-400 search-glow' : 'search-idle-ring'"
+                        class="form-input-custom sales-field w-full transition-all duration-300"
+                        style="padding-left:2.25rem; padding-right:2.5rem;" autofocus>
+                    <button x-show="searchQuery" x-cloak type="button"
+                        @click="searchQuery = ''; searchProducts()"
+                        class="flex items-center justify-center rounded-full bg-gray-200 hover:bg-red-100 text-gray-500 hover:text-red-500 transition-colors"
+                        style="position:absolute; right:0.625rem; top:50%; transform:translateY(-50%); z-index:10; width:1.5rem; height:1.5rem; flex-shrink:0;"
+                        title="Clear search">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
                 <div class="sales-segmented inline-flex w-full overflow-x-auto sm:w-auto">
                     <button type="button"
                         @click="switchTab('product'); searchProducts()"
@@ -251,9 +296,10 @@
 
             {{-- Product grid --}}
             <div x-show="itemType === 'product'"
-                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2.5 overflow-y-auto flex-1 max-h-[50vh] lg:max-h-[60vh] pb-1 pr-1 content-start auto-rows-max">
+                class="sales-item-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2.5 overflow-y-auto flex-1 min-h-0 pb-1 pr-1 content-start">
                 <template x-for="p in searchResults" :key="p.id">
                     <button @click="addProduct(p)"
+                        :class="searchQuery ? 'ring-2 ring-primary-400 border-primary-300 shadow-md' : ''"
                         class="sales-item-card group relative rounded-lg text-left hover:shadow-lg hover:border-primary-300 transition-all duration-200 overflow-hidden flex flex-col cursor-pointer">
                         <div class="relative w-full overflow-hidden bg-gray-50" style="height:80px">
                             <img x-show="p.thumbnail" :src="'/storage/' + p.thumbnail"
@@ -272,7 +318,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="px-2 py-1.5 flex flex-col gap-0.5 border-t border-gray-50 w-full">
+                        <div class="px-2 py-1.5 flex flex-col gap-0.5 border-t border-gray-50 w-full" style="flex:1; overflow:hidden;">
                             <p class="font-semibold text-[11px] text-gray-800 truncate leading-tight" x-text="p.name"></p>
                             <p class="text-[10px] text-gray-400 truncate leading-none" x-text="p.sku || 'No SKU'"></p>
                             <div class="flex items-center gap-1 mt-0.5 flex-wrap">
@@ -294,11 +340,12 @@
 
             {{-- Service grid --}}
             <div x-show="itemType === 'service'"
-                class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2.5 overflow-y-auto flex-1 max-h-[50vh] lg:max-h-[60vh] pb-1 pr-1 content-start auto-rows-max">
+                class="sales-item-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2.5 overflow-y-auto flex-1 min-h-0 pb-1 pr-1 content-start">
                 <template x-for="s in filteredServices" :key="s.id">
                     <button @click="openServiceModal(s)"
+                        :class="searchQuery ? 'ring-2 ring-indigo-300 border-indigo-300 shadow-md' : ''"
                         class="sales-item-card group relative rounded-lg text-left hover:shadow-lg hover:border-indigo-300 transition-all duration-200 overflow-hidden flex flex-col cursor-pointer">
-                        <div class="relative w-full overflow-hidden" style="height:80px">
+                        <div class="relative w-full overflow-hidden bg-indigo-50" style="height:80px">
                             <img x-show="s.thumbnail" :src="'/storage/' + s.thumbnail"
                                 class="absolute inset-0 w-full h-full object-contain p-1 group-hover:scale-110 transition-transform duration-300">
                             <div x-show="!s.thumbnail" class="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-indigo-50 to-violet-100">
@@ -310,11 +357,13 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="px-2 py-1.5 flex flex-col gap-0.5 border-t border-gray-50">
+                        <div class="px-2 py-1.5 flex flex-col gap-0.5 border-t border-gray-50 w-full" style="flex:1; overflow:hidden;">
                             <p class="font-semibold text-[11px] text-gray-800 truncate leading-tight" x-text="s.name"></p>
-                            <p class="text-[10px] text-gray-400 truncate leading-none" x-text="s.description || ''"></p>
-                            <span class="text-indigo-600 font-bold text-[13px] leading-none mt-0.5"
-                                x-text="'₹' + Number(s.default_price || 0).toLocaleString('en-IN', {minimumFractionDigits:2})"></span>
+                            <p class="text-[10px] text-gray-400 truncate leading-none" x-text="s.description || 'Service'"></p>
+                            <div class="flex items-center gap-1 mt-0.5 flex-wrap">
+                                <span class="text-indigo-600 font-bold text-[13px] leading-none"
+                                    x-text="'₹' + Number(s.default_price || 0).toLocaleString('en-IN', {minimumFractionDigits:2})"></span>
+                            </div>
                         </div>
                     </button>
                 </template>
@@ -348,7 +397,7 @@
         </div>
 
         {{-- RIGHT: Cart & Customer --}}
-        <div class="relative flex flex-col gap-3 order-first lg:order-none overflow-hidden" :style="custOpen ? 'z-index:95;' : 'z-index:10;'">
+        <div class="relative flex flex-col gap-3 order-first lg:order-none overflow-hidden" style="height:100%" :style="custOpen ? 'z-index:95;' : 'z-index:10;'">
 
             {{-- Customer selector --}}
             <div class="card sales-panel relative shrink-0" :style="custOpen ? 'overflow:visible; z-index:110;' : 'overflow:visible; z-index:10;'">

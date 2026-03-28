@@ -16,7 +16,8 @@ class DevToolsController extends Controller
     }
 
     /**
-     * Truncate all transactional tables but preserve master/config data.
+     * Truncate ALL transactional and master data tables.
+     * Preserves: users, roles, permissions, settings, email_templates.
      */
     public function resetData(Request $request)
     {
@@ -25,48 +26,54 @@ class DevToolsController extends Controller
         try {
             DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
-            $transactionalTables = [
-                // Financial transactions
+            $allTables = [
+                // ── Financial transactions ──────────────────────────────
                 'ledger_transactions',
                 'invoice_payments',
                 'invoice_items',
                 'invoices',
-                // Repairs
+                // ── Repairs ─────────────────────────────────────────────
                 'repair_payments',
                 'repair_parts',
                 'repair_services',
                 'repair_status_histories',
                 'repair_returns',
-                // Purchases
+                'repairs',
+                // ── Purchases ───────────────────────────────────────────
                 'purchase_items',
                 'purchases',
-                // Returns & credit notes
+                'po_requests',
+                // ── Returns & credit notes ───────────────────────────────
                 'credit_note_refunds',
                 'credit_notes',
                 'customer_returns',
-                // Services & recharges
+                // ── Services & recharges ─────────────────────────────────
                 'services',
                 'recharges',
-                // Expenses
+                // ── Expenses ─────────────────────────────────────────────
                 'expenses',
-                // Customers, stock & vendors
+                // ── Customers, vendors & stock ───────────────────────────
                 'customers',
                 'vendors',
                 'stock_movements',
                 'inventories',
+                // ── Master data ──────────────────────────────────────────
                 'products',
                 'parts',
-                // Notifications & activity
+                'service_types',
+                'subcategories',
+                'categories',
+                'brands',
+                'recharge_providers',
+                // ── Notifications & activity ─────────────────────────────
                 'notifications',
                 'activity_logs',
                 'reminders',
-                // Repairs (main)
-                'repairs',
-                // Backups
+                // ── Backups ──────────────────────────────────────────────
                 'backup_logs',
             ];
 
-            foreach ($transactionalTables as $table) {
+            foreach ($allTables as $table) {
                 if (Schema::hasTable($table)) {
                     DB::table($table)->truncate();
                     $log[] = ['status' => 'success', 'msg' => "Cleared: {$table}"];
@@ -77,7 +84,7 @@ class DevToolsController extends Controller
 
             DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-            $log[] = ['status' => 'success', 'msg' => '✅ All transactional data cleared. Master data (roles, settings, categories, brands) preserved.'];
+            $log[] = ['status' => 'success', 'msg' => '✅ All data cleared (transactions + master data). Users & settings preserved.'];
 
             return response()->json(['success' => true, 'log' => $log]);
 
@@ -147,13 +154,16 @@ class DevToolsController extends Controller
     private function getTableStats(): array
     {
         $tables = [
-            'customers'   => 'Customers',
-            'invoices'    => 'Invoices',
-            'repairs'     => 'Repairs',
-            'purchases'   => 'Purchases',
-            'expenses'    => 'Expenses',
-            'products'    => 'Products',
-            'parts'       => 'Parts',
+            'customers'     => 'Customers',
+            'invoices'      => 'Invoices',
+            'repairs'       => 'Repairs',
+            'purchases'     => 'Purchases',
+            'expenses'      => 'Expenses',
+            'products'      => 'Products',
+            'parts'         => 'Parts',
+            'categories'    => 'Categories',
+            'brands'        => 'Brands',
+            'service_types' => 'Services',
         ];
 
         $stats = [];

@@ -34,8 +34,8 @@
             <div style="font-size:1.5rem; margin-bottom:0.5rem;">🗑️</div>
             <h3 style="font-size:1rem; font-weight:600; color:#fca5a5; margin-bottom:0.4rem;">Reset Data</h3>
             <p style="font-size:0.825rem; color:#6b7280; line-height:1.5; margin-bottom:1.25rem;">
-                Truncates all transactional tables: invoices, repairs, purchases, customers, expenses, ledger, etc.<br>
-                <strong style="color:#9ca3af;">Master data (roles, settings, categories, brands) is preserved.</strong>
+                Truncates <strong style="color:#fca5a5;">all tables</strong> — invoices, repairs, purchases, customers, expenses, ledger <em>and</em> all master data (brands, categories, service types, products, parts, etc.).<br>
+                <strong style="color:#9ca3af;">Only users & app settings are preserved.</strong>
             </p>
             <button class="dev-btn dev-btn-danger" onclick="runAction('reset', this)">
                 ⚠️ Reset All Data
@@ -146,7 +146,7 @@ async function runAction(action, btn) {
     }
 
     try {
-        const res  = await fetch(`/dev-tools/${action}`, {
+        const res  = await fetch(`/admin/dev-tools/${action}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
