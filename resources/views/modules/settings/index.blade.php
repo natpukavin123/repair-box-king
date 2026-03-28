@@ -657,7 +657,7 @@
                                             <p class="text-[10px] text-gray-400">Click or drag & drop</p>
                                         </div>
                                     </template>
-                                    <input x-ref="mdImageInput" type="file" accept="image/*" class="hidden" @change="mdHandlePick($event)">
+                                    <input x-ref="mdImageInput" type="file" accept="image/*" class="hidden" @change="mdHandlePick($event)" @click.stop>
                                 </div>
                             </div>
 
@@ -692,7 +692,7 @@
                                             <p class="text-[10px] text-gray-400">Click or drag & drop</p>
                                         </div>
                                     </template>
-                                    <input x-ref="mdImageInput" type="file" accept="image/*" class="hidden" @change="mdHandlePick($event)">
+                                    <input x-ref="mdImageInput" type="file" accept="image/*" class="hidden" @change="mdHandlePick($event)" @click.stop>
                                 </div>
                             </div>
                         </div>
@@ -740,7 +740,7 @@
                                             <p class="text-[10px] text-gray-400">Click or drag & drop</p>
                                         </div>
                                     </template>
-                                    <input x-ref="mdImageInput" type="file" accept="image/*" class="hidden" @change="mdHandlePick($event)">
+                                    <input x-ref="mdImageInput" type="file" accept="image/*" class="hidden" @change="mdHandlePick($event)" @click.stop>
                                 </div>
                             </div>
 
@@ -805,7 +805,7 @@
                                             <p class="text-[10px] text-gray-400">Click or drag & drop</p>
                                         </div>
                                     </template>
-                                    <input x-ref="mdImageInput" type="file" accept="image/*" class="hidden" @change="mdHandlePick($event)">
+                                    <input x-ref="mdImageInput" type="file" accept="image/*" class="hidden" @change="mdHandlePick($event)" @click.stop>
                                 </div>
                             </div>
                         </div>
@@ -884,7 +884,7 @@
                                             <p class="text-[10px] text-gray-400">Click or drag & drop</p>
                                         </div>
                                     </template>
-                                    <input x-ref="mdImageInput" type="file" accept="image/*" class="hidden" @change="mdHandlePick($event)">
+                                    <input x-ref="mdImageInput" type="file" accept="image/*" class="hidden" @change="mdHandlePick($event)" @click.stop>
                                 </div>
                             </div>
                         </div>
@@ -951,7 +951,7 @@
                                             <p class="text-[10px] text-gray-400">Click or drag & drop</p>
                                         </div>
                                     </template>
-                                    <input x-ref="mdImageInput" type="file" accept="image/*" class="hidden" @change="mdHandlePick($event)">
+                                    <input x-ref="mdImageInput" type="file" accept="image/*" class="hidden" @change="mdHandlePick($event)" @click.stop>
                                 </div>
                             </div>
 
