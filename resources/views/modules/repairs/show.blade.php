@@ -332,8 +332,8 @@
                             <div x-show="repair.status === 'in_progress'" class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4 border-2 border-dashed border-gray-300">
                                 <p class="text-xs font-semibold text-gray-600 uppercase mb-3">Add New Part</p>
                                 <div class="relative mb-3">
-                                    <input x-model="partSearch" @input.debounce.300ms="searchParts(1)" @focus="if(partResults.length === 0) searchParts(1)" @click.away="partResults = []" type="text" class="form-input-custom text-sm w-full" placeholder="Search parts by name...">
-                                    <div x-show="partResults.length > 0" class="absolute z-50 w-full bg-white border rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto top-full" @scroll="handlePartScroll($event)">
+                                    <input x-model="partSearch" @input.debounce.300ms="searchParts(1)" @focus="if(partResults.length === 0) searchParts(1)" @click.away="setTimeout(() => partResults = [], 200)" type="text" class="form-input-custom text-sm w-full" placeholder="Search parts by name...">
+                                    <div x-show="partResults.length > 0 || (partSearch && partSearch.trim().length > 0 && !partLoading)" class="absolute z-50 w-full bg-white border rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto top-full" @scroll="handlePartScroll($event)">
                                         <template x-for="pr in partResults" :key="pr.id">
                                             <button @click="selectPart(pr)" class="w-full text-left px-3 py-2.5 hover:bg-indigo-50 text-sm border-b last:border-0 transition">
                                                 <span class="font-medium text-gray-800" x-text="pr.name"></span>
@@ -342,6 +342,10 @@
                                             </button>
                                         </template>
                                         <div x-show="partLoading" class="px-3 py-2 text-xs text-gray-400 text-center">Loading...</div>
+                                        <button x-show="partSearch && partSearch.trim().length > 0 && !partLoading" @click="createAndSelectPart()" class="w-full text-left px-3 py-2.5 hover:bg-green-50 text-sm border-t transition flex items-center gap-2 text-green-700 font-semibold">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                            Create "<span x-text="partSearch.trim()"></span>"
+                                        </button>
                                     </div>
                                 </div>
                                 <div x-show="partForm.part_id" class="text-xs text-green-600 mb-2 flex items-center gap-1 px-2 py-1 bg-green-50 rounded-lg w-fit">
@@ -407,8 +411,8 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
                                     <!-- Service Type -->
                                     <div class="relative">
-                                        <input x-model="svcForm.service_type_name" @input.debounce.300ms="searchServiceTypes(1)" @focus="if(svcTypeResults.length === 0) searchServiceTypes(1)" @click.away="svcTypeResults = []" type="text" class="form-input-custom text-sm w-full" placeholder="Service type (search or custom)...">
-                                        <div x-show="svcTypeResults.length > 0" class="absolute z-50 w-full bg-white border rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto top-full" @scroll="handleSvcTypeScroll($event)">
+                                        <input x-model="svcForm.service_type_name" @input.debounce.300ms="searchServiceTypes(1)" @focus="if(svcTypeResults.length === 0) searchServiceTypes(1)" @click.away="setTimeout(() => svcTypeResults = [], 200)" type="text" class="form-input-custom text-sm w-full" placeholder="Service type (search or custom)...">
+                                        <div x-show="svcTypeResults.length > 0 || (svcForm.service_type_name && svcForm.service_type_name.trim().length > 0 && !svcTypeLoading)" class="absolute z-50 w-full bg-white border rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto top-full" @scroll="handleSvcTypeScroll($event)">
                                             <template x-for="st in svcTypeResults" :key="st.id">
                                                 <button @click="selectServiceType(st)" class="w-full text-left px-3 py-2.5 hover:bg-indigo-50 text-sm border-b last:border-0 transition">
                                                     <span class="font-medium text-gray-800" x-text="st.name"></span>
@@ -416,6 +420,10 @@
                                                 </button>
                                             </template>
                                             <div x-show="svcTypeLoading" class="px-3 py-2 text-xs text-gray-400 text-center">Loading...</div>
+                                            <button x-show="svcForm.service_type_name && svcForm.service_type_name.trim().length > 0 && !svcTypeLoading" @click="createAndSelectServiceType()" class="w-full text-left px-3 py-2.5 hover:bg-green-50 text-sm border-t transition flex items-center gap-2 text-green-700 font-semibold">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                                Create "<span x-text="svcForm.service_type_name.trim()"></span>"
+                                            </button>
                                         </div>
                                     </div>
                                     <!-- Vendor -->
@@ -1387,6 +1395,15 @@ function repairDetail() {
             this.partSearch = '';
             this.partHasMore = false;
         },
+        async createAndSelectPart() {
+            const name = (this.partSearch || '').trim();
+            if (!name) return;
+            const r = await RepairBox.ajax('/admin/parts', 'POST', { name: name, sku: '', cost_price: 0, selling_price: 0 });
+            if (r.success !== false && r.data) {
+                RepairBox.toast('Part "' + name + '" created', 'success');
+                this.selectPart(r.data);
+            }
+        },
         async addPart() {
             if (!this.partForm.part_id) { RepairBox.toast('Please search & select a part', 'error'); return; }
             const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/admin/parts', 'POST', { part_id: this.partForm.part_id, quantity: this.partForm.quantity, cost_price: this.partForm.cost_price });
@@ -1427,6 +1444,15 @@ function repairDetail() {
             if (st.default_price) this.svcForm.customer_charge = st.default_price;
             this.svcTypeResults = [];
             this.svcTypeHasMore = false;
+        },
+        async createAndSelectServiceType() {
+            const name = (this.svcForm.service_type_name || '').trim();
+            if (!name) return;
+            const r = await RepairBox.ajax('/admin/service-types', 'POST', { name: name });
+            if (r.success !== false && r.data) {
+                RepairBox.toast('Service type "' + name + '" created', 'success');
+                this.selectServiceType(r.data);
+            }
         },
         async searchVendors(page) {
             page = page || 1;
