@@ -776,13 +776,15 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-3 gap-3">
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Purchase Price *</label>
                                     <input x-model="mdForm.purchase_price" type="number" step="0.01" class="form-input-custom" placeholder="0.00"></div>
                                 <div><label class="block text-sm font-medium text-gray-700 mb-1">MRP *</label>
                                     <input x-model="mdForm.mrp" type="number" step="0.01" class="form-input-custom" placeholder="0.00"></div>
                                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Selling Price *</label>
                                     <input x-model="mdForm.selling_price" type="number" step="0.01" class="form-input-custom" placeholder="0.00"></div>
+                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Opening Stock</label>
+                                    <input x-model="mdForm.opening_stock" type="number" step="1" min="0" class="form-input-custom" placeholder="0"></div>
                             </div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
                                 <textarea x-model="mdForm.description" class="form-input-custom" rows="2" placeholder="Description"></textarea></div>
@@ -1550,7 +1552,7 @@ function settingsPage() {
             { type: 'brands', label: 'Brands', columns: ['name'] },
             { type: 'categories', label: 'Categories', columns: ['name', 'description'] },
             { type: 'customers', label: 'Customers', columns: ['name', 'mobile_number', 'email', 'address', 'notes'] },
-            { type: 'products', label: 'Products', columns: ['name', 'sku', 'barcode', 'category', 'brand', 'purchase_price', 'mrp', 'selling_price', 'description'] },
+            { type: 'products', label: 'Products', columns: ['name', 'sku', 'barcode', 'category', 'brand', 'purchase_price', 'mrp', 'selling_price', 'description', 'opening_stock', 'image_url'] },
             { type: 'parts', label: 'Parts', columns: ['name', 'sku', 'cost_price', 'selling_price'] },
             { type: 'vendors', label: 'Vendors', columns: ['name', 'phone', 'address', 'specialization'] },
             { type: 'recharge_providers', label: 'Recharge Providers', columns: ['name', 'provider_type', 'commission_percentage'] },
@@ -2023,7 +2025,7 @@ function masterDataPanel() {
                 case 'brands': return { name: '', logo_url: '' };
                 case 'categories': return { name: '', description: '' };
                 case 'parts': return { name: '', sku: '', cost_price: '', selling_price: '' };
-                case 'products': return { name: '', sku: '', category_id: '', brand_id: '', purchase_price: '', mrp: '', selling_price: '', description: '' };
+                case 'products': return { name: '', sku: '', category_id: '', brand_id: '', purchase_price: '', mrp: '', selling_price: '', description: '', opening_stock: '' };
                 case 'customers': return { name: '', mobile_number: '', email: '', address: '' };
                 case 'inventory': return { product_id: '', adjustment_type: 'addition', quantity: '', reason: '' };
                 case 'recharge-providers': return { name: '', provider_type: '', commission_percentage: '' };

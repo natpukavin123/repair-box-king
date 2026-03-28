@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\{Setting, EmailTemplate, Notification, ActivityLog, Backup};
 use App\Models\{ServiceType, RechargeProvider, Vendor};
-use App\Models\{Brand, Category, Subcategory, Product, Customer, Part};
+use App\Models\{Brand, Category, Subcategory, Product, Customer, Part, Inventory};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{DB, Storage, Validator};
 use App\Services\ImageService;
@@ -551,9 +551,9 @@ class SettingController extends Controller
             'products' => [
                 'model' => Product::class,
                 'label' => 'Products',
-                'columns' => ['name', 'sku', 'barcode', 'category', 'brand', 'purchase_price', 'mrp', 'selling_price', 'description'],
+                'columns' => ['name', 'sku', 'barcode', 'category', 'brand', 'purchase_price', 'mrp', 'selling_price', 'description', 'opening_stock', 'image_url'],
                 'unique_key' => 'sku',
-                'rules' => ['name' => 'required|string|max:255', 'sku' => 'nullable|string|max:100', 'barcode' => 'nullable|string|max:100', 'category' => 'nullable|string', 'brand' => 'nullable|string', 'purchase_price' => 'nullable|numeric|min:0', 'mrp' => 'nullable|numeric|min:0', 'selling_price' => 'nullable|numeric|min:0', 'description' => 'nullable|string'],
+                'rules' => ['name' => 'required|string|max:255', 'sku' => 'nullable|string|max:100', 'barcode' => 'nullable|string|max:100', 'category' => 'nullable|string', 'brand' => 'nullable|string', 'purchase_price' => 'nullable|numeric|min:0', 'mrp' => 'nullable|numeric|min:0', 'selling_price' => 'nullable|numeric|min:0', 'description' => 'nullable|string', 'opening_stock' => 'nullable|integer|min:0', 'image_url' => 'nullable|string|max:500'],
             ],
             'parts' => [
                 'model' => Part::class,
@@ -752,8 +752,12 @@ class SettingController extends Controller
                 }
 
                 // Resolve foreign keys for products
+                $openingStock = null;
+                $imageUrl = null;
                 if ($type === 'products') {
-                    $finalData = collect($rowData)->except(['category', 'brand'])->toArray();
+                    $openingStock = isset($rowData['opening_stock']) && $rowData['opening_stock'] !== '' ? (int) $rowData['opening_stock'] : null;
+                    $imageUrl = !empty($rowData['image_url']) ? $rowData['image_url'] : null;
+                    $finalData = collect($rowData)->except(['category', 'brand', 'opening_stock', 'image_url'])->toArray();
                     if (!empty($rowData['category'])) {
                         $cat = Category::firstOrCreate(['name' => $rowData['category']]);
                         $finalData['category_id'] = $cat->id;
@@ -761,6 +765,9 @@ class SettingController extends Controller
                     if (!empty($rowData['brand'])) {
                         $brand = Brand::firstOrCreate(['name' => $rowData['brand']]);
                         $finalData['brand_id'] = $brand->id;
+                    }
+                    if ($imageUrl) {
+                        $finalData['image'] = $imageUrl;
                     }
                     // Set defaults for price fields
                     $finalData['purchase_price'] = $finalData['purchase_price'] ?: 0;
@@ -776,13 +783,24 @@ class SettingController extends Controller
                     $existing = $config['model']::where($uniqueKey, $uniqueValue)->first();
                     if ($existing) {
                         $existing->update($rowData);
+                        // Update inventory opening stock if provided
+                        if ($type === 'products' && $openingStock !== null) {
+                            $inv = Inventory::firstOrCreate(['product_id' => $existing->id], ['current_stock' => 0, 'reserved_stock' => 0]);
+                            $inv->update(['current_stock' => $openingStock]);
+                        }
                         $updated++;
                     } else {
-                        $config['model']::create($rowData);
+                        $record = $config['model']::create($rowData);
+                        if ($type === 'products') {
+                            Inventory::create(['product_id' => $record->id, 'current_stock' => $openingStock ?? 0, 'reserved_stock' => 0]);
+                        }
                         $created++;
                     }
                 } else {
-                    $config['model']::create($rowData);
+                    $record = $config['model']::create($rowData);
+                    if ($type === 'products') {
+                        Inventory::create(['product_id' => $record->id, 'current_stock' => $openingStock ?? 0, 'reserved_stock' => 0]);
+                    }
                     $created++;
                 }
             }

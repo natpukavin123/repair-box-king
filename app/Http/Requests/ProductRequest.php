@@ -24,6 +24,7 @@ class ProductRequest extends FormRequest
             'max_selling_price' => 'nullable|numeric|min:0',
             'description'    => 'nullable|string',
             'status'         => 'in:active,inactive',
+            'opening_stock'  => 'nullable|integer|min:0',
         ];
     }
 }

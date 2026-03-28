@@ -34,8 +34,12 @@ class ProductController extends Controller
 
     public function store(ProductRequest $request)
     {
-        $product = Product::create($request->validated());
-        Inventory::create(['product_id' => $product->id, 'current_stock' => 0, 'reserved_stock' => 0]);
+        $data = $request->validated();
+        $openingStock = (int) ($data['opening_stock'] ?? 0);
+        unset($data['opening_stock']);
+
+        $product = Product::create($data);
+        Inventory::create(['product_id' => $product->id, 'current_stock' => $openingStock, 'reserved_stock' => 0]);
         ActivityLog::log('create', 'products', $product->id, "Created product: {$product->name}");
         return response()->json(['success' => true, 'data' => $product->load('category', 'brand', 'inventory'), 'message' => 'Product created']);
     }

@@ -38,11 +38,12 @@
                 <x-ui.input-field label="Barcode" x-model="form.barcode" />
             </x-ui.form-section>
 
-            <x-ui.form-section title="Pricing" description="Use the same structured fields for purchase, MRP, and selling values.">
+            <x-ui.form-section title="Pricing & Stock" description="Purchase, MRP, selling values and initial inventory count.">
                 <x-ui.input-field label="Purchase Price" x-model="form.purchase_price" type="number" step="0.01" required />
                 <x-ui.input-field label="MRP" x-model="form.mrp" type="number" step="0.01" required />
                 <x-ui.input-field label="Selling Price" x-model="form.selling_price" type="number" step="0.01" required />
                 <x-ui.input-field label="Max Selling Price" x-model="form.max_selling_price" type="number" step="0.01" placeholder="Optional" />
+                <x-ui.input-field label="Opening Stock" x-model="form.opening_stock" type="number" step="1" min="0" placeholder="0" />
             </x-ui.form-section>
 
             <x-ui.form-section title="Description" description="Optional product note for staff and inventory context." gridClass="grid grid-cols-1 gap-4">
@@ -118,7 +119,7 @@ function createProductPage() {
         saving: false,
         subcategories: [],
         imageFile: null, imagePreview: null, thumbFile: null, thumbPreview: null,
-        form: { name: '', sku: '', category_id: '', subcategory_id: '', brand_id: '', purchase_price: '', mrp: '', selling_price: '', max_selling_price: '', barcode: '', description: '' },
+        form: { name: '', sku: '', category_id: '', subcategory_id: '', brand_id: '', purchase_price: '', mrp: '', selling_price: '', max_selling_price: '', barcode: '', description: '', opening_stock: '' },
 
         handleFilePick(type, e) {
             const file = e.target.files[0];
