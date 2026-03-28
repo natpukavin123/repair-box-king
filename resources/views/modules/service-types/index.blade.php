@@ -168,7 +168,7 @@
                                 <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="editItem(item)">
                                     <td class="px-3 py-2">
                                         <template x-if="item.thumbnail">
-                                            <img :src="'/storage/' + item.thumbnail" class="w-10 h-10 rounded-lg object-cover border border-gray-200 shadow-sm">
+                                            <img :src="RepairBox.imageUrl(item.thumbnail)" class="w-10 h-10 rounded-lg object-cover border border-gray-200 shadow-sm">
                                         </template>
                                         <template x-if="!item.thumbnail">
                                             <div class="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
@@ -358,8 +358,8 @@ function serviceTypesPage() {
             };
             this.imageFile = null;
             this.thumbFile = null;
-            this.imagePreview = item.image ? '/storage/' + item.image : null;
-            this.thumbPreview = item.thumbnail ? '/storage/' + item.thumbnail : null;
+            this.imagePreview = RepairBox.imageUrl(item.image);
+            this.thumbPreview = RepairBox.imageUrl(item.thumbnail);
         },
 
         // File handling
@@ -425,7 +425,7 @@ function serviceTypesPage() {
                     const fd = new FormData();
                     if (this.imageFile) fd.append('image', this.imageFile);
                     if (this.thumbFile) fd.append('thumbnail', this.thumbFile);
-                    await RepairBox.upload(`/service-types/${id}/upload-image`, fd);
+                    await RepairBox.upload(`/admin/service-types/${id}/upload-image`, fd);
                 }
 
                 RepairBox.toast(this.editing ? 'Service type updated' : 'Service type added', 'success');

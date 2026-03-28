@@ -56,6 +56,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Image Storage
+    |--------------------------------------------------------------------------
+    |
+    | Disk used for all image uploads (products, brands, parts, etc.).
+    | Set to 'public' for local storage, 's3' for AWS S3 / Cloudflare R2, etc.
+    | Optionally set a CDN URL (CloudFront, BunnyCDN) to serve images from a CDN.
+    |
+    */
+
+    'image_disk' => env('IMAGE_DISK', 'public'),
+    'image_cdn_url' => env('IMAGE_CDN_URL'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

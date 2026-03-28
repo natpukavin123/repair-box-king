@@ -61,12 +61,20 @@
         </x-slot:header>
 
         <table class="data-table">
-                    <thead class="sticky top-0 z-10 bg-gray-50"><tr><th>#</th><th>Name</th><th>Phone</th><th>Specialization</th><th>Status</th><th>Actions</th></tr></thead>
+                    <thead class="sticky top-0 z-10 bg-gray-50"><tr><th>#</th><th>Name</th><th>Image</th><th>Phone</th><th>Specialization</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody>
                         <template x-for="(v, i) in items" :key="v.id">
                             <tr>
                                 <td x-text="i+1"></td>
                                 <td class="font-medium" x-text="v.name"></td>
+                                <td>
+                                    <template x-if="v.thumbnail || v.image">
+                                        <img :src="RepairBox.imageUrl(v.thumbnail || v.image)" class="w-8 h-8 rounded object-cover">
+                                    </template>
+                                    <template x-if="!v.thumbnail && !v.image">
+                                        <span class="text-gray-400">-</span>
+                                    </template>
+                                </td>
                                 <td x-text="v.phone || '-'"></td>
                                 <td x-text="v.specialization || '-'"></td>
                                 <td><span class="badge" :class="v.status === 'active' ? 'badge-success' : 'badge-danger'" x-text="v.status || 'active'"></span></td>
@@ -75,7 +83,7 @@
                                 </td>
                             </tr>
                         </template>
-                        <tr x-show="items.length === 0 && !loading"><td colspan="6" class="text-center text-gray-400 py-8">No vendors found</td></tr>
+                        <tr x-show="items.length === 0 && !loading"><td colspan="7" class="text-center text-gray-400 py-8">No vendors found</td></tr>
                         <template x-if="loading">
                             <template x-for="i in 10" :key="'sk'+i">
                                 <tr>
@@ -108,6 +116,29 @@
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Phone</label><input x-model="form.phone" type="text" class="form-input-custom"></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Specialization</label><input x-model="form.specialization" type="text" class="form-input-custom"></div>
                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Address</label><textarea x-model="form.address" class="form-input-custom" rows="2"></textarea></div>
+
+                {{-- Image Upload --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Vendor Image <span class="text-gray-400 font-normal">(optional)</span></label>
+                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-all"
+                         @click="$refs.editImageInput.click()" @dragover.prevent @drop.prevent="handleDrop($event)">
+                        <template x-if="imagePreview">
+                            <div class="relative inline-block">
+                                <img :src="imagePreview" class="max-h-24 mx-auto rounded-lg object-contain">
+                                <button type="button" @click.stop="imageFile=null; imagePreview=null; $refs.editImageInput.value=''"
+                                        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">&#x2715;</button>
+                            </div>
+                        </template>
+                        <template x-if="!imagePreview">
+                            <div class="py-2">
+                                <svg class="w-6 h-6 text-gray-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                <p class="text-[10px] text-gray-400">Click or drag & drop</p>
+                            </div>
+                        </template>
+                        <input x-ref="editImageInput" type="file" accept="image/*" class="hidden" @change="handlePick($event)">
+                    </div>
+                </div>
+
                 <template x-if="editing">
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                         <select x-model="form.status" class="form-select-custom"><option value="active">Active</option><option value="inactive">Inactive</option></select>
@@ -126,6 +157,7 @@ function vendorsPage() {
     return {
         items: [], showModal: false, editing: null, saving: false, search: '', page: 1, lastPage: 1, loading: true,
         form: { name: '', phone: '', address: '', specialization: '' },
+        imageFile: null, imagePreview: null,
         init() {
             const p = new URLSearchParams(window.location.search);
             if (p.has('search')) this.search = p.get('search');
@@ -146,11 +178,45 @@ function vendorsPage() {
             this.updateUrl();
             this.loading = false;
         },
-        edit(v) { this.editing = v.id; this.form = { name: v.name, phone: v.phone || '', address: v.address || '', specialization: v.specialization || '', status: v.status || 'active' }; this.showModal = true; },
+        edit(v) {
+            this.editing = v.id;
+            this.form = { name: v.name, phone: v.phone || '', address: v.address || '', specialization: v.specialization || '', status: v.status || 'active' };
+            this.imageFile = null;
+            this.imagePreview = RepairBox.imageUrl(v.thumbnail || v.image);
+            this.showModal = true;
+        },
+
+        handlePick(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            this.imageFile = file;
+            const reader = new FileReader();
+            reader.onload = ev => this.imagePreview = ev.target.result;
+            reader.readAsDataURL(file);
+        },
+        handleDrop(e) {
+            const file = e.dataTransfer.files[0];
+            if (!file || !file.type.startsWith('image/')) return;
+            this.imageFile = file;
+            const reader = new FileReader();
+            reader.onload = ev => this.imagePreview = ev.target.result;
+            reader.readAsDataURL(file);
+        },
+
         async save() {
             this.saving = true;
             const r = await RepairBox.ajax(`/vendors/${this.editing}`, 'PUT', this.form);
-            this.saving = false; if(r.success !== false) { RepairBox.toast('Updated', 'success'); this.showModal = false; this.load(); }
+            if (r.success !== false) {
+                if (this.imageFile) {
+                    const fd = new FormData();
+                    fd.append('image', this.imageFile);
+                    await RepairBox.upload(`/admin/vendors/${this.editing}/upload-image`, fd);
+                }
+                RepairBox.toast('Updated', 'success');
+                this.showModal = false;
+                this.load();
+            }
+            this.saving = false;
         }
     };
 }

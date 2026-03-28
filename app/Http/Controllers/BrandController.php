@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Brand;
 use App\Http\Requests\BrandRequest;
+use App\Services\ImageService;
 
 class BrandController extends Controller
 {
@@ -40,5 +41,10 @@ class BrandController extends Controller
     {
         $brand->delete();
         return response()->json(['success' => true, 'message' => 'Brand deleted']);
+    }
+
+    public function uploadImage(\Illuminate\Http\Request $request, Brand $brand)
+    {
+        return response()->json(app(ImageService::class)->handleUpload($request, $brand, 'brands'));
     }
 }

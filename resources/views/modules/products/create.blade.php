@@ -146,7 +146,7 @@ function createProductPage() {
                     const fd = new FormData();
                     if (this.imageFile) fd.append('image', this.imageFile);
                     if (this.thumbFile) fd.append('thumbnail', this.thumbFile);
-                    await RepairBox.upload(`/products/${id}/upload-image`, fd);
+                    await RepairBox.upload(`/admin/products/${id}/upload-image`, fd);
                 }
                 RepairBox.toast('Product created', 'success');
                 window.location.href = '/admin/products';

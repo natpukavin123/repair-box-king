@@ -214,7 +214,14 @@
                                     <template x-for="(item, idx) in mdItems" :key="item.id">
                                         <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openMdEdit(item)">
                                             <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
-                                            <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
+                                            <td class="px-3 py-2 font-medium text-gray-800 text-sm">
+                                                <div class="flex items-center gap-2">
+                                                    <template x-if="item.thumbnail || item.image">
+                                                        <img :src="RepairBox.imageUrl(item.thumbnail || item.image)" class="w-7 h-7 rounded object-cover">
+                                                    </template>
+                                                    <span x-text="item.name"></span>
+                                                </div>
+                                            </td>
                                             <td class="px-3 py-2 text-sm" x-text="item.phone || '-'"></td>
                                             <td class="px-3 py-2 text-sm" x-text="item.specialization || '-'"></td>
                                             <td class="px-3 py-2">
@@ -283,7 +290,7 @@
                                     <tr class="bg-gray-50">
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
-                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Logo</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Image</th>
                                         <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
                                     </tr>
                                 </thead>
@@ -293,10 +300,10 @@
                                             <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
                                             <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
                                             <td class="px-3 py-2">
-                                                <template x-if="item.logo_url">
-                                                    <img :src="item.logo_url" class="w-8 h-8 rounded object-contain">
+                                                <template x-if="item.thumbnail || item.image">
+                                                    <img :src="RepairBox.imageUrl(item.thumbnail || item.image)" class="w-8 h-8 rounded object-cover">
                                                 </template>
-                                                <template x-if="!item.logo_url">
+                                                <template x-if="!item.thumbnail && !item.image">
                                                     <span class="text-gray-300 text-sm">-</span>
                                                 </template>
                                             </td>
@@ -373,7 +380,14 @@
                                     <template x-for="(item, idx) in mdItems" :key="item.id">
                                         <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openMdEdit(item)">
                                             <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
-                                            <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
+                                            <td class="px-3 py-2 font-medium text-gray-800 text-sm">
+                                                <div class="flex items-center gap-2">
+                                                    <template x-if="item.thumbnail || item.image">
+                                                        <img :src="RepairBox.imageUrl(item.thumbnail || item.image)" class="w-7 h-7 rounded object-cover">
+                                                    </template>
+                                                    <span x-text="item.name"></span>
+                                                </div>
+                                            </td>
                                             <td class="px-3 py-2 text-sm" x-text="item.sku || '-'"></td>
                                             <td class="px-3 py-2 text-sm" x-text="item.cost_price ? RepairBox.formatCurrency(item.cost_price) : '-'"></td>
                                             <td class="px-3 py-2 text-sm" x-text="item.selling_price ? RepairBox.formatCurrency(item.selling_price) : '-'"></td>
@@ -499,7 +513,14 @@
                                     <template x-for="(item, idx) in mdItems" :key="item.id">
                                         <tr class="border-t border-gray-100 hover:bg-gray-50/60 transition cursor-pointer" @click="openMdEdit(item)">
                                             <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
-                                            <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
+                                            <td class="px-3 py-2 font-medium text-gray-800 text-sm">
+                                                <div class="flex items-center gap-2">
+                                                    <template x-if="item.thumbnail || item.image">
+                                                        <img :src="RepairBox.imageUrl(item.thumbnail || item.image)" class="w-7 h-7 rounded object-cover">
+                                                    </template>
+                                                    <span x-text="item.name"></span>
+                                                </div>
+                                            </td>
                                             <td class="px-3 py-2 text-sm" x-text="item.provider_type"></td>
                                             <td class="px-3 py-2 text-sm" x-text="item.commission_percentage + '%'"></td>
                                             <td class="px-3 py-2 text-center" @click.stop>
@@ -541,7 +562,7 @@
                                             <td class="px-3 py-2 font-medium text-gray-800 text-sm">
                                                 <div class="flex items-center gap-2">
                                                     <template x-if="item.thumbnail">
-                                                        <img :src="'/storage/' + item.thumbnail" class="w-7 h-7 rounded object-cover">
+                                                        <img :src="RepairBox.imageUrl(item.thumbnail)" class="w-7 h-7 rounded object-cover">
                                                     </template>
                                                     <span x-text="item.name"></span>
                                                 </div>
@@ -598,6 +619,29 @@
                                 <input x-model="mdForm.specialization" type="text" class="form-input-custom" placeholder="e.g. Mobile repair"></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
                                 <textarea x-model="mdForm.address" class="form-input-custom" rows="2" placeholder="Address"></textarea></div>
+
+                            {{-- Image Upload --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Image <span class="text-gray-400 font-normal">(optional)</span></label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-all"
+                                     @click="$nextTick(() => $refs.mdImageInput?.click())" @dragover.prevent @drop.prevent="mdHandleDrop($event)">
+                                    <template x-if="mdImagePreview">
+                                        <div class="relative inline-block">
+                                            <img :src="mdImagePreview" class="max-h-20 mx-auto rounded-lg object-contain">
+                                            <button type="button" @click.stop="mdImageFile=null; mdImagePreview=null; $refs.mdImageInput && ($refs.mdImageInput.value='')"
+                                                    class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">&#x2715;</button>
+                                        </div>
+                                    </template>
+                                    <template x-if="!mdImagePreview">
+                                        <div class="py-2">
+                                            <svg class="w-6 h-6 text-gray-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            <p class="text-[10px] text-gray-400">Click or drag & drop</p>
+                                        </div>
+                                    </template>
+                                    <input x-ref="mdImageInput" type="file" accept="image/*" class="hidden" @change="mdHandlePick($event)">
+                                </div>
+                            </div>
+
                             <template x-if="mdEditing">
                                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                                     <select x-model="mdForm.status" class="form-select-custom"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
@@ -610,8 +654,28 @@
                         <div class="space-y-4">
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
                                 <input x-model="mdForm.name" type="text" class="form-input-custom" placeholder="Brand name"></div>
-                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
-                                <input x-model="mdForm.logo_url" type="text" class="form-input-custom" placeholder="https://..."></div>
+
+                            {{-- Image Upload --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Image <span class="text-gray-400 font-normal">(optional)</span></label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-all"
+                                     @click="$nextTick(() => $refs.mdImageInput?.click())" @dragover.prevent @drop.prevent="mdHandleDrop($event)">
+                                    <template x-if="mdImagePreview">
+                                        <div class="relative inline-block">
+                                            <img :src="mdImagePreview" class="max-h-20 mx-auto rounded-lg object-contain">
+                                            <button type="button" @click.stop="mdImageFile=null; mdImagePreview=null; $refs.mdImageInput && ($refs.mdImageInput.value='')"
+                                                    class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">&#x2715;</button>
+                                        </div>
+                                    </template>
+                                    <template x-if="!mdImagePreview">
+                                        <div class="py-2">
+                                            <svg class="w-6 h-6 text-gray-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            <p class="text-[10px] text-gray-400">Click or drag & drop</p>
+                                        </div>
+                                    </template>
+                                    <input x-ref="mdImageInput" type="file" accept="image/*" class="hidden" @change="mdHandlePick($event)">
+                                </div>
+                            </div>
                         </div>
                     </template>
 
@@ -638,6 +702,29 @@
                                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Selling Price</label>
                                     <input x-model="mdForm.selling_price" type="number" step="0.01" class="form-input-custom" placeholder="0.00"></div>
                             </div>
+
+                            {{-- Image Upload --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Image <span class="text-gray-400 font-normal">(optional)</span></label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-all"
+                                     @click="$nextTick(() => $refs.mdImageInput?.click())" @dragover.prevent @drop.prevent="mdHandleDrop($event)">
+                                    <template x-if="mdImagePreview">
+                                        <div class="relative inline-block">
+                                            <img :src="mdImagePreview" class="max-h-20 mx-auto rounded-lg object-contain">
+                                            <button type="button" @click.stop="mdImageFile=null; mdImagePreview=null; $refs.mdImageInput && ($refs.mdImageInput.value='')"
+                                                    class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">&#x2715;</button>
+                                        </div>
+                                    </template>
+                                    <template x-if="!mdImagePreview">
+                                        <div class="py-2">
+                                            <svg class="w-6 h-6 text-gray-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            <p class="text-[10px] text-gray-400">Click or drag & drop</p>
+                                        </div>
+                                    </template>
+                                    <input x-ref="mdImageInput" type="file" accept="image/*" class="hidden" @change="mdHandlePick($event)">
+                                </div>
+                            </div>
+
                             <template x-if="mdEditing">
                                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                                     <select x-model="mdForm.status" class="form-select-custom"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
@@ -680,6 +767,28 @@
                             </div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
                                 <textarea x-model="mdForm.description" class="form-input-custom" rows="2" placeholder="Description"></textarea></div>
+
+                            {{-- Image Upload --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Image <span class="text-gray-400 font-normal">(optional)</span></label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-all"
+                                     @click="$nextTick(() => $refs.mdImageInput?.click())" @dragover.prevent @drop.prevent="mdHandleDrop($event)">
+                                    <template x-if="mdImagePreview">
+                                        <div class="relative inline-block">
+                                            <img :src="mdImagePreview" class="max-h-20 mx-auto rounded-lg object-contain">
+                                            <button type="button" @click.stop="mdImageFile=null; mdImagePreview=null; $refs.mdImageInput && ($refs.mdImageInput.value='')"
+                                                    class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">&#x2715;</button>
+                                        </div>
+                                    </template>
+                                    <template x-if="!mdImagePreview">
+                                        <div class="py-2">
+                                            <svg class="w-6 h-6 text-gray-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            <p class="text-[10px] text-gray-400">Click or drag & drop</p>
+                                        </div>
+                                    </template>
+                                    <input x-ref="mdImageInput" type="file" accept="image/*" class="hidden" @change="mdHandlePick($event)">
+                                </div>
+                            </div>
                         </div>
                     </template>
 
@@ -737,6 +846,28 @@
                             </div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Commission % *</label>
                                 <input x-model="mdForm.commission_percentage" type="number" step="0.01" min="0" max="100" class="form-input-custom" placeholder="e.g. 3.5"></div>
+
+                            {{-- Image Upload --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Provider Image <span class="text-gray-400 font-normal">(optional)</span></label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-all"
+                                     @click="$nextTick(() => $refs.mdImageInput?.click())" @dragover.prevent @drop.prevent="mdHandleDrop($event)">
+                                    <template x-if="mdImagePreview">
+                                        <div class="relative inline-block">
+                                            <img :src="mdImagePreview" class="max-h-20 mx-auto rounded-lg object-contain">
+                                            <button type="button" @click.stop="mdImageFile=null; mdImagePreview=null; $refs.mdImageInput && ($refs.mdImageInput.value='')"
+                                                    class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">&#x2715;</button>
+                                        </div>
+                                    </template>
+                                    <template x-if="!mdImagePreview">
+                                        <div class="py-2">
+                                            <svg class="w-6 h-6 text-gray-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            <p class="text-[10px] text-gray-400">Click or drag & drop</p>
+                                        </div>
+                                    </template>
+                                    <input x-ref="mdImageInput" type="file" accept="image/*" class="hidden" @change="mdHandlePick($event)">
+                                </div>
+                            </div>
                         </div>
                     </template>
 
@@ -782,6 +913,29 @@
                                 <input x-model="mdForm.default_price" type="number" step="0.01" min="0" class="form-input-custom" placeholder="0.00"></div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
                                 <textarea x-model="mdForm.description" class="form-input-custom" rows="2" placeholder="Service description"></textarea></div>
+
+                            {{-- Image Upload --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Image <span class="text-gray-400 font-normal">(optional)</span></label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-all"
+                                     @click="$nextTick(() => $refs.mdImageInput?.click())" @dragover.prevent @drop.prevent="mdHandleDrop($event)">
+                                    <template x-if="mdImagePreview">
+                                        <div class="relative inline-block">
+                                            <img :src="mdImagePreview" class="max-h-20 mx-auto rounded-lg object-contain">
+                                            <button type="button" @click.stop="mdImageFile=null; mdImagePreview=null; $refs.mdImageInput && ($refs.mdImageInput.value='')"
+                                                    class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">&#x2715;</button>
+                                        </div>
+                                    </template>
+                                    <template x-if="!mdImagePreview">
+                                        <div class="py-2">
+                                            <svg class="w-6 h-6 text-gray-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            <p class="text-[10px] text-gray-400">Click or drag & drop</p>
+                                        </div>
+                                    </template>
+                                    <input x-ref="mdImageInput" type="file" accept="image/*" class="hidden" @change="mdHandlePick($event)">
+                                </div>
+                            </div>
+
                             <template x-if="mdEditing">
                                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                                     <select x-model="mdForm.status" class="form-select-custom"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
@@ -1451,7 +1605,7 @@
                                 </thead>
                                 <tbody>
                                     <template x-for="r in importResults" :key="r.row">
-                                        <tr class="border-t" :class="r.errors.length > 0 ? 'bg-red-50/50' : ''">
+                                        <tr class="border-t" :class="(r.errors || []).length > 0 ? 'bg-red-50/50' : ''">
                                             <td class="px-3 py-2 text-sm font-mono" x-text="r.row"></td>
                                             <td class="px-3 py-2">
                                                 <span class="badge text-xs" :class="r.action==='create' ? 'badge-success' : 'badge-info'" x-text="r.action"></span>
@@ -1465,12 +1619,12 @@
                                                 </template>
                                             </td>
                                             <td class="px-3 py-2">
-                                                <template x-if="r.errors.length === 0">
+                                                <template x-if="(r.errors || []).length === 0">
                                                     <span class="text-green-600 text-sm font-medium">OK</span>
                                                 </template>
-                                                <template x-if="r.errors.length > 0">
+                                                <template x-if="(r.errors || []).length > 0">
                                                     <div class="text-red-600 text-xs space-y-0.5">
-                                                        <template x-for="err in r.errors" :key="err">
+                                                        <template x-for="err in (r.errors || [])" :key="err">
                                                             <div x-text="err"></div>
                                                         </template>
                                                     </div>
@@ -1722,7 +1876,7 @@ function settingsPage() {
             if (!icon) return '';
             if (icon.startsWith('http') || icon.startsWith('data:')) return icon;
             // Construct the correct storage URL
-            return '/storage/' + (icon.startsWith('/') ? icon.substring(1) : icon);
+            return RepairBox.imageUrl(icon);
         },
         handleIconUpload(e) {
             const file = e.target.files[0];
@@ -1916,6 +2070,7 @@ function masterDataPanel() {
             'Keyboard Repair', 'Motherboard Repair', 'SIM Tray Replace', 'General Service',
         ],
         svcNewQuickFill: '',
+        mdImageFile: null, mdImagePreview: null,
 
         get mdSectionLabel() { return sectionConfig[this.mdSection]?.label || ''; },
         get mdSectionLabelSingular() { return sectionConfig[this.mdSection]?.singular || ''; },
@@ -1948,6 +2103,8 @@ function masterDataPanel() {
         openMdAdd() {
             this.mdEditing = null;
             this.mdForm = this.getDefaultForm();
+            this.mdImageFile = null;
+            this.mdImagePreview = null;
 
             if (this.mdSection === 'products') {
                 this.loadDropdowns();
@@ -1962,6 +2119,8 @@ function masterDataPanel() {
             if (this.mdSection === 'inventory') return;
             this.mdEditing = item.id;
             this.mdForm = { ...item };
+            this.mdImageFile = null;
+            this.mdImagePreview = RepairBox.imageUrl(item.thumbnail || item.image);
 
             if (this.mdSection === 'services' && !this.mdForm.quick_fills) {
                 this.mdForm.quick_fills = [];
@@ -2002,6 +2161,35 @@ function masterDataPanel() {
             this.mdProducts = Array.isArray(r) ? r : (r.data || []);
         },
 
+        mdHandlePick(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            this.mdImageFile = file;
+            const reader = new FileReader();
+            reader.onload = ev => this.mdImagePreview = ev.target.result;
+            reader.readAsDataURL(file);
+        },
+        mdHandleDrop(e) {
+            const file = e.dataTransfer.files[0];
+            if (!file || !file.type.startsWith('image/')) return;
+            this.mdImageFile = file;
+            const reader = new FileReader();
+            reader.onload = ev => this.mdImagePreview = ev.target.result;
+            reader.readAsDataURL(file);
+        },
+
+        mdGetUploadUrl(id) {
+            const urls = {
+                'brands': `/admin/brands/${id}/upload-image`,
+                'parts': `/admin/parts/${id}/upload-image`,
+                'vendors': `/admin/vendors/${id}/upload-image`,
+                'recharge-providers': `/admin/recharge-providers/${id}/upload-image`,
+                'products': `/admin/products/${id}/upload-image`,
+                'services': `/admin/service-types/${id}/upload-image`,
+            };
+            return urls[this.mdSection] || null;
+        },
+
         async saveMdItem() {
             if (!this.mdForm.name && this.mdSection !== 'inventory') {
                 return RepairBox.toast('Name is required', 'error');
@@ -2030,10 +2218,22 @@ function masterDataPanel() {
             this.mdSaving = false;
 
             if (r.success !== false) {
+                const savedId = (r.data && r.data.id) || this.mdEditing;
+                // Upload image if any
+                if (this.mdImageFile && savedId) {
+                    const uploadUrl = this.mdGetUploadUrl(savedId);
+                    if (uploadUrl) {
+                        const fd = new FormData();
+                        fd.append('image', this.mdImageFile);
+                        await RepairBox.upload(uploadUrl, fd);
+                    }
+                }
                 RepairBox.toast(this.mdEditing ? `${cfg.singular} updated` : `${cfg.singular} added`, 'success');
                 this.showMdModal = false;
                 this.mdEditing = null;
                 this.mdForm = {};
+                this.mdImageFile = null;
+                this.mdImagePreview = null;
                 await this.loadMdData();
             }
         },

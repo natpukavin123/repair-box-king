@@ -50,10 +50,12 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::resource('subcategories', SubcategoryController::class)->except(['edit', 'show']);
     Route::get('subcategories/by-category/{category}', [SubcategoryController::class, 'byCategory']);
     Route::resource('brands', BrandController::class)->except(['edit', 'show']);
+    Route::post('brands/{brand}/upload-image', [BrandController::class, 'uploadImage']);
 
     // Parts
     Route::resource('parts', PartController::class)->except(['edit', 'show']);
     Route::get('parts-search', [PartController::class, 'search']);
+    Route::post('parts/{part}/upload-image', [PartController::class, 'uploadImage']);
 
     // Products & Inventory
     Route::resource('products', ProductController::class)->except(['edit']);
@@ -158,10 +160,12 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::post('recharge-providers', [SettingController::class, 'storeRechargeProvider']);
     Route::put('recharge-providers/{rechargeProvider}', [SettingController::class, 'updateRechargeProvider']);
     Route::delete('recharge-providers/{rechargeProvider}', [SettingController::class, 'destroyRechargeProvider']);
+    Route::post('recharge-providers/{rechargeProvider}/upload-image', [SettingController::class, 'uploadRechargeProviderImage']);
     Route::get('vendors', [SettingController::class, 'vendors'])->name('vendors.index');
     Route::get('vendors/create', [SettingController::class, 'createVendor'])->name('vendors.create');
     Route::post('vendors', [SettingController::class, 'storeVendor']);
     Route::put('vendors/{vendor}', [SettingController::class, 'updateVendor']);
+    Route::post('vendors/{vendor}/upload-image', [SettingController::class, 'uploadVendorImage']);
     Route::get('email-templates', [SettingController::class, 'emailTemplates']);
     Route::put('email-templates/{emailTemplate}', [SettingController::class, 'updateEmailTemplate']);
     Route::post('notifications/test', [SettingController::class, 'testNotification']);

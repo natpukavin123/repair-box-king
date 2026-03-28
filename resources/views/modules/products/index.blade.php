@@ -48,7 +48,7 @@
                             <tr>
                                 <td>
                                     <template x-if="item.thumbnail">
-                                        <img :src="'/storage/' + item.thumbnail" class="w-10 h-10 rounded-lg object-cover border border-gray-200 shadow-sm">
+                                        <img :src="RepairBox.imageUrl(item.thumbnail)" class="w-10 h-10 rounded-lg object-cover border border-gray-200 shadow-sm">
                                     </template>
                                     <template x-if="!item.thumbnail">
                                         <div class="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
@@ -240,10 +240,10 @@ function productsPage() {
         edit(item) {
             this.editing = item.id;
             this.imageFile = null; this.thumbFile = null;
-            this.currentImageUrl = item.thumbnail ? '/storage/' + item.thumbnail : null;
-            this.currentThumbUrl = item.thumbnail ? '/storage/' + item.thumbnail : null;
-            this.imagePreview = item.image ? '/storage/' + item.image : null;
-            this.thumbPreview = item.thumbnail ? '/storage/' + item.thumbnail : null;
+            this.currentImageUrl = RepairBox.imageUrl(item.thumbnail);
+            this.currentThumbUrl = RepairBox.imageUrl(item.thumbnail);
+            this.imagePreview = RepairBox.imageUrl(item.image);
+            this.thumbPreview = RepairBox.imageUrl(item.thumbnail);
             this.form = {
                 name: item.name, sku: item.sku || '',
                 category_id: item.category_id || '', subcategory_id: item.subcategory_id || '',
@@ -263,7 +263,7 @@ function productsPage() {
                     const fd = new FormData();
                     if (this.imageFile) fd.append('image', this.imageFile);
                     if (this.thumbFile) fd.append('thumbnail', this.thumbFile);
-                    await RepairBox.upload(`/products/${this.editing}/upload-image`, fd);
+                    await RepairBox.upload(`/admin/products/${this.editing}/upload-image`, fd);
                 }
                 RepairBox.toast('Updated', 'success'); this.showModal = false; this.load();
             }

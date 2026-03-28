@@ -182,6 +182,12 @@
 
 <script>
 window.RepairBox = {
+    imageBaseUrl: @json(app(\App\Services\ImageService::class)->baseUrl()),
+    imageUrl: function(path) {
+        if (!path) return '';
+        if (path.startsWith('http://') || path.startsWith('https://')) return path;
+        return this.imageBaseUrl + '/' + path.replace(/^\/+/, '');
+    },
     ajax: async function(url, method, data) {
         method = method || 'GET';
         try {
@@ -306,6 +312,10 @@ if (pageLoader) {
         pageLoader.classList.remove('hide');
     });
 }
+
+// Prevent browser from navigating to files dropped outside a drop zone
+document.addEventListener('dragover', function(e) { e.preventDefault(); });
+document.addEventListener('drop', function(e) { e.preventDefault(); });
 </script>
 @stack('scripts')
 </body>

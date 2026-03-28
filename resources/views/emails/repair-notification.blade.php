@@ -42,7 +42,7 @@
                                 @php
                                     $iconUrl = $shopIcon;
                                     if (!str_starts_with($shopIcon, 'http') && !str_starts_with($shopIcon, 'data:')) {
-                                        $iconUrl = url('/storage/' . ltrim($shopIcon, '/'));
+                                        $iconUrl = app(\App\Services\ImageService::class)->url($shopIcon);
                                     }
                                 @endphp
                                 <img src="{{ $iconUrl }}" alt="{{ $shopName }}" style="height:48px;max-width:160px;object-fit:contain;margin-bottom:14px;display:block;margin-left:auto;margin-right:auto;" onerror="this.style.display='none'">

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Part;
 use App\Http\Requests\PartRequest;
+use App\Services\ImageService;
 
 class PartController extends Controller
 {
@@ -55,5 +56,10 @@ class PartController extends Controller
             'has_more' => $parts->hasMorePages(),
             'page' => $parts->currentPage(),
         ]);
+    }
+
+    public function uploadImage(\Illuminate\Http\Request $request, Part $part)
+    {
+        return response()->json(app(ImageService::class)->handleUpload($request, $part, 'parts'));
     }
 }

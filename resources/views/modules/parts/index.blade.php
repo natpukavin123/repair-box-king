@@ -14,12 +14,20 @@
         <div class="card-body p-0">
             <div class="table-scroll">
                 <table class="data-table">
-                    <thead class="sticky top-0 z-10 bg-gray-50"><tr><th>#</th><th>Name</th><th>SKU</th><th>Cost Price</th><th>Selling Price</th><th>Status</th><th>Actions</th></tr></thead>
+                    <thead class="sticky top-0 z-10 bg-gray-50"><tr><th>#</th><th>Name</th><th>Image</th><th>SKU</th><th>Cost Price</th><th>Selling Price</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody>
                         <template x-for="(item, i) in items" :key="item.id">
                             <tr>
                                 <td x-text="i+1"></td>
                                 <td class="font-medium" x-text="item.name"></td>
+                                <td>
+                                    <template x-if="item.thumbnail || item.image">
+                                        <img :src="RepairBox.imageUrl(item.thumbnail || item.image)" class="w-8 h-8 rounded object-cover">
+                                    </template>
+                                    <template x-if="!item.thumbnail && !item.image">
+                                        <span class="text-gray-400">-</span>
+                                    </template>
+                                </td>
                                 <td x-text="item.sku || '-'"></td>
                                 <td x-text="'₹' + Number(item.cost_price).toFixed(2)"></td>
                                 <td x-text="'₹' + Number(item.selling_price).toFixed(2)"></td>
@@ -30,7 +38,7 @@
                                 </td>
                             </tr>
                         </template>
-                        <tr x-show="items.length === 0 && !loading"><td colspan="7" class="text-center text-gray-400 py-8">No parts found</td></tr>
+                        <tr x-show="items.length === 0 && !loading"><td colspan="8" class="text-center text-gray-400 py-8">No parts found</td></tr>
                         <template x-if="loading">
                             <template x-for="i in 10" :key="'sk'+i">
                                 <tr>
@@ -66,6 +74,28 @@
                         <div><label class="block text-sm font-medium text-gray-700 mb-1">Selling Price</label><input x-model="form.selling_price" type="number" step="0.01" class="form-input-custom"></div>
                     </div>
 
+                    {{-- Image Upload --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Part Image <span class="text-gray-400 font-normal">(optional)</span></label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-all"
+                             @click="$refs.editImageInput.click()" @dragover.prevent @drop.prevent="handleDrop($event)">
+                            <template x-if="imagePreview">
+                                <div class="relative inline-block">
+                                    <img :src="imagePreview" class="max-h-24 mx-auto rounded-lg object-contain">
+                                    <button type="button" @click.stop="imageFile=null; imagePreview=null; $refs.editImageInput.value=''"
+                                            class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">&#x2715;</button>
+                                </div>
+                            </template>
+                            <template x-if="!imagePreview">
+                                <div class="py-2">
+                                    <svg class="w-6 h-6 text-gray-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    <p class="text-[10px] text-gray-400">Click or drag & drop</p>
+                                </div>
+                            </template>
+                            <input x-ref="editImageInput" type="file" accept="image/*" class="hidden" @change="handlePick($event)">
+                        </div>
+                    </div>
+
                     <div x-show="editing">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                         <select x-model="form.status" class="form-select-custom">
@@ -93,6 +123,7 @@ function partsPage() {
     return {
         items: [], showModal: false, editing: null, saving: false, search: '', loading: true,
         form: { name: '', sku: '', cost_price: '', selling_price: '' },
+        imageFile: null, imagePreview: null,
 
         init() {
             const p = new URLSearchParams(window.location.search);
@@ -121,13 +152,42 @@ function partsPage() {
                 selling_price: item.selling_price,
                 status: item.status,
             };
+            this.imageFile = null;
+            this.imagePreview = RepairBox.imageUrl(item.thumbnail || item.image);
             this.showModal = true;
         },
+
+        handlePick(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            this.imageFile = file;
+            const reader = new FileReader();
+            reader.onload = ev => this.imagePreview = ev.target.result;
+            reader.readAsDataURL(file);
+        },
+        handleDrop(e) {
+            const file = e.dataTransfer.files[0];
+            if (!file || !file.type.startsWith('image/')) return;
+            this.imageFile = file;
+            const reader = new FileReader();
+            reader.onload = ev => this.imagePreview = ev.target.result;
+            reader.readAsDataURL(file);
+        },
+
         async save() {
             this.saving = true;
             const r = await RepairBox.ajax(`/parts/${this.editing}`, 'PUT', this.form);
+            if (r.success !== false) {
+                if (this.imageFile) {
+                    const fd = new FormData();
+                    fd.append('image', this.imageFile);
+                    await RepairBox.upload(`/admin/parts/${this.editing}/upload-image`, fd);
+                }
+                RepairBox.toast('Updated', 'success');
+                this.showModal = false;
+                this.load();
+            }
             this.saving = false;
-            if (r.success !== false) { RepairBox.toast('Updated', 'success'); this.showModal = false; this.load(); }
         },
         async remove(item) {
             if (!await RepairBox.confirm('Delete this part?')) return;

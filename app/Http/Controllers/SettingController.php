@@ -7,6 +7,7 @@ use App\Models\{ServiceType, RechargeProvider, Vendor};
 use App\Models\{Brand, Category, Subcategory, Product, Customer, Part};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{DB, Storage, Validator};
+use App\Services\ImageService;
 
 class SettingController extends Controller
 {
@@ -31,24 +32,12 @@ class SettingController extends Controller
 
         // Handle icon upload
         if ($request->hasFile('shop_icon')) {
-            $file = $request->file('shop_icon');
-            $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
-
-            // Delete old icon if it was stored on the same disk
+            $img = app(ImageService::class);
             $oldIcon = Setting::getValue('shop_icon');
-            if ($oldIcon && !str_starts_with($oldIcon, 'http')) {
-                Storage::disk($disk)->delete($oldIcon);
-            }
+            $img->delete($oldIcon);
 
-            $path = $file->store('shop', $disk);
-
-            // For S3/cloud disks, store the full public URL so it works across environments.
-            // For local disk, store the relative path (served via /storage symlink).
-            $storedValue = $disk === 's3'
-                ? Storage::disk('s3')->url($path)
-                : $path;
-
-            Setting::setValue('shop_icon', $storedValue);
+            $path = $img->store($request->file('shop_icon'), 'shop');
+            Setting::setValue('shop_icon', $path);
         }
 
         return response()->json(['success' => true, 'message' => 'Settings updated']);
@@ -102,71 +91,7 @@ class SettingController extends Controller
 
     public function uploadServiceTypeImage(Request $request, ServiceType $serviceType)
     {
-        $request->validate([
-            'image'     => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-        ]);
-
-        $updates = [];
-
-        if ($request->hasFile('image')) {
-            if ($serviceType->image) \Storage::disk('public')->delete($serviceType->image);
-            if ($serviceType->thumbnail && !$request->hasFile('thumbnail')) \Storage::disk('public')->delete($serviceType->thumbnail);
-
-            $path = $request->file('image')->store('service-types', 'public');
-            $updates['image'] = $path;
-
-            if (!$request->hasFile('thumbnail')) {
-                $thumbPath = $this->makeThumb(
-                    \Storage::disk('public')->path($path),
-                    'service-types/thumbs',
-                    pathinfo($path, PATHINFO_FILENAME) . '_thumb.jpg'
-                );
-                if ($thumbPath) $updates['thumbnail'] = $thumbPath;
-            }
-        }
-
-        if ($request->hasFile('thumbnail')) {
-            if ($serviceType->thumbnail) \Storage::disk('public')->delete($serviceType->thumbnail);
-            $path = $request->file('thumbnail')->store('service-types/thumbs', 'public');
-            $updates['thumbnail'] = $path;
-        }
-
-        if ($updates) $serviceType->update($updates);
-
-        $fresh = $serviceType->fresh();
-        return response()->json([
-            'success'   => true,
-            'image_url' => $fresh->image ? \Storage::disk('public')->url($fresh->image) : null,
-            'thumb_url' => $fresh->thumbnail ? \Storage::disk('public')->url($fresh->thumbnail) : null,
-        ]);
-    }
-
-    private function makeThumb(string $src, string $destFolder, string $filename): ?string
-    {
-        if (!function_exists('imagecreatefromjpeg')) return null;
-        $ext = strtolower(pathinfo($src, PATHINFO_EXTENSION));
-        $image = match($ext) {
-            'jpg', 'jpeg' => @imagecreatefromjpeg($src),
-            'png'         => @imagecreatefrompng($src),
-            'gif'         => @imagecreatefromgif($src),
-            'webp'        => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($src) : null,
-            default       => null,
-        };
-        if (!$image) return null;
-        [$sw, $sh] = getimagesize($src);
-        $ratio = min(200 / $sw, 200 / $sh);
-        $nw = max(1, (int)($sw * $ratio));
-        $nh = max(1, (int)($sh * $ratio));
-        $thumb = imagecreatetruecolor($nw, $nh);
-        imagecopyresampled($thumb, $image, 0, 0, 0, 0, $nw, $nh, $sw, $sh);
-        $dir = \Storage::disk('public')->path($destFolder);
-        if (!is_dir($dir)) mkdir($dir, 0755, true);
-        $destPath = $dir . DIRECTORY_SEPARATOR . $filename;
-        imagejpeg($thumb, $destPath, 85);
-        imagedestroy($image);
-        imagedestroy($thumb);
-        return $destFolder . '/' . $filename;
+        return response()->json(app(ImageService::class)->handleUpload($request, $serviceType, 'service-types'));
     }
 
     // Recharge Providers
@@ -227,6 +152,11 @@ class SettingController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function uploadRechargeProviderImage(Request $request, RechargeProvider $rechargeProvider)
+    {
+        return response()->json(app(ImageService::class)->handleUpload($request, $rechargeProvider, 'recharge-providers'));
+    }
+
     // Vendors
     public function vendors()
     {
@@ -266,6 +196,11 @@ class SettingController extends Controller
         ]);
         $vendor->update($data);
         return response()->json(['success' => true, 'data' => $vendor]);
+    }
+
+    public function uploadVendorImage(Request $request, Vendor $vendor)
+    {
+        return response()->json(app(ImageService::class)->handleUpload($request, $vendor, 'vendors'));
     }
 
     // Email Templates

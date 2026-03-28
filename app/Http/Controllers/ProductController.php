@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Inventory;
 use App\Http\Requests\ProductRequest;
 use App\Models\ActivityLog;
+use App\Services\ImageService;
 
 class ProductController extends Controller
 {
@@ -101,71 +102,6 @@ class ProductController extends Controller
 
     public function uploadImage(\Illuminate\Http\Request $request, Product $product)
     {
-        $request->validate([
-            'image'     => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-        ]);
-
-        $updates = [];
-
-        if ($request->hasFile('image')) {
-            // Delete old
-            if ($product->image) \Storage::disk('public')->delete($product->image);
-            if ($product->thumbnail && !$request->hasFile('thumbnail')) \Storage::disk('public')->delete($product->thumbnail);
-
-            $path = $request->file('image')->store('products', 'public');
-            $updates['image'] = $path;
-
-            // Auto-generate thumbnail from uploaded image (200×200 max)
-            if (!$request->hasFile('thumbnail')) {
-                $thumbPath = $this->makeThumb(
-                    \Storage::disk('public')->path($path),
-                    'products/thumbs',
-                    pathinfo($path, PATHINFO_FILENAME) . '_thumb.jpg'
-                );
-                if ($thumbPath) $updates['thumbnail'] = $thumbPath;
-            }
-        }
-
-        if ($request->hasFile('thumbnail')) {
-            if ($product->thumbnail) \Storage::disk('public')->delete($product->thumbnail);
-            $path = $request->file('thumbnail')->store('products/thumbs', 'public');
-            $updates['thumbnail'] = $path;
-        }
-
-        if ($updates) $product->update($updates);
-
-        return response()->json([
-            'success'   => true,
-            'image_url' => $product->fresh()->image ? \Storage::disk('public')->url($product->fresh()->image) : null,
-            'thumb_url' => $product->fresh()->thumbnail ? \Storage::disk('public')->url($product->fresh()->thumbnail) : null,
-        ]);
-    }
-
-    private function makeThumb(string $src, string $destFolder, string $filename): ?string
-    {
-        if (!function_exists('imagecreatefromjpeg')) return null;
-        $ext = strtolower(pathinfo($src, PATHINFO_EXTENSION));
-        $image = match($ext) {
-            'jpg', 'jpeg' => @imagecreatefromjpeg($src),
-            'png'         => @imagecreatefrompng($src),
-            'gif'         => @imagecreatefromgif($src),
-            'webp'        => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($src) : null,
-            default       => null,
-        };
-        if (!$image) return null;
-        [$sw, $sh] = getimagesize($src);
-        $ratio = min(200 / $sw, 200 / $sh);
-        $nw = max(1, (int)($sw * $ratio));
-        $nh = max(1, (int)($sh * $ratio));
-        $thumb = imagecreatetruecolor($nw, $nh);
-        imagecopyresampled($thumb, $image, 0, 0, 0, 0, $nw, $nh, $sw, $sh);
-        $dir = \Storage::disk('public')->path($destFolder);
-        if (!is_dir($dir)) mkdir($dir, 0755, true);
-        $destPath = $dir . DIRECTORY_SEPARATOR . $filename;
-        imagejpeg($thumb, $destPath, 85);
-        imagedestroy($image);
-        imagedestroy($thumb);
-        return $destFolder . '/' . $filename;
+        return response()->json(app(ImageService::class)->handleUpload($request, $product, 'products'));
     }
 }
