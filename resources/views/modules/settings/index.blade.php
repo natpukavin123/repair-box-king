@@ -13,7 +13,7 @@
     {{-- Tabs --}}
     <div class="secondary-tabs">
         <button @click="tab='general'; updateUrl()" :class="tab==='general' ? 'secondary-tab is-active' : 'secondary-tab'">General</button>
-        <button @click="tab='master-data'; updateUrl()" :class="tab==='master-data' ? 'secondary-tab is-active' : 'secondary-tab'">Master Data</button>
+        <button @click="tab='master-data'; updateUrl(); $dispatch('md-tab-activated')" :class="tab==='master-data' ? 'secondary-tab is-active' : 'secondary-tab'">Master Data</button>
         <button @click="tab='email-templates'; updateUrl()" :class="tab==='email-templates' ? 'secondary-tab is-active' : 'secondary-tab'">Email Templates</button>
         <button @click="tab='notifications'; updateUrl(); loadNotifications()" :class="tab==='notifications' ? 'secondary-tab is-active' : 'secondary-tab'">Notifications</button>
         <button @click="tab='print-settings'; updateUrl()" :class="tab==='print-settings' ? 'secondary-tab is-active' : 'secondary-tab'">Print Settings</button>
@@ -22,7 +22,7 @@
     </div>
 
     {{-- Master Data --}}
-    <div x-show="tab==='master-data'" x-data="masterDataPanel()" x-init="switchSection(mdSection)">
+    <div x-show="tab==='master-data'" x-data="masterDataPanel()" x-init="switchSection(mdSection)" @md-tab-activated.window="resyncSectionUrl()">
         <style>
             .md-workspace { gap: 0.7rem; }
             .md-workspace .md-panel {
@@ -421,6 +421,7 @@
                                 <thead class="sticky top-0 z-10">
                                     <tr class="bg-gray-50">
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Img</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">SKU</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Category</th>
@@ -433,6 +434,16 @@
                                     <template x-for="(item, idx) in mdItems" :key="item.id">
                                         <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openMdEdit(item)">
                                             <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
+                                            <td class="px-3 py-2">
+                                                <template x-if="item.thumbnail || item.image">
+                                                    <img :src="RepairBox.imageUrl(item.thumbnail || item.image)" class="w-8 h-8 rounded-lg object-cover border border-gray-100">
+                                                </template>
+                                                <template x-if="!item.thumbnail && !item.image">
+                                                    <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+                                                        <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                                    </div>
+                                                </template>
+                                            </td>
                                             <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
                                             <td class="px-3 py-2 text-sm" x-text="item.sku || '-'"></td>
                                             <td class="px-3 py-2 text-sm" x-text="item.category ? item.category.name : '-'"></td>
@@ -449,7 +460,7 @@
                                         </tr>
                                     </template>
                                     <tr x-show="mdItems.length === 0 && !mdLoading">
-                                        <td colspan="7" class="text-center py-12">
+                                        <td colspan="8" class="text-center py-12">
                                             <p class="text-gray-400 font-medium">No products found</p>
                                         </td>
                                     </tr>
@@ -1798,8 +1809,15 @@ function settingsPage() {
             this.load();
         },
         updateUrl() {
-            const params = new URLSearchParams();
-            if (this.tab !== 'general') params.set('tab', this.tab);
+            const params = new URLSearchParams(window.location.search);
+            if (this.tab !== 'general') {
+                params.set('tab', this.tab);
+            } else {
+                params.delete('tab');
+            }
+            if (this.tab !== 'master-data') {
+                params.delete('section');
+            }
             const qs = params.toString();
             history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
         },
@@ -2052,7 +2070,7 @@ function masterDataPanel() {
     };
 
     return {
-        mdSection: 'vendors',
+        mdSection: new URLSearchParams(window.location.search).get('section') || 'vendors',
         mdItems: [],
         mdLoading: false,
         mdSaving: false,
@@ -2081,6 +2099,15 @@ function masterDataPanel() {
             this.mdEditing = null;
             this.mdForm = {};
             this.loadMdData();
+            if (new URLSearchParams(window.location.search).get('tab') === 'master-data') {
+                this.resyncSectionUrl();
+            }
+        },
+
+        resyncSectionUrl() {
+            const params = new URLSearchParams(window.location.search);
+            params.set('section', this.mdSection);
+            history.replaceState(null, '', window.location.pathname + '?' + params.toString());
         },
 
         async loadMdData() {
