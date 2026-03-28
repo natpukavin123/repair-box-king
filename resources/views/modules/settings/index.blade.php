@@ -172,8 +172,9 @@
                 <div class="md-toolbar flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
                     <div class="relative flex-1">
                         <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                        <input x-model="mdSearch" @input.debounce.400ms="loadMdData()" type="text"
-                            class="form-input-custom md-search-input pl-10 pr-10 w-full text-sm" :placeholder="'Search ' + mdSectionLabel + '...'">
+                        <input x-model="mdSearch" @input.debounce.400ms="loadMdData()" type="search"
+                            class="form-input-custom md-search-input pl-10 pr-10 w-full text-sm" :placeholder="'Search ' + mdSectionLabel + '...'"
+                            autocomplete="off" readonly onfocus="this.removeAttribute('readonly')">
                         <button x-show="mdSearch" @click="mdSearch = ''; loadMdData()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
@@ -776,14 +777,14 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div class="grid grid-cols-3 gap-3" :class="!mdEditing && 'sm:grid-cols-4'">
                                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Purchase Price *</label>
                                     <input x-model="mdForm.purchase_price" type="number" step="0.01" class="form-input-custom" placeholder="0.00"></div>
                                 <div><label class="block text-sm font-medium text-gray-700 mb-1">MRP *</label>
                                     <input x-model="mdForm.mrp" type="number" step="0.01" class="form-input-custom" placeholder="0.00"></div>
                                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Selling Price *</label>
                                     <input x-model="mdForm.selling_price" type="number" step="0.01" class="form-input-custom" placeholder="0.00"></div>
-                                <div><label class="block text-sm font-medium text-gray-700 mb-1">Opening Stock</label>
+                                <div x-show="!mdEditing"><label class="block text-sm font-medium text-gray-700 mb-1">Opening Stock</label>
                                     <input x-model="mdForm.opening_stock" type="number" step="1" min="0" class="form-input-custom" placeholder="0"></div>
                             </div>
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
