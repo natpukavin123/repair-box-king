@@ -376,22 +376,22 @@
             {{-- Manual item entry --}}
             <div x-show="itemType === 'manual'" class="card sales-panel p-4">
                 <h4 class="text-sm font-semibold text-gray-700 mb-3">Manual Item Entry</h4>
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
-                    <div class="md:col-span-2">
+                <div class="space-y-3">
+                    <div>
                         <label class="text-xs font-medium text-gray-600">Item Name *</label>
-                            <input x-model="manualItem.item_name" type="text" class="form-input-custom sales-field mt-1 text-sm" placeholder="e.g. Tempered Glass">
+                        <input x-model="manualItem.item_name" type="text" class="form-input-custom sales-field mt-1 text-sm" placeholder="e.g. Tempered Glass">
                     </div>
-                    <div>
-                        <label class="text-xs font-medium text-gray-600">MRP</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-medium text-gray-600">MRP</label>
                             <input x-model.number="manualItem.mrp" type="number" step="0.01" class="form-input-custom sales-field mt-1 text-sm" placeholder="0.00">
-                    </div>
-                    <div>
-                        <label class="text-xs font-medium text-gray-600">Sell Price *</label>
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-gray-600">Sell Price *</label>
                             <input x-model.number="manualItem.price" type="number" step="0.01" class="form-input-custom sales-field mt-1 text-sm" placeholder="0.00">
+                        </div>
                     </div>
-                    <div class="flex items-end">
-                        <button @click="addManualItem()" class="btn-primary w-full text-sm">Add to Cart</button>
-                    </div>
+                    <button @click="addManualItem()" class="btn-primary w-full text-sm">Add to Cart</button>
                 </div>
             </div>
         </div>
