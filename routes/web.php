@@ -149,6 +149,8 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     // Settings
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
     Route::put('settings', [SettingController::class, 'update']);
+    Route::get('print-settings', [SettingController::class, 'printSettingsPage'])->name('print-settings.index');
+    Route::get('print-preview/{type}', [SettingController::class, 'printPreview'])->name('settings.print-preview');
     Route::get('service-types', [SettingController::class, 'serviceTypes'])->name('service-types.index');
     Route::get('service-types-search', [SettingController::class, 'searchServiceTypes']);
     Route::get('vendors-search', [SettingController::class, 'searchVendors']);

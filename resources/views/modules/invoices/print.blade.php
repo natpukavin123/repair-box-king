@@ -192,7 +192,7 @@ table.sum-tbl .row-full td{color:#000;font-weight:900;text-align:center;border-b
 }
 </style>
 </head>
-<body class="{{ $defaultLang === 'ta' ? 'lang-ta' : '' }}">
+<body class="{{ $defaultLang === 'ta' ? 'lang-ta' : '' }}" data-default-lang="{{ $defaultLang }}">
 
 <div class="toolbar">
     <div class="toolbar-left">
@@ -248,8 +248,8 @@ table.sum-tbl .row-full td{color:#000;font-weight:900;text-align:center;border-b
                 <div class="inv-logo"><div class="inv-logo-txt">REPAIR<br>BOX</div></div>
                 @endif
                 <div class="inv-shop">
-                    <div class="inv-shop-name" data-en="{{ e($shopName) }}" data-ta="{{ e($shopNameTa) }}">{{ $defaultLang === 'ta' ? $shopNameTa : $shopName }}</div>
-                    <div class="inv-shop-slogan" data-en="{{ e($shopSlogan) }}" data-ta="{{ e($shopSloganTa) }}">{{ $defaultLang === 'ta' ? $shopSloganTa : $shopSlogan }}</div>
+                    <div class="inv-shop-name" data-en="{{ e($shopName) }}" data-ta="{{ e($shopNameTa) }}" data-setting-ta="invoice_shop_name_ta">{{ $defaultLang === 'ta' ? $shopNameTa : $shopName }}</div>
+                    <div class="inv-shop-slogan" data-en="{{ e($shopSlogan) }}" data-ta="{{ e($shopSloganTa) }}" data-setting-ta="invoice_shop_slogan_ta">{{ $defaultLang === 'ta' ? $shopSloganTa : $shopSlogan }}</div>
                     <div class="inv-shop-contact"
                          data-en-addr="{{ e($shopAddress) }}"
                          data-ta-addr="{{ e($shopAddressTa) }}">
@@ -258,7 +258,7 @@ table.sum-tbl .row-full td{color:#000;font-weight:900;text-align:center;border-b
                     </div>
                 </div>
                 <div class="inv-badge">
-                    <div class="inv-type" data-en="{{ e($headerTitleEn) }}" data-ta="{{ e($headerTitleTa) }}">{{ $defaultLang === 'ta' ? $headerTitleTa : $headerTitleEn }}</div>
+                    <div class="inv-type" data-en="{{ e($headerTitleEn) }}" data-ta="{{ e($headerTitleTa) }}" data-setting-en="invoice_header_title_en" data-setting-ta="invoice_header_title_ta">{{ $defaultLang === 'ta' ? $headerTitleTa : $headerTitleEn }}</div>
                     <div class="inv-num">#{{ $invoice->invoice_number }}</div>
                     <div class="inv-date">{{ $invoice->created_at->format('d M Y') }}</div>
                 </div>
@@ -365,13 +365,13 @@ table.sum-tbl .row-full td{color:#000;font-weight:900;text-align:center;border-b
                         <div class="sign-blank"></div>
                         <div class="sign-line"></div>
                         <div class="sign-for" data-en="For {{ e($shopName) }}" data-ta="{{ e($shopNameTa) }} சார்பாக">{{ $defaultLang === 'ta' ? $shopNameTa . ' சார்பாக' : 'For ' . $shopName }}</div>
-                        <div class="sign-auth" data-en="{{ e($signLabelEn) }}" data-ta="{{ e($signLabelTa) }}">{{ $defaultLang === 'ta' ? $signLabelTa : $signLabelEn }}</div>
+                        <div class="sign-auth" data-en="{{ e($signLabelEn) }}" data-ta="{{ e($signLabelTa) }}" data-setting-en="invoice_sign_label_en" data-setting-ta="invoice_sign_label_ta">{{ $defaultLang === 'ta' ? $signLabelTa : $signLabelEn }}</div>
                     </div>
                 </div>
             </div>
 
             <div class="inv-foot">
-                <div class="inv-tc" data-en="{{ e($footerTextEn) }}" data-ta="{{ e($footerTextTa) }}">{{ $defaultLang === 'ta' ? $footerTextTa : $footerTextEn }}</div>
+                <div class="inv-tc" data-en="{{ e($footerTextEn) }}" data-ta="{{ e($footerTextTa) }}" data-setting-en="invoice_footer_text" data-setting-ta="invoice_footer_text_ta">{{ $defaultLang === 'ta' ? $footerTextTa : $footerTextEn }}</div>
                 <div class="inv-gen">
                     {{ $shopName }} &nbsp;|&nbsp; &#128222; {{ $shopPhone }}
                     @if($shopEmail) &nbsp;|&nbsp; &#9993; {{ $shopEmail }} @endif
@@ -406,6 +406,62 @@ function switchLang(lang) {
     document.getElementById('previewTitle').textContent =
         lang === 'ta' ? @json($headerTitleTa) : @json($headerTitleEn);
 }
+
+// ── Edit Mode (iframe embedding in settings page) ──
+(function() {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('edit') !== '1') return;
+
+    // Hide toolbar and adjust layout for iframe
+    var style = document.createElement('style');
+    style.textContent = '.toolbar{display:none!important;}body{background:#e8eaed;margin:0;display:flex;justify-content:center;padding:20px 0;min-height:100vh;}.a4-shell{width:148.5mm;height:210mm;margin:0 auto;box-shadow:0 2px 16px rgba(0,0,0,.18);flex-direction:column;}.blank-half,.cut-zone{display:none!important;}.inv-half{width:148.5mm;height:210mm;flex-shrink:0;padding:4mm 5mm;}@media print{body{background:#fff!important;padding:0!important;display:block!important;}html,body{width:297mm;height:210mm;margin:0;padding:0;}.a4-shell{width:297mm;height:210mm;box-shadow:none;display:flex;flex-direction:row;margin:0;}.blank-half{display:block!important;flex:1;background:#fff!important;}.blank-half *{display:none!important;}.inv-half{width:148.5mm;height:210mm;}.cut-zone{display:none!important;}}';
+    document.head.appendChild(style);
+
+    var currentLang = document.querySelector('[data-default-lang]')?.dataset.defaultLang || 'en';
+
+    // Make editable elements contenteditable
+    document.querySelectorAll('[data-setting-en], [data-setting-ta]').forEach(function(el) {
+        el.setAttribute('contenteditable', 'true');
+        el.style.cursor = 'text';
+        el.style.outline = 'none';
+        el.style.background = 'rgba(59,130,246,0.06)';
+        el.style.border = '1.5px dashed rgba(59,130,246,0.45)';
+        el.style.borderRadius = '3px';
+        el.style.padding = '1px 5px';
+        el.style.transition = 'all 0.2s';
+
+        el.addEventListener('focus', function() {
+            el.style.background = 'rgba(59,130,246,0.12)';
+            el.style.borderColor = 'rgba(59,130,246,0.8)';
+            el.style.boxShadow = '0 0 0 3px rgba(59,130,246,0.15)';
+        });
+        el.addEventListener('blur', function() {
+            el.style.background = 'rgba(59,130,246,0.06)';
+            el.style.borderColor = 'rgba(59,130,246,0.45)';
+            el.style.boxShadow = 'none';
+            var settingKey = el.getAttribute('data-setting-' + currentLang);
+            if (settingKey) {
+                var value = el.innerText.trim();
+                el.setAttribute('data-' + currentLang, value);
+                window.parent.postMessage({ type: 'setting-changed', key: settingKey, value: value }, '*');
+            }
+        });
+    });
+
+    // Override switchLang to track current language
+    var origSwitchLang = window.switchLang;
+    window.switchLang = function(lang) {
+        currentLang = lang;
+        if (origSwitchLang) origSwitchLang(lang);
+    };
+
+    // Listen for messages from parent
+    window.addEventListener('message', function(event) {
+        if (!event.data) return;
+        if (event.data.type === 'switch-lang') { window.switchLang(event.data.lang); }
+        if (event.data.type === 'init-edit-mode') { currentLang = event.data.lang; if (origSwitchLang) origSwitchLang(event.data.lang); }
+    });
+})();
 </script>
 </body>
 </html>

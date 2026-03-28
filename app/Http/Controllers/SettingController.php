@@ -19,19 +19,99 @@ class SettingController extends Controller
         return view('modules.settings.index');
     }
 
+    /**
+     * Allowed keys per section — only these are accepted & saved.
+     */
+    private function sectionKeyMap(): array
+    {
+        return [
+            'general' => [
+                'shop_name', 'shop_address', 'shop_phone', 'shop_email', 'shop_slogan',
+                'currency_symbol', 'invoice_prefix', 'repair_prefix', 'low_stock_threshold',
+                'ui_theme', 'ui_motion',
+            ],
+            'notifications' => [
+                'notify_email_received', 'notify_email_completed',
+                'notify_whatsapp_received', 'notify_whatsapp_completed',
+                'whatsapp_api_url', 'whatsapp_api_token', 'whatsapp_from_number',
+                'whatsapp_template_received', 'whatsapp_template_completed',
+            ],
+            'print' => [
+                'invoice_header_title_en', 'invoice_header_title_ta',
+                'invoice_footer_text', 'invoice_footer_text_ta',
+                'invoice_sign_label_en', 'invoice_sign_label_ta',
+                'invoice_default_language', 'invoice_paper_size',
+                'invoice_shop_name_ta', 'invoice_shop_slogan_ta', 'invoice_shop_address_ta',
+                'receipt_header_title_en', 'receipt_header_title_ta',
+                'receipt_notes_en', 'receipt_notes_ta',
+                'receipt_footer_text', 'receipt_footer_text_ta',
+                'receipt_sign_label_en', 'receipt_sign_label_ta',
+                'receipt_shop_name_ta', 'receipt_shop_slogan_ta', 'receipt_shop_address_ta',
+                'repair_invoice_header_title_en', 'repair_invoice_header_title_ta',
+                'repair_invoice_footer_text', 'repair_invoice_footer_text_ta',
+            ],
+        ];
+    }
+
+    private function sectionValidation(string $section): array
+    {
+        $base = ['settings' => 'required|array'];
+
+        return match ($section) {
+            'general' => array_merge($base, [
+                'settings.shop_name'          => 'nullable|string|max:200',
+                'settings.shop_address'       => 'nullable|string|max:500',
+                'settings.shop_phone'         => 'nullable|string|max:20',
+                'settings.shop_email'         => 'nullable|email|max:150',
+                'settings.shop_slogan'        => 'nullable|string|max:200',
+                'settings.currency_symbol'    => 'nullable|string|max:10',
+                'settings.invoice_prefix'     => 'nullable|string|max:20',
+                'settings.repair_prefix'      => 'nullable|string|max:20',
+                'settings.low_stock_threshold' => 'nullable|integer|min:0|max:9999',
+                'settings.ui_theme'           => 'nullable|string|in:atelier,graphite,solstice',
+                'settings.ui_motion'          => 'nullable|string|in:enhanced,reduced,none',
+                'shop_icon'                   => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ]),
+            'notifications' => array_merge($base, [
+                'settings.notify_email_received'     => 'nullable|string|in:0,1',
+                'settings.notify_email_completed'    => 'nullable|string|in:0,1',
+                'settings.notify_whatsapp_received'  => 'nullable|string|in:0,1',
+                'settings.notify_whatsapp_completed' => 'nullable|string|in:0,1',
+                'settings.whatsapp_api_url'          => 'nullable|url|max:500',
+                'settings.whatsapp_api_token'        => 'nullable|string|max:500',
+                'settings.whatsapp_from_number'      => 'nullable|string|max:30',
+                'settings.whatsapp_template_received'  => 'nullable|string|max:2000',
+                'settings.whatsapp_template_completed' => 'nullable|string|max:2000',
+            ]),
+            'print' => array_merge($base, [
+                'settings.*' => 'nullable|string|max:1000',
+            ]),
+            default => array_merge($base, [
+                'settings.*' => 'nullable|string|max:500',
+            ]),
+        };
+    }
+
     public function update(Request $request)
     {
-        $settings = $request->validate([
-            'settings' => 'required|array',
-            'settings.*' => 'nullable|string|max:500',
-            'shop_icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        ]);
-        foreach ($settings['settings'] as $key => $value) {
+        $section = $request->input('section', 'general');
+        $allowedKeys = $this->sectionKeyMap()[$section] ?? null;
+        $rules = $this->sectionValidation($section);
+
+        $validated = $request->validate($rules);
+        $incoming = $validated['settings'] ?? [];
+
+        // Filter to only allowed keys for this section
+        if ($allowedKeys) {
+            $incoming = array_intersect_key($incoming, array_flip($allowedKeys));
+        }
+
+        foreach ($incoming as $key => $value) {
             Setting::setValue($key, $value);
         }
 
-        // Handle icon upload
-        if ($request->hasFile('shop_icon')) {
+        // Handle icon upload (general section only)
+        if ($section === 'general' && $request->hasFile('shop_icon')) {
             $img = app(ImageService::class);
             $oldIcon = Setting::getValue('shop_icon');
             $img->delete($oldIcon);
@@ -41,6 +121,96 @@ class SettingController extends Controller
         }
 
         return response()->json(['success' => true, 'message' => 'Settings updated']);
+    }
+
+    public function printSettingsPage()
+    {
+        $settings = Setting::all()->pluck('setting_value', 'setting_key')->toArray();
+        return view('modules.settings.print-settings', compact('settings'));
+    }
+
+    public function printPreview(string $type)
+    {
+        if ($type === 'sales-invoice') {
+            $invoice = \App\Models\Invoice::with('items', 'payments', 'customer', 'creator')->latest()->first();
+            if (!$invoice) {
+                // Build a dummy invoice object with sample data
+                $invoice = new \App\Models\Invoice([
+                    'invoice_number' => 'INV-SAMPLE',
+                    'total_amount' => 850,
+                    'discount' => 0,
+                    'final_amount' => 850,
+                    'payment_status' => 'paid',
+                ]);
+                $invoice->id = 0;
+                $invoice->created_at = now();
+                $invoice->setRelation('customer', new \App\Models\Customer(['name' => 'John Doe', 'mobile_number' => '9876543210', 'address' => '123 Main Street']));
+                $invoice->setRelation('creator', new \App\Models\User(['name' => 'Admin']));
+                $item1 = new \App\Models\InvoiceItem(['item_name' => 'Phone Case (Sample)', 'quantity' => 2, 'price' => 300, 'mrp' => 350]);
+                $item2 = new \App\Models\InvoiceItem(['item_name' => 'Screen Guard', 'quantity' => 1, 'price' => 150, 'mrp' => 200]);
+                $item3 = new \App\Models\InvoiceItem(['item_name' => 'Charging Cable', 'quantity' => 1, 'price' => 100, 'mrp' => 120]);
+                $invoice->setRelation('items', collect([$item1, $item2, $item3]));
+                $pay = new \App\Models\InvoicePayment(['amount' => 850, 'payment_method' => 'cash']);
+                $invoice->setRelation('payments', collect([$pay]));
+            }
+            return view('modules.invoices.print', compact('invoice'));
+        }
+
+        if ($type === 'repair-receipt') {
+            $repair = \App\Models\Repair::with('customer', 'parts.part', 'payments', 'repairServices', 'statusHistory')->latest()->first();
+            if (!$repair) {
+                $repair = new \App\Models\Repair([
+                    'ticket_number' => 'RPR-SAMPLE',
+                    'tracking_id' => 'TRK-SAMPLE1',
+                    'device_brand' => 'Samsung',
+                    'device_model' => 'Galaxy S24',
+                    'imei' => '123456789012345',
+                    'problem_description' => 'Screen cracked, touch not working properly',
+                    'estimated_cost' => 1500,
+                    'service_charge' => 0,
+                    'status' => 'received',
+                    'expected_delivery_date' => now()->addDays(5),
+                ]);
+                $repair->id = 0;
+                $repair->created_at = now();
+                $repair->setRelation('customer', new \App\Models\Customer(['name' => 'Jane Smith', 'mobile_number' => '9876543210']));
+                $pay = new \App\Models\RepairPayment(['amount' => 500, 'payment_method' => 'cash', 'direction' => 'IN', 'payment_type' => 'advance']);
+                $repair->setRelation('payments', collect([$pay]));
+                $repair->setRelation('parts', collect([]));
+                $repair->setRelation('repairServices', collect([]));
+                $repair->setRelation('statusHistory', collect([]));
+            }
+            return view('modules.repairs.print', compact('repair'));
+        }
+
+        if ($type === 'repair-invoice') {
+            $repair = \App\Models\Repair::with('customer', 'parts.part', 'payments', 'repairServices', 'repairReturns.items')->latest()->first();
+            if (!$repair) {
+                $repair = new \App\Models\Repair([
+                    'ticket_number' => 'RPR-SAMPLE',
+                    'tracking_id' => 'TRK-SAMPLE1',
+                    'device_brand' => 'Samsung',
+                    'device_model' => 'Galaxy S24',
+                    'imei' => '123456789012345',
+                    'problem_description' => 'Screen cracked',
+                    'estimated_cost' => 1300,
+                    'service_charge' => 200,
+                    'status' => 'completed',
+                ]);
+                $repair->id = 0;
+                $repair->created_at = now();
+                $repair->setRelation('customer', new \App\Models\Customer(['name' => 'Jane Smith', 'mobile_number' => '9876543210', 'address' => '123 Main Street']));
+                $pay1 = new \App\Models\RepairPayment(['amount' => 500, 'payment_method' => 'cash', 'direction' => 'IN', 'payment_type' => 'advance']);
+                $pay2 = new \App\Models\RepairPayment(['amount' => 800, 'payment_method' => 'cash', 'direction' => 'IN', 'payment_type' => 'final']);
+                $repair->setRelation('payments', collect([$pay1, $pay2]));
+                $repair->setRelation('parts', collect([]));
+                $repair->setRelation('repairServices', collect([]));
+                $repair->setRelation('repairReturns', collect([]));
+            }
+            return view('modules.repairs.invoice', compact('repair'));
+        }
+
+        abort(404);
     }
 
     // Service Types

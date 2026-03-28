@@ -16,7 +16,7 @@
         <button @click="tab='master-data'; updateUrl(); $dispatch('md-tab-activated')" :class="tab==='master-data' ? 'secondary-tab is-active' : 'secondary-tab'">Master Data</button>
         <button @click="tab='email-templates'; updateUrl()" :class="tab==='email-templates' ? 'secondary-tab is-active' : 'secondary-tab'">Email Templates</button>
         <button @click="tab='notifications'; updateUrl(); loadNotifications()" :class="tab==='notifications' ? 'secondary-tab is-active' : 'secondary-tab'">Notifications</button>
-        <button @click="tab='print-settings'; updateUrl()" :class="tab==='print-settings' ? 'secondary-tab is-active' : 'secondary-tab'">Print Settings</button>
+        <button @click="tab='print'; updateUrl(); initPrintTab()" :class="tab==='print' ? 'secondary-tab is-active' : 'secondary-tab'">Print Settings</button>
         <button @click="tab='backups'; updateUrl()" :class="tab==='backups' ? 'secondary-tab is-active' : 'secondary-tab'">Backups</button>
         <button @click="tab='import'; updateUrl()" :class="tab==='import' ? 'secondary-tab is-active' : 'secondary-tab'">Import</button>
     </div>
@@ -100,18 +100,23 @@
                     <h3 class="font-semibold text-gray-800 text-sm">Master Data</h3>
                 </div>
                 <div class="p-2 space-y-0.5">
-                    <button @click="switchSection('vendors')" :class="mdSection==='vendors' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
-                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#f97316,#c2410c);">
-                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    {{-- ── Repairs Module ── --}}
+                    <div class="px-3 pt-2 pb-1"><p class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Repairs Module</p></div>
+                    <button @click="switchSection('parts')" :class="mdSection==='parts' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
+                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#f97316,#ea580c);">
+                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                         </div>
-                        <span>Vendor Management</span>
+                        <span>Parts</span>
                     </button>
-                    <button @click="switchSection('inventory')" :class="mdSection==='inventory' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
-                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);">
-                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+                    <button @click="switchSection('services')" :class="mdSection==='services' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
+                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#6366f1,#4f46e5);">
+                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                         </div>
-                        <span>Inventory</span>
+                        <span>Services</span>
                     </button>
+
+                    {{-- ── Sales Module ── --}}
+                    <div class="px-3 pt-3 pb-1 border-t border-gray-100 mt-1"><p class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Sales Module</p></div>
                     <button @click="switchSection('brands')" :class="mdSection==='brands' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
                         <div class="md-menu-icon" style="background:linear-gradient(135deg,#ec4899,#db2777);">
                             <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>
@@ -124,23 +129,17 @@
                         </div>
                         <span>Categories</span>
                     </button>
-                    <button @click="switchSection('parts')" :class="mdSection==='parts' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
-                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#f97316,#ea580c);">
-                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        </div>
-                        <span>Parts</span>
-                    </button>
                     <button @click="switchSection('products')" :class="mdSection==='products' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
                         <div class="md-menu-icon" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);">
                             <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                         </div>
                         <span>Products</span>
                     </button>
-                    <button @click="switchSection('customers')" :class="mdSection==='customers' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
-                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a);">
-                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <button @click="switchSection('inventory')" :class="mdSection==='inventory' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
+                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626);">
+                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
                         </div>
-                        <span>Customers</span>
+                        <span>Inventory</span>
                     </button>
                     <button @click="switchSection('recharge-providers')" :class="mdSection==='recharge-providers' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
                         <div class="md-menu-icon" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">
@@ -148,11 +147,20 @@
                         </div>
                         <span>Recharge Providers</span>
                     </button>
-                    <button @click="switchSection('services')" :class="mdSection==='services' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
-                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#6366f1,#4f46e5);">
-                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+
+                    {{-- ── People ── --}}
+                    <div class="px-3 pt-3 pb-1 border-t border-gray-100 mt-1"><p class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">People</p></div>
+                    <button @click="switchSection('vendors')" :class="mdSection==='vendors' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
+                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#f97316,#c2410c);">
+                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                         </div>
-                        <span>Services</span>
+                        <span>Vendors</span>
+                    </button>
+                    <button @click="switchSection('customers')" :class="mdSection==='customers' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
+                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#22c55e,#16a34a);">
+                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        </div>
+                        <span>Customers</span>
                     </button>
                 </div>
             </div>
@@ -966,125 +974,127 @@
     </div>
 
     {{-- General Settings --}}
-    <div x-show="tab==='general'" class="card">
-        <div class="card-header"><h3 class="text-lg font-semibold">General Settings</h3></div>
-        <div class="card-body space-y-8">
-            <div class="rounded-[28px] border border-white/60 bg-white/80 p-5 shadow-[0_20px_60px_-28px_rgba(15,23,42,0.35)] backdrop-blur">
-                <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-                    <div>
-                        <p class="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Appearance</p>
-                        <h4 class="mt-2 text-xl font-semibold text-slate-900">Theme Studio</h4>
-                        <p class="mt-1 max-w-2xl text-sm text-slate-500">Control the overall app mood, top-bar polish, and motion style. Changes preview immediately and are saved for all pages.</p>
-                    </div>
-                    <div class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600">
-                        <span class="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-                        Live preview enabled
-                    </div>
-                </div>
+    <div x-show="tab==='general'" class="space-y-5" x-cloak>
 
-                <div class="mt-5 grid gap-4 xl:grid-cols-3">
-                    <template x-for="theme in appearanceThemes" :key="theme.id">
-                        <button
-                            type="button"
-                            @click="settings.ui_theme = theme.id; applyAppearancePreview()"
-                            class="group rounded-[24px] border p-4 text-left transition duration-300"
-                            :class="settings.ui_theme === theme.id ? 'border-slate-900 bg-slate-950 text-white shadow-[0_24px_70px_-30px_rgba(15,23,42,0.8)]' : 'border-slate-200 bg-white text-slate-900 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]'"
-                        >
-                            <div class="flex items-start justify-between gap-4">
-                                <div>
-                                    <div class="text-sm font-semibold" x-text="theme.name"></div>
-                                    <div class="mt-1 text-xs" :class="settings.ui_theme === theme.id ? 'text-white/70' : 'text-slate-500'" x-text="theme.description"></div>
-                                </div>
-                                <div class="rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.22em]"
-                                     :class="settings.ui_theme === theme.id ? 'bg-white/10 text-white' : 'bg-slate-100 text-slate-500'">Theme</div>
-                            </div>
-
-                            <div class="mt-5 rounded-[20px] p-4" :style="theme.preview">
-                                <div class="flex items-center justify-between rounded-2xl border border-white/20 bg-white/10 px-3 py-3 backdrop-blur-sm">
-                                    <div>
-                                        <div class="text-[11px] uppercase tracking-[0.24em] text-white/70">Preview</div>
-                                        <div class="mt-1 text-sm font-semibold text-white">Dashboard Shell</div>
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <span class="h-3 w-3 rounded-full bg-white/80"></span>
-                                        <span class="h-3 w-3 rounded-full bg-white/45"></span>
-                                        <span class="h-3 w-3 rounded-full bg-white/25"></span>
-                                    </div>
-                                </div>
-                                <div class="mt-4 grid grid-cols-3 gap-2">
-                                    <span class="h-16 rounded-2xl border border-white/10 bg-white/15"></span>
-                                    <span class="h-16 rounded-2xl border border-white/10 bg-black/10"></span>
-                                    <span class="h-16 rounded-2xl border border-white/10 bg-white/10"></span>
-                                </div>
-                            </div>
-                        </button>
+        {{-- ─── Shop Settings ─── --}}
+        <div class="card">
+            <div class="card-header"><h3 class="text-lg font-semibold">Shop Settings</h3></div>
+            <div class="card-body space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <template x-for="key in settingKeys" :key="key">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1" x-text="formatLabel(key)"></label>
+                            <input :value="settings[key] || ''" @input="settings[key] = $event.target.value" type="text" class="form-input-custom">
+                        </div>
                     </template>
                 </div>
 
-                <div class="mt-5 grid gap-4 md:grid-cols-2">
-                    <div>
-                        <label class="form-label">Motion Style</label>
-                        <select x-model="settings.ui_motion" @change="applyAppearancePreview()" class="form-select-custom">
-                            <option value="enhanced">Enhanced</option>
-                            <option value="reduced">Reduced</option>
-                            <option value="none">Off</option>
-                        </select>
-                        <p class="mt-2 text-xs text-slate-500">Enhanced adds page transitions and hover movement. Reduced keeps the app calmer. Off removes decorative motion.</p>
-                    </div>
-                    <div class="rounded-[22px] border border-slate-200 bg-slate-50/80 p-4">
-                        <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Current Selection</p>
-                        <div class="mt-3 flex items-center justify-between rounded-2xl bg-white px-4 py-3 shadow-sm">
-                            <div>
-                                <div class="text-sm font-semibold text-slate-900" x-text="selectedTheme.name"></div>
-                                <div class="text-xs text-slate-500" x-text="selectedTheme.description"></div>
+                {{-- Shop Logo --}}
+                <div class="pt-5 border-t">
+                    <h4 class="text-md font-semibold mb-4">Shop Logo</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Upload Icon</label>
+                            <div class="flex items-center gap-4">
+                                <div class="flex-1">
+                                    <input type="file" @change="handleIconUpload" accept="image/*" class="form-input-custom">
+                                    <p class="text-xs text-gray-500 mt-1">Max 2MB. PNG, JPG, GIF, SVG</p>
+                                </div>
                             </div>
-                            <div class="text-right">
-                                <div class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">Motion</div>
-                                <div class="mt-1 text-sm font-semibold text-slate-700" x-text="formatMotionLabel(settings.ui_motion)"></div>
+                        </div>
+                        <div class="flex items-center justify-center">
+                            <div x-show="previewIcon" class="w-24 h-24 border rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
+                                <img :src="previewIcon" class="w-full h-full object-contain" alt="Preview">
+                            </div>
+                            <div x-show="!previewIcon && settings.shop_icon" class="w-24 h-24 border rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
+                                <img :src="getIconUrl()" class="w-full h-full object-contain" alt="Shop Icon" x-on:error="$el.parentElement.style.display='none'">
+                            </div>
+                            <div x-show="!previewIcon && !settings.shop_icon" class="w-24 h-24 border-2 border-dashed rounded-lg bg-gray-50 flex items-center justify-center">
+                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <template x-for="key in settingKeys" :key="key">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1" x-text="formatLabel(key)"></label>
-                        <input :value="settings[key] || ''" @input="settings[key] = $event.target.value" type="text" class="form-input-custom">
+                <div>
+                    <button @click="saveSettings()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save Shop Settings</button>
+                </div>
+            </div>
+        </div>
+
+        {{-- ─── Appearance ─── --}}
+        <div class="card">
+            <div class="card-header"><h3 class="text-lg font-semibold">Appearance</h3></div>
+            <div class="card-body">
+                <div class="rounded-[28px] border border-white/60 bg-white/80 p-5 shadow-[0_20px_60px_-28px_rgba(15,23,42,0.35)] backdrop-blur">
+                    <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+                        <div>
+                            <h4 class="text-xl font-semibold text-slate-900">Theme Studio</h4>
+                            <p class="mt-1 max-w-2xl text-sm text-slate-500">Control the overall app mood, top-bar polish, and motion style.</p>
+                        </div>
+                        <div class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600">
+                            <span class="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+                            Live preview
+                        </div>
                     </div>
-                </template>
-            </div>
 
-            {{-- Shop Icon Upload --}}
-            <div class="mt-6 pt-6 border-t">
-                <h4 class="text-md font-semibold mb-4">Shop Logo</h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Upload Icon</label>
-                        <div class="flex items-center gap-4">
-                            <div class="flex-1">
-                                <input type="file" @change="handleIconUpload" accept="image/*" class="form-input-custom">
-                                <p class="text-xs text-gray-500 mt-1">Max 2MB. PNG, JPG, GIF, SVG</p>
+                    <div class="mt-5 grid gap-4 xl:grid-cols-3">
+                        <template x-for="theme in appearanceThemes" :key="theme.id">
+                            <button type="button" @click="settings.ui_theme = theme.id; applyAppearancePreview()"
+                                class="group rounded-[24px] border p-4 text-left transition duration-300"
+                                :class="settings.ui_theme === theme.id ? 'border-slate-900 bg-slate-950 text-white shadow-[0_24px_70px_-30px_rgba(15,23,42,0.8)]' : 'border-slate-200 bg-white text-slate-900 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]'">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div>
+                                        <div class="text-sm font-semibold" x-text="theme.name"></div>
+                                        <div class="mt-1 text-xs" :class="settings.ui_theme === theme.id ? 'text-white/70' : 'text-slate-500'" x-text="theme.description"></div>
+                                    </div>
+                                </div>
+                                <div class="mt-5 rounded-[20px] p-4" :style="theme.preview">
+                                    <div class="flex items-center justify-between rounded-2xl border border-white/20 bg-white/10 px-3 py-3 backdrop-blur-sm">
+                                        <div>
+                                            <div class="text-[11px] uppercase tracking-[0.24em] text-white/70">Preview</div>
+                                            <div class="mt-1 text-sm font-semibold text-white">Dashboard Shell</div>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <span class="h-3 w-3 rounded-full bg-white/80"></span>
+                                            <span class="h-3 w-3 rounded-full bg-white/45"></span>
+                                            <span class="h-3 w-3 rounded-full bg-white/25"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </button>
+                        </template>
+                    </div>
+
+                    <div class="mt-5 grid gap-4 md:grid-cols-2">
+                        <div>
+                            <label class="form-label">Motion Style</label>
+                            <select x-model="settings.ui_motion" @change="applyAppearancePreview()" class="form-select-custom">
+                                <option value="enhanced">Enhanced</option>
+                                <option value="reduced">Reduced</option>
+                                <option value="none">Off</option>
+                            </select>
+                            <p class="mt-2 text-xs text-slate-500">Enhanced adds page transitions and hover movement. Reduced keeps the app calmer. Off removes decorative motion.</p>
+                        </div>
+                        <div class="rounded-[22px] border border-slate-200 bg-slate-50/80 p-4">
+                            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Current Selection</p>
+                            <div class="mt-3 flex items-center justify-between rounded-2xl bg-white px-4 py-3 shadow-sm">
+                                <div>
+                                    <div class="text-sm font-semibold text-slate-900" x-text="selectedTheme.name"></div>
+                                    <div class="text-xs text-slate-500" x-text="selectedTheme.description"></div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">Motion</div>
+                                    <div class="mt-1 text-sm font-semibold text-slate-700" x-text="formatMotionLabel(settings.ui_motion)"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center justify-center">
-                        <div x-show="previewIcon" class="w-24 h-24 border rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
-                            <img :src="previewIcon" class="w-full h-full object-contain" alt="Preview">
-                        </div>
-                        <div x-show="!previewIcon && settings.shop_icon" class="w-24 h-24 border rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
-                            <img :src="getIconUrl()" class="w-full h-full object-contain" alt="Shop Icon" x-on:error="$el.parentElement.style.display='none'" @load="console.log('Icon loaded:', getIconUrl())">
-                        </div>
-                        <div x-show="!previewIcon && !settings.shop_icon" class="w-24 h-24 border-2 border-dashed rounded-lg bg-gray-50 flex items-center justify-center">
-                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        </div>
-                    </div>
                 </div>
-            </div>
 
-            <div class="mt-6">
-                <button @click="saveSettings()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save Settings</button>
+                <div class="mt-5">
+                    <button @click="saveSettings()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save Appearance</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1114,383 +1124,155 @@
          Notifications
     ══════════════════════════════════════════════════════════ --}}
     <div x-show="tab==='notifications'" x-cloak>
+        <style>@media(max-width:1024px){ .notify-grid { grid-template-columns:1fr !important; } }</style>
+        <div class="notify-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; align-items:start;">
 
-        {{-- ─── Email Notifications ─────────────────────── --}}
-        <div class="card mb-6">
-            <div class="card-header flex items-center gap-3">
-                <div class="w-9 h-9 flex items-center justify-center rounded-lg bg-indigo-100">
-                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                </div>
-                <h3 class="text-lg font-semibold">Email Notifications</h3>
-            </div>
-            <div class="card-body space-y-5">
-                <p class="text-sm text-gray-500">Automatically send emails to customers when their repair status changes. Configure SMTP settings in <code class="bg-gray-100 px-1 rounded">.env</code> or under your hosting mail settings.</p>
-
-                {{-- Toggles --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <label class="flex items-start gap-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition" :class="settings.notify_email_received === '1' ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200'">
-                        <input type="checkbox" :checked="settings.notify_email_received === '1'" @change="settings.notify_email_received = $event.target.checked ? '1' : '0'" class="mt-0.5 h-4 w-4 accent-indigo-600">
-                        <div>
-                            <p class="font-medium text-gray-800 text-sm">Order Received</p>
-                            <p class="text-xs text-gray-500 mt-0.5">Send email when a repair ticket is created.</p>
+            {{-- ═══ LEFT: Toggles + Config ═══ --}}
+            <div class="space-y-5">
+                {{-- Email Toggles --}}
+                <div class="card">
+                    <div class="card-header flex items-center gap-3">
+                        <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-100">
+                            <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                         </div>
-                    </label>
-                    <label class="flex items-start gap-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition" :class="settings.notify_email_completed === '1' ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200'">
-                        <input type="checkbox" :checked="settings.notify_email_completed === '1'" @change="settings.notify_email_completed = $event.target.checked ? '1' : '0'" class="mt-0.5 h-4 w-4 accent-indigo-600">
-                        <div>
-                            <p class="font-medium text-gray-800 text-sm">Repair Completed</p>
-                            <p class="text-xs text-gray-500 mt-0.5">Send email when a repair is marked as completed.</p>
-                        </div>
-                    </label>
-                </div>
-
-                {{-- Variable Reference --}}
-                <details class="text-sm">
-                    <summary class="cursor-pointer text-indigo-600 font-medium select-none">Available template variables</summary>
-                    <div class="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 font-mono text-xs text-gray-600">
-                            <span>{customer_name}</span><span>{ticket_number}</span><span>{tracking_id}</span>
-                            <span>{tracking_url}</span><span>{device_brand}</span><span>{device_model}</span>
-                            <span>{estimated_cost}</span><span>{service_charge}</span><span>{grand_total}</span>
-                            <span>{expected_delivery_date}</span><span>{technician_name}</span><span>{status}</span>
-                            <span>{shop_name}</span><span>{shop_phone}</span>
-                        </div>
+                        <h3 class="font-semibold text-sm">Email Notifications</h3>
                     </div>
-                </details>
+                    <div class="card-body space-y-3">
+                        <label class="flex items-center gap-3 p-3 border rounded-xl cursor-pointer hover:bg-gray-50 transition" :class="settings.notify_email_received === '1' ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200'">
+                            <input type="checkbox" :checked="settings.notify_email_received === '1'" @change="settings.notify_email_received = $event.target.checked ? '1' : '0'" class="h-4 w-4 accent-indigo-600">
+                            <div><p class="font-medium text-gray-800 text-sm">Order Received</p><p class="text-xs text-gray-500">Email when repair ticket created</p></div>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 border rounded-xl cursor-pointer hover:bg-gray-50 transition" :class="settings.notify_email_completed === '1' ? 'border-indigo-300 bg-indigo-50' : 'border-gray-200'">
+                            <input type="checkbox" :checked="settings.notify_email_completed === '1'" @change="settings.notify_email_completed = $event.target.checked ? '1' : '0'" class="h-4 w-4 accent-indigo-600">
+                            <div><p class="font-medium text-gray-800 text-sm">Repair Completed</p><p class="text-xs text-gray-500">Email when repair marked completed</p></div>
+                        </label>
 
-                {{-- Email Templates quick-edit --}}
-                <div>
-                    <h4 class="font-semibold text-gray-700 mb-3">Email Templates</h4>
-                    <div class="space-y-4">
-                        <template x-for="et in emailTemplates.filter(t => ['repair_received','repair_completed'].includes(t.template_name))" :key="et.id">
-                            <div class="border border-gray-200 rounded-xl overflow-hidden">
-                                <div class="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-200">
+                        {{-- Email Templates quick-edit --}}
+                        <div class="pt-2">
+                            <h4 class="font-semibold text-gray-700 text-xs uppercase tracking-wider mb-2">Email Templates</h4>
+                            <template x-for="et in emailTemplates.filter(t => ['repair_received','repair_completed'].includes(t.template_name))" :key="et.id">
+                                <div class="flex items-center justify-between p-2.5 border border-gray-200 rounded-lg mb-2">
                                     <div class="flex items-center gap-2">
                                         <span class="w-2 h-2 rounded-full" :class="et.template_name === 'repair_received' ? 'bg-blue-500' : 'bg-emerald-500'"></span>
-                                        <span class="font-medium text-sm" x-text="et.template_name === 'repair_received' ? '📥 Order Received' : '✅ Repair Completed'"></span>
+                                        <span class="text-sm font-medium" x-text="et.template_name === 'repair_received' ? 'Order Received' : 'Repair Completed'"></span>
+                                        <span class="badge text-[10px]" :class="et.status==='active' ? 'badge-success' : 'badge-danger'" x-text="et.status"></span>
                                     </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="badge" :class="et.status==='active' ? 'badge-success' : 'badge-danger'" x-text="et.status"></span>
-                                        <button @click="etEditing=et; etForm={subject:et.subject,body:et.body||'',status:et.status}; showEtModal=true" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">Edit</button>
-                                    </div>
+                                    <button @click="etEditing=et; etForm={subject:et.subject,body:et.body||'',status:et.status}; showEtModal=true" class="text-indigo-600 hover:text-indigo-800 text-xs font-semibold">Edit</button>
                                 </div>
-                                <div class="px-4 py-3">
-                                    <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">Subject</p>
-                                    <p class="text-sm text-gray-700 font-mono" x-text="et.subject || '(no subject)'"></p>
-                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- WhatsApp Toggles + Config --}}
+                <div class="card">
+                    <div class="card-header flex items-center gap-3">
+                        <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-green-100">
+                            <svg class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                        </div>
+                        <h3 class="font-semibold text-sm">WhatsApp Notifications</h3>
+                    </div>
+                    <div class="card-body space-y-3">
+                        <label class="flex items-center gap-3 p-3 border rounded-xl cursor-pointer hover:bg-gray-50 transition" :class="settings.notify_whatsapp_received === '1' ? 'border-green-300 bg-green-50' : 'border-gray-200'">
+                            <input type="checkbox" :checked="settings.notify_whatsapp_received === '1'" @change="settings.notify_whatsapp_received = $event.target.checked ? '1' : '0'" class="h-4 w-4 accent-green-600">
+                            <div><p class="font-medium text-gray-800 text-sm">Order Received</p><p class="text-xs text-gray-500">WhatsApp when repair ticket created</p></div>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 border rounded-xl cursor-pointer hover:bg-gray-50 transition" :class="settings.notify_whatsapp_completed === '1' ? 'border-green-300 bg-green-50' : 'border-gray-200'">
+                            <input type="checkbox" :checked="settings.notify_whatsapp_completed === '1'" @change="settings.notify_whatsapp_completed = $event.target.checked ? '1' : '0'" class="h-4 w-4 accent-green-600">
+                            <div><p class="font-medium text-gray-800 text-sm">Repair Completed</p><p class="text-xs text-gray-500">WhatsApp when repair marked completed</p></div>
+                        </label>
+
+                        <div class="pt-2 space-y-3">
+                            <h4 class="font-semibold text-gray-700 text-xs uppercase tracking-wider">API Configuration</h4>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">API Endpoint URL</label>
+                                <input x-model="settings.whatsapp_api_url" type="url" class="form-input-custom" placeholder="https://api.ultramsg.com/instanceXXXX">
+                                <p class="text-xs text-gray-400 mt-1">Base URL – <code class="bg-gray-100 px-1 rounded">/sendMessage</code> appended automatically</p>
                             </div>
-                        </template>
-                        <p x-show="emailTemplates.filter(t => ['repair_received','repair_completed'].includes(t.template_name)).length === 0"
-                           class="text-sm text-gray-400">No repair email templates found. Run migrations to seed default templates.</p>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">API Token</label>
+                                <input x-model="settings.whatsapp_api_token" type="password" class="form-input-custom" placeholder="••••••••••">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">From Number <span class="text-gray-400 font-normal">(optional)</span></label>
+                                <input x-model="settings.whatsapp_from_number" type="text" class="form-input-custom" placeholder="919876543210">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 pt-3">
+                            <button @click="saveNotificationSettings()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save Settings</button>
+                            <button @click="showTestNotifyModal=true" class="btn-secondary text-sm">Test Message</button>
+                        </div>
                     </div>
                 </div>
-
-                <div><button @click="saveNotificationSettings()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save Email Settings</button></div>
             </div>
-        </div>
 
-        {{-- ─── WhatsApp Notifications ─────────────────────── --}}
-        <div class="card">
-            <div class="card-header flex items-center gap-3">
-                <div class="w-9 h-9 flex items-center justify-center rounded-lg bg-green-100">
-                    <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+            {{-- ═══ RIGHT: Template Editor ═══ --}}
+            <div class="card" style="position:sticky; top:1rem;">
+                <div class="card-header">
+                    <h3 class="font-semibold text-sm">Message Templates</h3>
                 </div>
-                <h3 class="text-lg font-semibold">WhatsApp Notifications</h3>
-            </div>
-            <div class="card-body space-y-5">
-                <div class="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-                    <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span>Works with any HTTP WhatsApp gateway like <strong>Ultramsg</strong>, <strong>2chat</strong>, or <strong>WA-Gateway</strong>. Enter the API URL, token, and your sender number below.</span>
-                </div>
-
-                {{-- Toggles --}}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <label class="flex items-start gap-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition" :class="settings.notify_whatsapp_received === '1' ? 'border-green-300 bg-green-50' : 'border-gray-200'">
-                        <input type="checkbox" :checked="settings.notify_whatsapp_received === '1'" @change="settings.notify_whatsapp_received = $event.target.checked ? '1' : '0'" class="mt-0.5 h-4 w-4 accent-green-600">
-                        <div>
-                            <p class="font-medium text-gray-800 text-sm">Order Received</p>
-                            <p class="text-xs text-gray-500 mt-0.5">Send WhatsApp when a repair ticket is created.</p>
+                <div class="card-body space-y-4">
+                    <select x-model="selectedNotifyTemplate" class="form-select-custom">
+                        <option value="whatsapp_template_received">WhatsApp: Order Received</option>
+                        <option value="whatsapp_template_completed">WhatsApp: Repair Completed</option>
+                    </select>
+                    <textarea x-model="settings[selectedNotifyTemplate]" class="form-input-custom font-mono text-sm" rows="14"
+                              placeholder="Hello {customer_name}! Your device has been received..."></textarea>
+                    <details class="text-sm">
+                        <summary class="cursor-pointer text-indigo-600 font-medium select-none">Available template variables</summary>
+                        <div class="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <div class="grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-xs text-gray-600">
+                                <span>{customer_name}</span><span>{ticket_number}</span><span>{tracking_id}</span>
+                                <span>{tracking_url}</span><span>{device_brand}</span><span>{device_model}</span>
+                                <span>{estimated_cost}</span><span>{service_charge}</span><span>{grand_total}</span>
+                                <span>{expected_delivery_date}</span><span>{technician_name}</span><span>{status}</span>
+                                <span>{shop_name}</span><span>{shop_phone}</span>
+                            </div>
                         </div>
-                    </label>
-                    <label class="flex items-start gap-3 p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition" :class="settings.notify_whatsapp_completed === '1' ? 'border-green-300 bg-green-50' : 'border-gray-200'">
-                        <input type="checkbox" :checked="settings.notify_whatsapp_completed === '1'" @change="settings.notify_whatsapp_completed = $event.target.checked ? '1' : '0'" class="mt-0.5 h-4 w-4 accent-green-600">
-                        <div>
-                            <p class="font-medium text-gray-800 text-sm">Repair Completed</p>
-                            <p class="text-xs text-gray-500 mt-0.5">Send WhatsApp when a repair is marked as completed.</p>
-                        </div>
-                    </label>
-                </div>
-
-                {{-- API Config --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">API Endpoint URL</label>
-                        <input x-model="settings.whatsapp_api_url" type="url" class="form-input-custom" placeholder="https://api.ultramsg.com/instanceXXXX">
-                        <p class="text-xs text-gray-400 mt-1">Base URL – the system appends <code class="bg-gray-100 px-1 rounded">/sendMessage</code> automatically.</p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">API Token / Secret</label>
-                        <input x-model="settings.whatsapp_api_token" type="password" class="form-input-custom" placeholder="••••••••••">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">From Number / Instance ID <span class="text-gray-400 font-normal">(optional)</span></label>
-                        <input x-model="settings.whatsapp_from_number" type="text" class="form-input-custom" placeholder="919876543210">
-                        <p class="text-xs text-gray-400 mt-1">Some providers need the sender number or instance ID.</p>
-                    </div>
-                </div>
-
-                {{-- WhatsApp Templates --}}
-                <div class="space-y-4">
-                    <h4 class="font-semibold text-gray-700">Message Templates</h4>
-
-                    <div class="border border-gray-200 rounded-xl overflow-hidden">
-                        <div class="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-200">
-                            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                            <span class="font-medium text-sm">📥 Order Received Message</span>
-                        </div>
-                        <div class="p-4">
-                            <textarea x-model="settings.whatsapp_template_received" class="form-input-custom font-mono text-sm" rows="7"
-                                      placeholder="Hello {customer_name}! Your device has been received..."></textarea>
-                            <p class="text-xs text-gray-400 mt-1">Use the same <code class="bg-gray-100 px-1 rounded">{variable}</code> placeholders as email templates.</p>
-                        </div>
-                    </div>
-
-                    <div class="border border-gray-200 rounded-xl overflow-hidden">
-                        <div class="flex items-center gap-2 px-4 py-3 bg-gray-50 border-b border-gray-200">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                            <span class="font-medium text-sm">✅ Repair Completed Message</span>
-                        </div>
-                        <div class="p-4">
-                            <textarea x-model="settings.whatsapp_template_completed" class="form-input-custom font-mono text-sm" rows="7"
-                                      placeholder="Hello {customer_name}! Your device is ready for pickup..."></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-3">
-                    <button @click="saveNotificationSettings()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save WhatsApp Settings</button>
-                    <button @click="showTestNotifyModal=true" class="btn-secondary text-sm">🧪 Send Test Message</button>
+                    </details>
                 </div>
             </div>
         </div>
     </div>
     {{-- /Notifications --}}
 
-    {{-- ══════════════════════════════════════════════════════════
-         Print Settings (all print types in one place)
-    ══════════════════════════════════════════════════════════ --}}
-    <div x-show="tab==='print-settings'" class="space-y-6">
-
-        {{-- ─── SALES INVOICE ─── --}}
-        <div class="card">
-            <div class="card-header flex items-center gap-3">
-                <div class="w-9 h-9 flex items-center justify-center rounded-lg bg-blue-100">
-                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+    {{-- ═══ Print Settings ═══ --}}
+    <div x-show="tab==='print'" x-cloak>
+        {{-- Toolbar --}}
+        <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
+            <div class="flex items-center gap-3">
+                {{-- Sub-tabs --}}
+                <div style="display:inline-flex; gap:4px; background:#f1f5f9; padding:4px; border-radius:12px;">
+                    <button @click="printTab='sales-invoice'; loadPrintIframe()" :class="printTab==='sales-invoice' ? 'px-4 py-1.5 text-xs font-bold rounded-lg bg-white text-gray-900 shadow-sm' : 'px-4 py-1.5 text-xs font-medium rounded-lg text-gray-500 hover:text-gray-700'">Sales Invoice</button>
+                    <button @click="printTab='repair-receipt'; loadPrintIframe()" :class="printTab==='repair-receipt' ? 'px-4 py-1.5 text-xs font-bold rounded-lg bg-white text-gray-900 shadow-sm' : 'px-4 py-1.5 text-xs font-medium rounded-lg text-gray-500 hover:text-gray-700'">Repair Receipt</button>
+                    <button @click="printTab='repair-invoice'; loadPrintIframe()" :class="printTab==='repair-invoice' ? 'px-4 py-1.5 text-xs font-bold rounded-lg bg-white text-gray-900 shadow-sm' : 'px-4 py-1.5 text-xs font-medium rounded-lg text-gray-500 hover:text-gray-700'">Repair Invoice</button>
                 </div>
-                <h3 class="text-lg font-semibold">Sales Invoice</h3>
+                {{-- Language toggle --}}
+                <div style="display:inline-flex; border-radius:8px; overflow:hidden; border:2px solid #1e293b;">
+                    <button @click="printLang='en'; sendLangToIframe()" :class="printLang==='en' ? 'px-3 py-1 text-[11px] font-bold bg-gray-900 text-white' : 'px-3 py-1 text-[11px] font-bold bg-white text-gray-900 hover:bg-gray-50'" style="border:none; cursor:pointer;">EN</button>
+                    <button @click="printLang='ta'; sendLangToIframe()" :class="printLang==='ta' ? 'px-3 py-1 text-[11px] font-bold bg-gray-900 text-white' : 'px-3 py-1 text-[11px] font-bold bg-white text-gray-900 hover:bg-gray-50'" style="border:none; cursor:pointer;">TA</button>
+                </div>
             </div>
-            <div class="card-body space-y-5">
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Default Print Language</label>
-                        <select x-model="settings.invoice_default_language" class="form-select-custom w-full">
-                            <option value="en">English</option>
-                            <option value="ta">Tamil (தமிழ்)</option>
-                        </select>
-                        <p class="text-xs text-gray-500 mt-1">Pre-selected when print dialog appears. Can be changed at print time.</p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Paper Size</label>
-                        <select x-model="settings.invoice_paper_size" class="form-select-custom w-full">
-                            <option value="A4_landscape">A4 Landscape (half page)</option>
-                            <option value="A5">A5 Portrait</option>
-                        </select>
-                    </div>
-                </div>
-
-                {{-- Header Titles --}}
-                <div class="border-t pt-5">
-                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Header Titles</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Title (English)</label>
-                            <input type="text" x-model="settings.invoice_header_title_en" class="form-input-custom" placeholder="Sales Invoice">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Invoice Title (Tamil)</label>
-                            <input type="text" x-model="settings.invoice_header_title_ta" class="form-input-custom" placeholder="விற்பனை இரசீது">
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Shop Info (Tamil variants) --}}
-                <div class="border-t pt-5">
-                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Tamil Shop Info</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Shop Name (Tamil)</label>
-                            <input type="text" x-model="settings.invoice_shop_name_ta" class="form-input-custom" placeholder="Leave blank to use English name">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Shop Slogan (Tamil)</label>
-                            <input type="text" x-model="settings.invoice_shop_slogan_ta" class="form-input-custom" placeholder="உங்கள் நம்பகமான மொபைல் பார்ட்னர்">
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Shop Address (Tamil)</label>
-                            <input type="text" x-model="settings.invoice_shop_address_ta" class="form-input-custom" placeholder="Leave blank to use English address">
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Footer --}}
-                <div class="border-t pt-5">
-                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Footer Text</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Footer (English)</label>
-                            <textarea x-model="settings.invoice_footer_text" class="form-input-custom" rows="2" placeholder="Subject to jurisdiction..."></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Footer (Tamil)</label>
-                            <textarea x-model="settings.invoice_footer_text_ta" class="form-input-custom" rows="2" placeholder="நீதிமன்ற அதிகார வரம்புக்கு உட்பட்டது..."></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Signature --}}
-                <div class="border-t pt-5">
-                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Signature Labels</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Signature Label (English)</label>
-                            <input type="text" x-model="settings.invoice_sign_label_en" class="form-input-custom" placeholder="Authorised Signatory">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Signature Label (Tamil)</label>
-                            <input type="text" x-model="settings.invoice_sign_label_ta" class="form-input-custom" placeholder="அங்கீகரிக்கப்பட்ட கையொப்பம்">
-                        </div>
-                    </div>
-                </div>
-
-                <div><button @click="saveSettings()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save Settings</button></div>
+            <div class="flex items-center gap-2">
+                <button @click="printSample()" class="btn-secondary text-sm px-4">
+                    <svg class="w-3.5 h-3.5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    Print Sample
+                </button>
+                <button @click="savePrintSettings()" class="btn-primary text-sm px-4" :disabled="saving">
+                    <span x-show="saving" class="spinner mr-1" style="width:14px;height:14px;"></span>
+                    Save Settings
+                </button>
             </div>
         </div>
 
-        {{-- ─── REPAIR RECEIPT ─── --}}
-        <div class="card">
-            <div class="card-header flex items-center gap-3">
-                <div class="w-9 h-9 flex items-center justify-center rounded-lg bg-emerald-100">
-                    <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                </div>
-                <h3 class="text-lg font-semibold">Repair Receipt</h3>
-            </div>
-            <div class="card-body space-y-5">
+        <p class="text-xs text-gray-400 mb-3">Click on any <span style="background:rgba(59,130,246,.06); border:1.5px dashed rgba(59,130,246,.45); border-radius:3px; padding:0 4px;">highlighted text</span> in the preview to edit it directly.</p>
 
-                {{-- Header Titles --}}
-                <div>
-                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Header Titles</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Receipt Title (English)</label>
-                            <input type="text" x-model="settings.receipt_header_title_en" class="form-input-custom" placeholder="Repair Receipt">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Receipt Title (Tamil)</label>
-                            <input type="text" x-model="settings.receipt_header_title_ta" class="form-input-custom" placeholder="பழுதுபார்ப்பு ரசீது">
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Shop Info (Tamil variants) --}}
-                <div class="border-t pt-5">
-                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Tamil Shop Info</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Shop Name (Tamil)</label>
-                            <input type="text" x-model="settings.receipt_shop_name_ta" class="form-input-custom" placeholder="Leave blank to use English name">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Shop Slogan (Tamil)</label>
-                            <input type="text" x-model="settings.receipt_shop_slogan_ta" class="form-input-custom" placeholder="உங்கள் நம்பகமான மொபைல் பார்ட்னர்">
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Shop Address (Tamil)</label>
-                            <input type="text" x-model="settings.receipt_shop_address_ta" class="form-input-custom" placeholder="Leave blank to use English address">
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Important Notes --}}
-                <div class="border-t pt-5">
-                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Important Notes <span class="text-xs text-gray-400 font-normal">(printed on receipt, one per line)</span></h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Notes (English)</label>
-                            <textarea x-model="settings.receipt_notes_en" class="form-input-custom" rows="4" placeholder="Keep this receipt to claim your device.&#10;Estimated cost may change upon diagnosis.&#10;Data backup is customer's responsibility.&#10;Unclaimed devices after 30 days — not our liability."></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Notes (Tamil)</label>
-                            <textarea x-model="settings.receipt_notes_ta" class="form-input-custom" rows="4" placeholder="உங்கள் சாதனத்தை பெற இந்த ரசீதை வைத்திருங்கள்.&#10;மதிப்பீட்டுச் செலவு ஆய்வுக்குப் பிறகு மாறலாம்."></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Footer --}}
-                <div class="border-t pt-5">
-                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Footer Text</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Footer (English)</label>
-                            <textarea x-model="settings.receipt_footer_text" class="form-input-custom" rows="2" placeholder="Keep this receipt to claim your device..."></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Footer (Tamil)</label>
-                            <textarea x-model="settings.receipt_footer_text_ta" class="form-input-custom" rows="2" placeholder="உங்கள் சாதனத்தை பெற இந்த ரசீதை வைத்திருங்கள்..."></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Signature --}}
-                <div class="border-t pt-5">
-                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Signature Labels</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Signature Label (English)</label>
-                            <input type="text" x-model="settings.receipt_sign_label_en" class="form-input-custom" placeholder="Authorised Signatory">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Signature Label (Tamil)</label>
-                            <input type="text" x-model="settings.receipt_sign_label_ta" class="form-input-custom" placeholder="அங்கீகரிக்கப்பட்ட கையொப்பம்">
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Repair Invoice --}}
-                <div class="border-t pt-5">
-                    <h4 class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">Repair Invoice Settings</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Repair Invoice Title (English)</label>
-                            <input type="text" x-model="settings.repair_invoice_header_title_en" class="form-input-custom" placeholder="Repair Invoice">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Repair Invoice Title (Tamil)</label>
-                            <input type="text" x-model="settings.repair_invoice_header_title_ta" class="form-input-custom" placeholder="பழுதுபார்ப்பு இரசீது">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Repair Invoice Footer (English)</label>
-                            <textarea x-model="settings.repair_invoice_footer_text" class="form-input-custom" rows="2" placeholder="Subject to jurisdiction..."></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Repair Invoice Footer (Tamil)</label>
-                            <textarea x-model="settings.repair_invoice_footer_text_ta" class="form-input-custom" rows="2" placeholder="நீதிமன்ற அதிகார வரம்புக்கு..."></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <div><button @click="saveSettings()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save Settings</button></div>
-            </div>
+        {{-- Iframe Container --}}
+        <div style="background:#e8eaed; border-radius:14px; padding:0; overflow:hidden;">
+            <iframe x-ref="printIframe"
+                    style="width:100%; height:calc(100vh - 200px); min-height:600px; border:none; display:block;"
+                    @load="onPrintIframeLoad()"></iframe>
         </div>
     </div>
 
@@ -1757,6 +1539,9 @@ function settingsPage() {
     return {
         tab: 'general', saving: false, iconFile: null, previewIcon: '',
         settings: {}, settingKeys: ['shop_name','shop_address','shop_phone','shop_email','shop_slogan','currency_symbol','invoice_prefix','repair_prefix','low_stock_threshold'],
+        selectedNotifyTemplate: 'whatsapp_template_received',
+        // Print settings state
+        printTab: 'sales-invoice', printLang: 'en', printSettings: {},
         // Import state
         importType: '', importFile: null, importValidating: false, importConfirming: false,
         importResults: null, importSummary: { total: 0, creates: 0, updates: 0, errors: 0 },
@@ -1807,6 +1592,16 @@ function settingsPage() {
                 this.tab = p.get('tab');
             }
             this.load();
+            // Listen for postMessage from print iframe edits
+            window.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'setting-changed') {
+                    this.printSettings[event.data.key] = event.data.value;
+                }
+            });
+            // If landing on print tab, init it after load
+            if (this.tab === 'print') {
+                setTimeout(() => this.initPrintTab(), 600);
+            }
         },
         updateUrl() {
             const params = new URLSearchParams(window.location.search);
@@ -1842,10 +1637,9 @@ function settingsPage() {
         async saveNotificationSettings() {
             this.saving = true;
             try {
-                const payload = {};
-                this.notificationSettingKeys.forEach(k => { if (this.settings[k] !== undefined) payload['settings['+k+']'] = this.settings[k]; });
                 const formData = new FormData();
                 formData.append('_method', 'PUT');
+                formData.append('section', 'notifications');
                 this.notificationSettingKeys.forEach(k => {
                     if (this.settings[k] !== undefined && this.settings[k] !== null)
                         formData.append('settings['+k+']', this.settings[k]);
@@ -1855,6 +1649,10 @@ function settingsPage() {
                     headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
                     body: formData
                 });
+                if (!r.ok) {
+                    const err = await r.json().catch(() => null);
+                    throw new Error(err?.message || `HTTP ${r.status}`);
+                }
                 const data = await r.json();
                 if (data.success !== false) RepairBox.toast('Notification settings saved', 'success');
                 else RepairBox.toast(data.message || 'Error', 'error');
@@ -1996,13 +1794,13 @@ function settingsPage() {
         },
         async saveSettings() {
             this.saving = true;
+            const generalKeys = ['shop_name','shop_address','shop_phone','shop_email','shop_slogan','currency_symbol','invoice_prefix','repair_prefix','low_stock_threshold','ui_theme','ui_motion'];
             try {
                 const formData = new FormData();
-                // Laravel method spoofing: POST + _method=PUT so PHP parses multipart/form-data
                 formData.append('_method', 'PUT');
-                // Append each setting individually with array notation
-                Object.keys(this.settings).forEach(key => {
-                    if (key !== 'shop_icon' && this.settings[key] !== null) {
+                formData.append('section', 'general');
+                generalKeys.forEach(key => {
+                    if (this.settings[key] !== null && this.settings[key] !== undefined) {
                         formData.append(`settings[${key}]`, this.settings[key]);
                     }
                 });
@@ -2020,33 +1818,93 @@ function settingsPage() {
                 });
 
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    const err = await response.json().catch(() => null);
+                    throw new Error(err?.message || `HTTP ${response.status}`);
                 }
 
                 const r = await response.json();
                 this.saving = false;
                 this.iconFile = null;
                 if (r.success !== false) {
-                    RepairBox.toast('Settings saved', 'success');
+                    RepairBox.toast('General settings saved', 'success');
                     this.previewIcon = '';
                     this.iconFile = null;
-                    setTimeout(() => this.load(), 500);
                 } else {
                     RepairBox.toast(r.message || 'Error saving settings', 'error');
                 }
             } catch (err) {
                 this.saving = false;
                 console.error('Save error:', err);
-                RepairBox.toast('Error saving settings: ' + err.message, 'error');
+                RepairBox.toast('Error: ' + err.message, 'error');
             }
         },
         clearIconPreview() {
             this.previewIcon = '';
             this.iconFile = null;
         },
+        // ── Print Settings methods ──
+        initPrintTab() {
+            const printKeys = [
+                'invoice_header_title_en','invoice_header_title_ta','invoice_footer_text','invoice_footer_text_ta',
+                'invoice_sign_label_en','invoice_sign_label_ta','invoice_default_language','invoice_paper_size',
+                'invoice_shop_name_ta','invoice_shop_slogan_ta','invoice_shop_address_ta',
+                'receipt_header_title_en','receipt_header_title_ta','receipt_notes_en','receipt_notes_ta',
+                'receipt_footer_text','receipt_footer_text_ta','receipt_sign_label_en','receipt_sign_label_ta',
+                'receipt_shop_name_ta','receipt_shop_slogan_ta','receipt_shop_address_ta',
+                'repair_invoice_header_title_en','repair_invoice_header_title_ta',
+                'repair_invoice_footer_text','repair_invoice_footer_text_ta',
+            ];
+            printKeys.forEach(k => { this.printSettings[k] = this.settings[k] || ''; });
+            this.printLang = this.settings.invoice_default_language || 'en';
+            this.$nextTick(() => this.loadPrintIframe());
+        },
+        loadPrintIframe() {
+            const iframe = this.$refs.printIframe;
+            if (iframe) iframe.src = '/admin/print-preview/' + this.printTab + '?edit=1';
+        },
+        onPrintIframeLoad() {
+            const iframe = this.$refs.printIframe;
+            if (iframe && iframe.contentWindow) {
+                try { iframe.contentWindow.postMessage({ type: 'init-edit-mode', lang: this.printLang }, '*'); } catch(e) {}
+            }
+        },
+        sendLangToIframe() {
+            const iframe = this.$refs.printIframe;
+            if (iframe && iframe.contentWindow) {
+                try { iframe.contentWindow.postMessage({ type: 'switch-lang', lang: this.printLang }, '*'); } catch(e) {}
+            }
+        },
+        printSample() {
+            const iframe = this.$refs.printIframe;
+            if (iframe && iframe.contentWindow) { iframe.contentWindow.print(); }
+        },
+        async savePrintSettings() {
+            this.saving = true;
+            try {
+                const fd = new FormData();
+                fd.append('_method', 'PUT');
+                fd.append('section', 'print');
+                Object.keys(this.printSettings).forEach(k => {
+                    if (this.printSettings[k] !== null && this.printSettings[k] !== undefined)
+                        fd.append('settings['+k+']', this.printSettings[k]);
+                });
+                const r = await fetch('/admin/settings', {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
+                    body: fd
+                });
+                if (!r.ok) { const err = await r.json().catch(() => null); throw new Error(err?.message || 'HTTP '+r.status); }
+                const d = await r.json();
+                if (d.success !== false) {
+                    RepairBox.toast('Print settings saved!', 'success');
+                    this.loadPrintIframe(); // reload to reflect changes
+                } else RepairBox.toast(d.message || 'Error', 'error');
+            } catch(e) { RepairBox.toast('Error: '+e.message, 'error'); }
+            this.saving = false;
+        },
         async saveEmailTemplate() {
             this.saving = true;
-            const r = await RepairBox.ajax(`/email-templates/${this.etEditing.id}`, 'PUT', this.etForm);
+            const r = await RepairBox.ajax(`/admin/email-templates/${this.etEditing.id}`, 'PUT', this.etForm);
             this.saving = false; if(r.success !== false) { RepairBox.toast('Saved', 'success'); this.showEtModal = false; const et = await RepairBox.ajax('/admin/email-templates'); if(et.data) this.emailTemplates = et.data; }
         },
         async createBackup() {
@@ -2070,7 +1928,7 @@ function masterDataPanel() {
     };
 
     return {
-        mdSection: new URLSearchParams(window.location.search).get('section') || 'vendors',
+        mdSection: new URLSearchParams(window.location.search).get('section') || 'parts',
         mdItems: [],
         mdLoading: false,
         mdSaving: false,
