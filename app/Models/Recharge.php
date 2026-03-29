@@ -8,12 +8,11 @@ class Recharge extends Model
 {
     protected $fillable = [
         'customer_id', 'provider_id', 'mobile_number', 'plan_name',
-        'recharge_amount', 'commission', 'payment_method', 'transaction_id', 'status',
+        'recharge_amount', 'payment_method', 'transaction_id', 'status',
     ];
 
     protected $casts = [
         'recharge_amount' => 'decimal:2',
-        'commission' => 'decimal:2',
     ];
 
     public function customer()

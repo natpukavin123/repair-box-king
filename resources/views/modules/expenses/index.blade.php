@@ -693,14 +693,14 @@ function expensesPage() {
 
         async saveEdit() {
             this.saving = true;
-            const r = await RepairBox.ajax(`/expenses/${this.editing}`, 'PUT', this.editForm);
+            const r = await RepairBox.ajax(`/admin/expenses/${this.editing}`, 'PUT', this.editForm);
             this.saving = false;
             if (r.success !== false) { RepairBox.toast('Updated', 'success'); this.showModal = false; this.load(); }
         },
 
         async remove(e) {
             if (!await RepairBox.confirm('Delete this expense?')) return;
-            const r = await RepairBox.ajax(`/expenses/${e.id}`, 'DELETE');
+            const r = await RepairBox.ajax(`/admin/expenses/${e.id}`, 'DELETE');
             if (r.success !== false) { RepairBox.toast('Deleted', 'success'); this.load(); }
         },
 
@@ -717,7 +717,7 @@ function expensesPage() {
 
         async updateCat(c) {
             if (!this.editCatName.trim()) return;
-            const r = await RepairBox.ajax(`/expenses/categories/${c.id}`, 'PUT', { name: this.editCatName });
+            const r = await RepairBox.ajax(`/admin/expenses/categories/${c.id}`, 'PUT', { name: this.editCatName });
             if (r.success !== false) {
                 RepairBox.toast('Category updated', 'success');
                 this.editingCat = null;
@@ -728,7 +728,7 @@ function expensesPage() {
 
         async deleteCat(c) {
             if (!await RepairBox.confirm(`Delete category "${c.name}"?`)) return;
-            const r = await RepairBox.ajax(`/expenses/categories/${c.id}`, 'DELETE');
+            const r = await RepairBox.ajax(`/admin/expenses/categories/${c.id}`, 'DELETE');
             if (r.success !== false) {
                 RepairBox.toast('Category deleted', 'success');
                 this.loadCategories();

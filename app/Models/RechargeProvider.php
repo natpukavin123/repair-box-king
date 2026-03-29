@@ -6,11 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class RechargeProvider extends Model
 {
-    protected $fillable = ['name', 'provider_type', 'commission_percentage', 'status', 'image', 'thumbnail'];
-
-    protected $casts = [
-        'commission_percentage' => 'decimal:2',
-    ];
+    protected $fillable = ['name', 'provider_type', 'status', 'image', 'thumbnail'];
 
     public function recharges()
     {

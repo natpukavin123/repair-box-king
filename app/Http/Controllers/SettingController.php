@@ -304,14 +304,14 @@ class SettingController extends Controller
 
     public function storeRechargeProvider(Request $request)
     {
-        $data = $request->validate(['name' => 'required|string|max:150', 'provider_type' => 'required|string|max:50', 'commission_percentage' => 'required|numeric|min:0|max:100']);
+        $data = $request->validate(['name' => 'required|string|max:150', 'provider_type' => 'required|string|max:50']);
         $rp = RechargeProvider::create($data);
         return response()->json(['success' => true, 'data' => $rp]);
     }
 
     public function updateRechargeProvider(Request $request, RechargeProvider $rechargeProvider)
     {
-        $data = $request->validate(['name' => 'required|string|max:150', 'provider_type' => 'required|string|max:50', 'commission_percentage' => 'required|numeric|min:0|max:100']);
+        $data = $request->validate(['name' => 'required|string|max:150', 'provider_type' => 'required|string|max:50']);
         $rechargeProvider->update($data);
         return response()->json(['success' => true, 'data' => $rechargeProvider]);
     }
@@ -541,6 +541,13 @@ class SettingController extends Controller
                 'unique_key' => 'name',
                 'rules' => ['name' => 'required|string|max:150', 'description' => 'nullable|string'],
             ],
+            'subcategories' => [
+                'model' => Subcategory::class,
+                'label' => 'Subcategories',
+                'columns' => ['category', 'name'],
+                'unique_key' => 'name',
+                'rules' => ['category' => 'required|string', 'name' => 'required|string|max:150'],
+            ],
             'customers' => [
                 'model' => Customer::class,
                 'label' => 'Customers',
@@ -572,9 +579,9 @@ class SettingController extends Controller
             'recharge_providers' => [
                 'model' => RechargeProvider::class,
                 'label' => 'Recharge Providers',
-                'columns' => ['name', 'provider_type', 'commission_percentage'],
+                'columns' => ['name', 'provider_type'],
                 'unique_key' => 'name',
-                'rules' => ['name' => 'required|string|max:150', 'provider_type' => 'required|string|max:50', 'commission_percentage' => 'required|numeric|min:0|max:100'],
+                'rules' => ['name' => 'required|string|max:150', 'provider_type' => 'required|string|max:50'],
             ],
             'service_types' => [
                 'model' => ServiceType::class,
@@ -749,6 +756,16 @@ class SettingController extends Controller
                 if ($validator->fails()) {
                     $skipped++;
                     continue;
+                }
+
+                // Resolve foreign keys for subcategories
+                if ($type === 'subcategories') {
+                    $finalData = collect($rowData)->except(['category'])->toArray();
+                    if (!empty($rowData['category'])) {
+                        $cat = Category::firstOrCreate(['name' => $rowData['category']]);
+                        $finalData['category_id'] = $cat->id;
+                    }
+                    $rowData = $finalData;
                 }
 
                 // Resolve foreign keys for products

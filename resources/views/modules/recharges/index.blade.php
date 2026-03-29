@@ -212,6 +212,40 @@
                     </div>
                 </div>
 
+                {{-- Provider filter --}}
+                <div class="relative" x-data="{ provOpen: false }" @click.away="provOpen = false">
+                    <button type="button" @click="provOpen = !provOpen"
+                        :class="filterProvider ? 'border-primary-400 bg-primary-50 text-primary-700' : 'border-gray-300 bg-white text-gray-700'"
+                        class="rch-filter-control flex items-center gap-1.5 text-sm pl-3 pr-2 rounded-lg border shadow-sm hover:shadow transition-all cursor-pointer">
+                        <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                        <span x-text="filterProvider ? (providers.find(pv => pv.id == filterProvider)?.name || 'Provider') : 'All Providers'"></span>
+                        <svg class="w-3 h-3 ml-0.5 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div x-show="provOpen" x-cloak x-transition.origin.top.left
+                        class="absolute top-full left-0 mt-1 w-52 z-50 border border-gray-200 bg-white shadow-xl rounded-xl p-1">
+                        <button type="button" @click="filterProvider = ''; loadHistory(1); provOpen = false"
+                            class="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition-colors"
+                            :class="!filterProvider ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-50'">
+                            <span class="font-medium">All Providers</span>
+                        </button>
+                        <template x-for="prov in providers" :key="prov.id">
+                            <button type="button" @click="filterProvider = prov.id; loadHistory(1); provOpen = false"
+                                class="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition-colors"
+                                :class="filterProvider == prov.id ? 'bg-primary-50 text-primary-700' : 'text-slate-700 hover:bg-slate-50'">
+                                <span class="font-medium" x-text="prov.name"></span>
+                            </button>
+                        </template>
+                        <div x-show="providers.length === 0" class="px-3 py-2 text-xs text-gray-400 text-center">No providers yet</div>
+                        <div class="border-t border-gray-100 mt-1 pt-1">
+                            <button type="button" @click="provOpen = false; showNewProvider = true"
+                                class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-green-600 hover:bg-green-50 transition-colors">
+                                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                New Provider
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 {{-- Date From --}}
                 <input x-model="dateFrom" @change="loadHistory(1)" type="date"
                     class="rch-filter-control text-sm pl-3 pr-2 rounded-lg border border-gray-300 bg-white shadow-sm hover:shadow transition-all cursor-pointer" title="From date">
@@ -221,8 +255,8 @@
                     class="rch-filter-control text-sm pl-3 pr-2 rounded-lg border border-gray-300 bg-white shadow-sm hover:shadow transition-all cursor-pointer" title="To date">
 
                 {{-- Clear all filters --}}
-                <button x-show="tableSearch || filterStatus || dateFrom || dateTo"
-                    @click="tableSearch = ''; filterStatus = ''; dateFrom = ''; dateTo = ''; loadHistory(1)"
+                <button x-show="tableSearch || filterStatus || filterProvider || dateFrom || dateTo"
+                    @click="tableSearch = ''; filterStatus = ''; filterProvider = ''; dateFrom = ''; dateTo = ''; loadHistory(1)"
                     class="rch-filter-control flex items-center gap-1 text-xs text-red-600 hover:text-red-700 font-semibold px-3 rounded-lg border border-red-200 hover:bg-red-50 transition-colors cursor-pointer">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                     Clear
@@ -412,13 +446,20 @@
                 <div class="rch-form-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain">
                     <div class="px-4 py-2 space-y-2">
                         <div>
-                            <label class="text-xs font-medium text-gray-600 mb-1 block">Provider *</label>
+                            <label class="text-xs font-medium text-gray-600 mb-1 flex items-center justify-between">
+                                <span>Provider *</span>
+                                <button type="button" @click="showNewProvider = true" class="text-primary-600 hover:text-primary-800 text-xs font-semibold flex items-center gap-0.5">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                    New
+                                </button>
+                            </label>
                             <select x-model="form.provider_id" class="form-select-custom rch-form-input text-sm">
                                 <option value="">Select Provider</option>
                                 <template x-for="p in providers" :key="p.id">
                                     <option :value="p.id" x-text="p.name"></option>
                                 </template>
                             </select>
+                            <p x-show="providers.length === 0" class="text-[11px] text-gray-400 mt-1">No providers yet — click <strong>New</strong> to add one.</p>
                         </div>
                         <div>
                             <label class="text-xs font-medium text-gray-600 mb-1 block">Mobile Number *</label>
@@ -519,6 +560,39 @@
         </div>
     </div>
 
+    {{-- NEW PROVIDER MODAL --}}
+    <div x-show="showNewProvider" x-cloak class="modal-overlay" @click.self="showNewProvider = false" x-transition>
+        <div class="modal-container max-w-md" @click.stop>
+            <div class="modal-header">
+                <h3 class="text-lg font-semibold">New Recharge Provider</h3>
+                <button @click="showNewProvider = false" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+            </div>
+            <div class="modal-body space-y-3">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                    <input x-model="newProviderForm.name" type="text" class="form-input-custom" placeholder="e.g. Airtel, Jio, Vi">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Provider Type *</label>
+                    <select x-model="newProviderForm.provider_type" class="form-select-custom">
+                        <option value="mobile">Mobile</option>
+                        <option value="dth">DTH</option>
+                        <option value="broadband">Broadband</option>
+                        <option value="electricity">Electricity</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button @click="showNewProvider = false" class="btn-secondary">Cancel</button>
+                <button @click="saveNewProvider()" class="btn-primary" :disabled="newProviderSaving">
+                    <span x-show="newProviderSaving" class="spinner mr-1"></span>
+                    <span x-text="newProviderSaving ? 'Saving...' : 'Create Provider'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     {{-- ADD CUSTOMER MODAL --}}
     <div x-show="showAddCust" x-cloak class="modal-overlay">
         <div class="modal-container max-w-md" @click.stop>
@@ -569,7 +643,8 @@ function rechargesPage() {
         custSearch: '', custResults: [], custOpen: false, custHasMore: false, custPage: 1, custLoading: false, selCust: null,
         showAddCust: false, newCust: {name: '', mobile_number: '', email: '', address: ''},
         customerFormTried: false, customerSaving: false, customerSubmitError: '',
-        tableSearch: '', dateFrom: '', dateTo: '', filterStatus: '',
+        tableSearch: '', dateFrom: '', dateTo: '', filterStatus: '', filterProvider: '',
+        showNewProvider: false, newProviderForm: { name: '', provider_type: 'mobile' }, newProviderSaving: false,
         viewItem: null,
         form: { customer_id: null, provider_id: '', mobile_number: '', recharge_amount: '', transaction_id: '', payment_method: 'cash' },
         pagination: { currentPage: 1, lastPage: 1, from: 0, to: 0, total: 0 },
@@ -582,6 +657,7 @@ function rechargesPage() {
             this.dateTo   = p.get('date_to')   || now.toISOString().split('T')[0];
             if (p.has('search')) this.tableSearch = p.get('search');
             if (p.has('status')) this.filterStatus = p.get('status');
+            if (p.has('provider_id')) this.filterProvider = p.get('provider_id');
             const r = await RepairBox.ajax('/admin/recharge-providers');
             if (r.data) this.providers = r.data;
             if (p.has('customer_id')) await this.loadCustomerById(p.get('customer_id'));
@@ -649,6 +725,7 @@ function rechargesPage() {
             const params = new URLSearchParams();
             if (this.tableSearch) params.set('search', this.tableSearch);
             if (this.filterStatus) params.set('status', this.filterStatus);
+            if (this.filterProvider) params.set('provider_id', this.filterProvider);
             if (this.dateFrom) params.set('date_from', this.dateFrom);
             if (this.dateTo) params.set('date_to', this.dateTo);
             if (this.selCust) params.set('customer_id', this.selCust.id);
@@ -665,6 +742,7 @@ function rechargesPage() {
             if (this.selCust) url += '&customer_id=' + this.selCust.id;
             if (this.tableSearch) url += '&search=' + encodeURIComponent(this.tableSearch);
             if (this.filterStatus) url += '&status=' + this.filterStatus;
+            if (this.filterProvider) url += '&provider_id=' + this.filterProvider;
             if (this.dateFrom) url += '&date_from=' + this.dateFrom;
             if (this.dateTo) url += '&date_to=' + this.dateTo;
             const r = await RepairBox.ajax(url);
@@ -730,6 +808,23 @@ function rechargesPage() {
                 RepairBox.toast('Recharge recorded successfully', 'success');
                 this.resetForm();
                 await this.loadHistory(1);
+            }
+        },
+
+        async saveNewProvider() {
+            if (!this.newProviderForm.name.trim()) { RepairBox.toast('Name is required', 'error'); return; }
+            this.newProviderSaving = true;
+            const r = await RepairBox.ajax('/admin/recharge-providers', 'POST', {
+                name: this.newProviderForm.name.trim(),
+                provider_type: this.newProviderForm.provider_type || 'mobile',
+            });
+            this.newProviderSaving = false;
+            if (r.success !== false && r.data) {
+                RepairBox.toast('Provider created', 'success');
+                this.providers.push(r.data);
+                this.form.provider_id = r.data.id;
+                this.showNewProvider = false;
+                this.newProviderForm = { name: '', provider_type: 'mobile' };
             }
         },
 

@@ -16,7 +16,6 @@ class RechargeRequest extends FormRequest
             'mobile_number' => 'required|string|max:20',
             'plan_name' => 'nullable|string|max:150',
             'recharge_amount' => 'required|numeric|min:1',
-            'commission' => 'nullable|numeric|min:0',
             'payment_method' => 'required|string|max:50',
             'transaction_id' => 'nullable|string|max:100',
         ];

@@ -535,7 +535,6 @@
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Type</th>
-                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Commission %</th>
                                         <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
                                     </tr>
                                 </thead>
@@ -552,7 +551,6 @@
                                                 </div>
                                             </td>
                                             <td class="px-3 py-2 text-sm" x-text="item.provider_type"></td>
-                                            <td class="px-3 py-2 text-sm" x-text="item.commission_percentage + '%'"></td>
                                             <td class="px-3 py-2 text-center" @click.stop>
                                                 <button @click="openMdEdit(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition" title="Edit">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -884,9 +882,6 @@
                                     <option value="electricity">Electricity</option>
                                 </select>
                             </div>
-                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Commission % *</label>
-                                <input x-model="mdForm.commission_percentage" type="number" step="0.01" min="0" max="100" class="form-input-custom" placeholder="e.g. 3.5"></div>
-
                             {{-- Image Upload --}}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Provider Image <span class="text-gray-400 font-normal">(optional)</span></label>
@@ -1415,6 +1410,7 @@
                             <option value="">-- Select type --</option>
                             <option value="brands">Brands</option>
                             <option value="categories">Categories</option>
+                            <option value="subcategories">Subcategories</option>
                             <option value="customers">Customers</option>
                             <option value="products">Products</option>
                             <option value="parts">Parts</option>
@@ -1640,11 +1636,12 @@ function settingsPage() {
         importTemplates: [
             { type: 'brands', label: 'Brands', columns: ['name'] },
             { type: 'categories', label: 'Categories', columns: ['name', 'description'] },
+            { type: 'subcategories', label: 'Subcategories', columns: ['category', 'name'] },
             { type: 'customers', label: 'Customers', columns: ['name', 'mobile_number', 'email', 'address', 'notes'] },
             { type: 'products', label: 'Products', columns: ['name', 'sku', 'barcode', 'category', 'subcategory', 'brand', 'purchase_price', 'mrp', 'selling_price', 'description', 'opening_stock', 'image_url'] },
             { type: 'parts', label: 'Parts', columns: ['name', 'sku', 'cost_price', 'selling_price'] },
             { type: 'vendors', label: 'Vendors', columns: ['name', 'phone', 'address', 'specialization'] },
-            { type: 'recharge_providers', label: 'Recharge Providers', columns: ['name', 'provider_type', 'commission_percentage'] },
+            { type: 'recharge_providers', label: 'Recharge Providers', columns: ['name', 'provider_type'] },
             { type: 'service_types', label: 'Services', columns: ['name', 'default_price', 'description'] },
         ],
         appearanceThemes: [
@@ -1801,7 +1798,7 @@ function settingsPage() {
             return t ? t.columns.join(', ') : '';
         },
         getUniqueKeyLabel() {
-            const keys = { brands: 'name', categories: 'name', customers: 'mobile_number', products: 'sku', parts: 'sku', vendors: 'name', recharge_providers: 'name', service_types: 'name' };
+            const keys = { brands: 'name', categories: 'name', subcategories: 'name', customers: 'mobile_number', products: 'sku', parts: 'sku', vendors: 'name', recharge_providers: 'name', service_types: 'name' };
             return keys[this.importType] || '';
         },
         resetImport() {
@@ -2127,7 +2124,7 @@ function masterDataPanel() {
                 case 'products': return { name: '', sku: '', category_id: '', subcategory_id: '', brand_id: '', purchase_price: '', mrp: '', selling_price: '', description: '', opening_stock: '' };
                 case 'customers': return { name: '', mobile_number: '', email: '', address: '' };
                 case 'inventory': return { product_id: '', adjustment_type: 'addition', quantity: '', reason: '' };
-                case 'recharge-providers': return { name: '', provider_type: '', commission_percentage: '' };
+                case 'recharge-providers': return { name: '', provider_type: '' };
                 case 'services': return { name: '', default_price: '', description: '', quick_fills: [] };
                 default: return {};
             }

@@ -29,12 +29,6 @@ class RechargeController extends Controller
     {
         $data = $request->validated();
         $data['status'] = 'success';
-        if (empty($data['commission']) && !empty($data['provider_id'])) {
-            $provider = \App\Models\RechargeProvider::find($data['provider_id']);
-            if ($provider) {
-                $data['commission'] = round($data['recharge_amount'] * $provider->commission_percentage / 100, 2);
-            }
-        }
         $recharge = Recharge::create($data);
 
         LedgerTransaction::create([
