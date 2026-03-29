@@ -343,6 +343,7 @@
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Description</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Subcategories</th>
                                         <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
                                     </tr>
                                 </thead>
@@ -352,6 +353,13 @@
                                             <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
                                             <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
                                             <td class="px-3 py-2 text-sm text-gray-500" x-text="item.description || '-'"></td>
+                                            <td class="px-3 py-2" @click.stop>
+                                                <button @click="openCatSubModal(item)"
+                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h8M4 18h8"/></svg>
+                                                    <span x-text="(item.subcategories ? item.subcategories.length : 0) + ' subcategories'"></span>
+                                                </button>
+                                            </td>
                                             <td class="px-3 py-2 text-center" @click.stop>
                                                 <button @click="openMdEdit(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition" title="Edit">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -363,7 +371,7 @@
                                         </tr>
                                     </template>
                                     <tr x-show="mdItems.length === 0 && !mdLoading">
-                                        <td colspan="4" class="text-center py-12">
+                                        <td colspan="5" class="text-center py-12">
                                             <p class="text-gray-400 font-medium">No categories found</p>
                                         </td>
                                     </tr>
@@ -434,6 +442,7 @@
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">SKU</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Category</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Subcategory</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">MRP</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Sale Price</th>
                                         <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
@@ -456,6 +465,7 @@
                                             <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
                                             <td class="px-3 py-2 text-sm" x-text="item.sku || '-'"></td>
                                             <td class="px-3 py-2 text-sm" x-text="item.category ? item.category.name : '-'"></td>
+                                            <td class="px-3 py-2 text-sm" x-text="item.subcategory ? item.subcategory.name : '-'"></td>
                                             <td class="px-3 py-2 text-sm" x-text="item.mrp ? RepairBox.formatCurrency(item.mrp) : '-'"></td>
                                             <td class="px-3 py-2 text-sm" x-text="item.selling_price ? RepairBox.formatCurrency(item.selling_price) : '-'"></td>
                                             <td class="px-3 py-2 text-center" @click.stop>
@@ -469,7 +479,7 @@
                                         </tr>
                                     </template>
                                     <tr x-show="mdItems.length === 0 && !mdLoading">
-                                        <td colspan="8" class="text-center py-12">
+                                        <td colspan="9" class="text-center py-12">
                                             <p class="text-gray-400 font-medium">No products found</p>
                                         </td>
                                     </tr>
@@ -761,7 +771,7 @@
                                 <input x-model="mdForm.sku" type="text" class="form-input-custom" placeholder="SKU code"></div>
                             <div class="grid grid-cols-2 gap-3">
                                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                                    <select x-model="mdForm.category_id" class="form-select-custom">
+                                    <select x-model="mdForm.category_id" class="form-select-custom" @change="mdLoadSubcategories()">
                                         <option value="">Select</option>
                                         <template x-for="cat in mdCategories" :key="cat.id">
                                             <option :value="cat.id" x-text="cat.name"></option>
@@ -776,6 +786,14 @@
                                         </template>
                                     </select>
                                 </div>
+                            </div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Subcategory</label>
+                                <select x-model="mdForm.subcategory_id" class="form-select-custom">
+                                    <option value="">Select</option>
+                                    <template x-for="s in mdSubcategories" :key="s.id">
+                                        <option :value="s.id" x-text="s.name"></option>
+                                    </template>
+                                </select>
                             </div>
                             <div class="grid grid-cols-3 gap-3" :class="!mdEditing && 'sm:grid-cols-4'">
                                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Purchase Price *</label>
@@ -971,6 +989,76 @@
                         <span x-show="mdSaving" class="spinner mr-1"></span>
                         <span x-text="mdEditing ? 'Update' : 'Save'"></span>
                     </button>
+                </div>
+            </div>
+        </div>
+
+        {{-- Subcategory Management Modal --}}
+        <div x-show="showCatSubModal" class="modal-overlay" x-cloak @click.self="showCatSubModal=false" style="z-index:55;">
+            <div class="modal-container" style="max-width:560px;">
+                <div class="modal-header">
+                    <div>
+                        <h3 class="text-lg font-semibold" x-text="'Subcategories — ' + (catSubItem ? catSubItem.name : '')"></h3>
+                        <p class="text-xs text-gray-500 mt-0.5">Manage subcategories for this category</p>
+                    </div>
+                    <button @click="showCatSubModal=false" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+                </div>
+                <div class="modal-body">
+                    {{-- Add new subcategory --}}
+                    <div class="flex gap-2 mb-4">
+                        <input x-model="catSubNewName" type="text" class="form-input-custom flex-1" placeholder="New subcategory name"
+                            @keydown.enter.prevent="addCatSub()">
+                        <button @click="addCatSub()" class="btn-primary px-4 text-sm" :disabled="catSubSaving || !catSubNewName.trim()">
+                            <span x-show="catSubSaving" class="spinner mr-1"></span>
+                            Add
+                        </button>
+                    </div>
+
+                    {{-- Subcategories list --}}
+                    <div x-show="catSubLoading" class="text-center py-8 text-gray-400 text-sm">Loading...</div>
+                    <div x-show="!catSubLoading">
+                        <div x-show="catSubItems.length === 0" class="text-center py-8 text-gray-400 text-sm">No subcategories yet. Add one above.</div>
+                        <div class="divide-y divide-gray-100 rounded-xl border border-gray-100 overflow-hidden" x-show="catSubItems.length > 0">
+                            <template x-for="sub in catSubItems" :key="sub.id">
+                                <div class="flex items-center gap-3 px-3 py-2.5 bg-white hover:bg-gray-50/60 transition">
+                                    {{-- View mode --}}
+                                    <template x-if="catSubEditing !== sub.id">
+                                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                                            <span class="flex-1 text-sm font-medium text-gray-800 truncate" x-text="sub.name"></span>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                                                :class="(sub.status||'active')==='active' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'"
+                                                x-text="sub.status || 'active'"></span>
+                                            <button @click="startEditCatSub(sub)" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition shrink-0" title="Edit">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                            </button>
+                                            <button @click="deleteCatSub(sub)" class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition shrink-0" title="Delete">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                            </button>
+                                        </div>
+                                    </template>
+                                    {{-- Edit mode --}}
+                                    <template x-if="catSubEditing === sub.id">
+                                        <div class="flex items-center gap-2 flex-1">
+                                            <input x-model="catSubEditName" type="text" class="form-input-custom flex-1 text-sm py-1" @keydown.enter.prevent="saveCatSubEdit()" @keydown.escape.prevent="cancelCatSubEdit()">
+                                            <select x-model="catSubEditStatus" class="form-select-custom text-sm py-1" style="min-width:90px;">
+                                                <option value="active">Active</option>
+                                                <option value="inactive">Inactive</option>
+                                            </select>
+                                            <button @click="saveCatSubEdit()" class="p-1.5 rounded-lg text-white bg-primary-600 hover:bg-primary-700 transition shrink-0" :disabled="catSubSaving" title="Save">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            </button>
+                                            <button @click="cancelCatSubEdit()" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition shrink-0" title="Cancel">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button @click="showCatSubModal=false" class="btn-secondary">Close</button>
                 </div>
             </div>
         </div>
@@ -1553,7 +1641,7 @@ function settingsPage() {
             { type: 'brands', label: 'Brands', columns: ['name'] },
             { type: 'categories', label: 'Categories', columns: ['name', 'description'] },
             { type: 'customers', label: 'Customers', columns: ['name', 'mobile_number', 'email', 'address', 'notes'] },
-            { type: 'products', label: 'Products', columns: ['name', 'sku', 'barcode', 'category', 'brand', 'purchase_price', 'mrp', 'selling_price', 'description', 'opening_stock', 'image_url'] },
+            { type: 'products', label: 'Products', columns: ['name', 'sku', 'barcode', 'category', 'subcategory', 'brand', 'purchase_price', 'mrp', 'selling_price', 'description', 'opening_stock', 'image_url'] },
             { type: 'parts', label: 'Parts', columns: ['name', 'sku', 'cost_price', 'selling_price'] },
             { type: 'vendors', label: 'Vendors', columns: ['name', 'phone', 'address', 'specialization'] },
             { type: 'recharge_providers', label: 'Recharge Providers', columns: ['name', 'provider_type', 'commission_percentage'] },
@@ -1942,6 +2030,15 @@ function masterDataPanel() {
         mdCategories: [],
         mdBrands: [],
         mdProducts: [],
+        showCatSubModal: false,
+        catSubItem: null,
+        catSubItems: [],
+        catSubLoading: false,
+        catSubSaving: false,
+        catSubNewName: '',
+        catSubEditing: null,
+        catSubEditName: '',
+        catSubEditStatus: 'active',
         svcQuickFillTags: [
             'Xerox / Photocopy', 'Lamination', 'Screen Replacement', 'Battery Replacement',
             'Charging Port Repair', 'Software / Flashing', 'Data Recovery', 'Water Damage Repair',
@@ -1950,6 +2047,7 @@ function masterDataPanel() {
         ],
         svcNewQuickFill: '',
         mdImageFile: null, mdImagePreview: null,
+        mdSubcategories: [],
 
         get mdSectionLabel() { return sectionConfig[this.mdSection]?.label || ''; },
         get mdSectionLabelSingular() { return sectionConfig[this.mdSection]?.singular || ''; },
@@ -2026,7 +2124,7 @@ function masterDataPanel() {
                 case 'brands': return { name: '', logo_url: '' };
                 case 'categories': return { name: '', description: '' };
                 case 'parts': return { name: '', sku: '', cost_price: '', selling_price: '' };
-                case 'products': return { name: '', sku: '', category_id: '', brand_id: '', purchase_price: '', mrp: '', selling_price: '', description: '', opening_stock: '' };
+                case 'products': return { name: '', sku: '', category_id: '', subcategory_id: '', brand_id: '', purchase_price: '', mrp: '', selling_price: '', description: '', opening_stock: '' };
                 case 'customers': return { name: '', mobile_number: '', email: '', address: '' };
                 case 'inventory': return { product_id: '', adjustment_type: 'addition', quantity: '', reason: '' };
                 case 'recharge-providers': return { name: '', provider_type: '', commission_percentage: '' };
@@ -2042,11 +2140,90 @@ function masterDataPanel() {
             ]);
             this.mdCategories = Array.isArray(cats) ? cats : (cats.data || []);
             this.mdBrands = Array.isArray(brands) ? brands : (brands.data || []);
+            // Load subcategories for the currently selected category (for edit mode)
+            if (this.mdForm.category_id) {
+                await this.mdLoadSubcategories();
+            }
+        },
+
+        async mdLoadSubcategories() {
+            if (!this.mdForm.category_id) { this.mdSubcategories = []; return; }
+            const r = await RepairBox.ajax(`/admin/subcategories/by-category/${this.mdForm.category_id}`);
+            this.mdSubcategories = r.data || r || [];
         },
 
         async loadProducts() {
             const r = await RepairBox.ajax('/admin/products');
             this.mdProducts = Array.isArray(r) ? r : (r.data || []);
+        },
+
+        async openCatSubModal(item) {
+            this.catSubItem = item;
+            this.catSubNewName = '';
+            this.catSubEditing = null;
+            this.catSubEditName = '';
+            this.catSubEditStatus = 'active';
+            this.showCatSubModal = true;
+            await this.loadCatSubItems();
+        },
+
+        async loadCatSubItems() {
+            this.catSubLoading = true;
+            const r = await RepairBox.ajax(`/admin/subcategories?category_id=${this.catSubItem.id}&per_page=200`);
+            this.catSubItems = Array.isArray(r) ? r : (r.data || []);
+            this.catSubLoading = false;
+        },
+
+        async addCatSub() {
+            if (!this.catSubNewName.trim()) return;
+            this.catSubSaving = true;
+            const r = await RepairBox.ajax('/admin/subcategories', 'POST', { category_id: this.catSubItem.id, name: this.catSubNewName.trim() });
+            this.catSubSaving = false;
+            if (r.success !== false) {
+                this.catSubNewName = '';
+                await this.loadCatSubItems();
+                // update count in parent list
+                const parent = this.mdItems.find(i => i.id === this.catSubItem.id);
+                if (parent) parent.subcategories = this.catSubItems;
+                RepairBox.toast('Subcategory added', 'success');
+            }
+        },
+
+        startEditCatSub(sub) {
+            this.catSubEditing = sub.id;
+            this.catSubEditName = sub.name;
+            this.catSubEditStatus = sub.status || 'active';
+        },
+
+        cancelCatSubEdit() {
+            this.catSubEditing = null;
+            this.catSubEditName = '';
+            this.catSubEditStatus = 'active';
+        },
+
+        async saveCatSubEdit() {
+            if (!this.catSubEditName.trim()) return;
+            this.catSubSaving = true;
+            const r = await RepairBox.ajax(`/admin/subcategories/${this.catSubEditing}`, 'PUT', { category_id: this.catSubItem.id, name: this.catSubEditName.trim(), status: this.catSubEditStatus });
+            this.catSubSaving = false;
+            if (r.success !== false) {
+                this.cancelCatSubEdit();
+                await this.loadCatSubItems();
+                const parent = this.mdItems.find(i => i.id === this.catSubItem.id);
+                if (parent) parent.subcategories = this.catSubItems;
+                RepairBox.toast('Subcategory updated', 'success');
+            }
+        },
+
+        async deleteCatSub(sub) {
+            if (!confirm(`Delete subcategory "${sub.name}"?`)) return;
+            const r = await RepairBox.ajax(`/admin/subcategories/${sub.id}`, 'DELETE');
+            if (r.success !== false) {
+                await this.loadCatSubItems();
+                const parent = this.mdItems.find(i => i.id === this.catSubItem.id);
+                if (parent) parent.subcategories = this.catSubItems;
+                RepairBox.toast('Subcategory deleted', 'success');
+            }
         },
 
         mdHandlePick(e) {

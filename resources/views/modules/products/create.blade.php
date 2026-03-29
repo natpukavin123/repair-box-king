@@ -135,7 +135,7 @@ function createProductPage() {
         },
         async loadSubcategories() {
             if (!this.form.category_id) { this.subcategories = []; return; }
-            const r = await RepairBox.ajax(`/subcategories/by-category/${this.form.category_id}`);
+            const r = await RepairBox.ajax(`/admin/subcategories/by-category/${this.form.category_id}`);
             if (r.data) this.subcategories = r.data;
         },
         async save() {

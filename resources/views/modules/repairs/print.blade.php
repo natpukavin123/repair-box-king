@@ -97,8 +97,8 @@ body.lang-ta .inv-shop-name{font-size:18px;}
 .inv-shop-contact{font-size:9px;color:#000;margin-top:4px;line-height:1.7;}
 .inv-badge{text-align:right;flex-shrink:0;}
 .inv-type{display:inline-block;border:1.5px solid #000;color:#000;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:3px 8px;margin-bottom:3px;}
-.inv-num{font-family:'Playfair Display',Georgia,serif;font-size:16px;font-weight:900;color:#000;line-height:1;}
-.inv-date{font-size:9px;color:#000;margin-top:2px;}
+.inv-num{font-family:'DM Sans',Arial,sans-serif;font-size:13px;font-weight:900;color:#fff;background:#000;padding:2px 8px;display:inline-block;letter-spacing:.4px;line-height:1.6;}
+.inv-date{font-size:9px;color:#000;margin-top:3px;}
 .inv-rule{height:0;flex-shrink:0;}
 
 .inv-info{display:flex;border-bottom:2px solid #000;flex-shrink:0;}
@@ -109,11 +109,11 @@ body.lang-ta .inv-shop-name{font-size:18px;}
 .inf-sub{font-size:9px;color:#000;margin-top:2px;line-height:1.55;}
 .status-badge{display:inline-block;padding:3px 10px;border:1.5px solid #000;font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;background:#fff;color:#000;}
 
-.cost-banner{border-bottom:2px solid #000;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0;}
-.cost-lbl{font-size:8px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#000;margin-bottom:3px;}
-.cost-val{font-family:'Playfair Display',Georgia,serif;font-size:28px;font-weight:900;color:#000;line-height:1;}
-.adv-val{font-size:14px;font-weight:700;color:#000;}
-.adv-zero{font-size:10px;color:#000;}
+.cost-banner{background:repeating-linear-gradient(45deg,#f6f6f6 0,#f6f6f6 1px,#fff 1px,#fff 9px);border-bottom:2px solid #000;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0;}
+.cost-lbl{font-size:8px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#666;margin-bottom:4px;}
+.cost-val{font-family:'DM Sans',Arial,sans-serif;font-size:26px;font-weight:900;color:#000;line-height:1;letter-spacing:-.5px;}
+.adv-val{font-family:'DM Sans',Arial,sans-serif;font-size:18px;font-weight:900;color:#000;line-height:1;}
+.adv-zero{font-size:8px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:2px;border:1px dashed #ccc;padding:2px 7px;display:inline-block;}
 
 .prob-row{border-bottom:2px solid #000;padding:7px 12px;flex-shrink:0;}
 .prob-lbl{font-size:8px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#000;margin-bottom:3px;}
@@ -125,7 +125,7 @@ body.lang-ta .inv-shop-name{font-size:18px;}
 .sec-lbl{font-size:8px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#000;margin-bottom:2px;}
 
 .track-box{border:2px solid #000;padding:7px 10px;text-align:center;background:#fff;}
-.track-id{font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:900;color:#000;letter-spacing:3px;line-height:1;}
+.track-id{font-family:'Courier New',Courier,monospace;font-size:17px;font-weight:700;color:#000;letter-spacing:2px;line-height:1.2;word-break:break-all;}
 .track-hint{font-size:8px;color:#000;margin-top:3px;}
 
 .pay-row{display:flex;justify-content:space-between;font-size:10px;padding:2px 0;border-bottom:1px solid #000;color:#000;}
@@ -266,7 +266,7 @@ body.lang-ta .inv-shop-name{font-size:18px;}
                     @if($advancePaid > 0)
                     <div class="adv-val">&#8377;{{ number_format($advancePaid, 2) }}</div>
                     @else
-                    <div class="adv-zero">&#8377; 0.00</div>
+                    <div class="adv-zero">NIL</div>
                     @endif
                 </div>
             </div>
@@ -379,7 +379,7 @@ function switchLang(lang) {
     if (params.get('edit') !== '1') return;
 
     var style = document.createElement('style');
-    style.textContent = '.toolbar{display:none!important;}body{background:#e8eaed;margin:0;display:flex;justify-content:center;padding:20px 0;min-height:100vh;}.a4-shell{width:148.5mm;height:210mm;margin:0 auto;box-shadow:0 2px 16px rgba(0,0,0,.18);flex-direction:column;}.blank-half,.cut-zone{display:none!important;}.inv-half{width:148.5mm;height:210mm;flex-shrink:0;padding:4mm 5mm;}@media print{body{background:#fff!important;padding:0!important;display:block!important;}html,body{width:297mm;height:210mm;margin:0;padding:0;}.a4-shell{width:297mm;height:210mm;box-shadow:none;display:flex;flex-direction:row;margin:0;}.blank-half{display:block!important;flex:1;background:#fff!important;}.blank-half *{display:none!important;}.inv-half{width:148.5mm;height:210mm;}.cut-zone{display:none!important;}}';
+    style.textContent = '.toolbar{display:none!important;}body{background:#e8eaed;margin:0;display:flex;justify-content:center;padding:20px 0;min-height:100vh;}.a4-shell{width:148.5mm;height:210mm;margin:0 auto;box-shadow:0 2px 16px rgba(0,0,0,.18);flex-direction:column;}.blank-half,.cut-zone{display:none!important;}.inv-half{width:148.5mm;height:210mm;flex-shrink:0;padding:4mm 5mm;}@media print{body{background:#fff!important;padding:0!important;display:block!important;}html,body{width:297mm;height:210mm;margin:0;padding:0;}.a4-shell{width:297mm;height:210mm;box-shadow:none;display:flex;flex-direction:row;margin:0;}.blank-half{display:block!important;flex:1;background:#fff!important;}.blank-half *{display:none!important;}.inv-half{width:148.5mm;height:210mm;}.cut-zone{display:none!important;}[data-setting-en],[data-setting-ta],[data-setting-en]:focus,[data-setting-ta]:focus{background:transparent!important;border:none!important;border-radius:0!important;box-shadow:none!important;padding:0!important;cursor:default!important;}}';
     document.head.appendChild(style);
 
     var currentLang = document.querySelector('[data-default-lang]')?.dataset.defaultLang || 'en';

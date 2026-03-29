@@ -286,7 +286,7 @@
                     <div class="ps-cost-row">
                         <div><div class="ps-slbl" x-text="previewLang==='ta' ? 'மதிப்பீட்டு பழுது செலவு' : 'Estimated Repair Cost'"></div><div class="ps-cost-big">&#8377;1,500.00</div></div>
                         <div class="text-center"><div class="ps-slbl" x-text="previewLang==='ta' ? 'நிலை' : 'Status'"></div><span class="ps-status" x-text="previewLang==='ta' ? 'பெறப்பட்டது' : 'RECEIVED'"></span></div>
-                        <div class="text-right"><div class="ps-slbl" x-text="previewLang==='ta' ? 'முன்பணம்' : 'Advance Paid'"></div><div style="font-size:14px;font-weight:700;">&#8377;500.00</div></div>
+                        <div class="text-right"><div class="ps-slbl" x-text="previewLang==='ta' ? 'முன்பணம்' : 'Advance Paid'"></div><div style="font-family:'DM Sans',Arial,sans-serif;font-size:18px;font-weight:900;line-height:1;">&#8377;500.00</div></div>
                     </div>
                     <div class="ps-prob"><div class="ps-slbl" x-text="previewLang==='ta' ? 'சிக்கல் விவரணை' : 'Problem Description'"></div><div style="font-size:10px;line-height:1.6;">Screen cracked, touch not working properly</div></div>
                     <div class="ps-bottom-row" style="min-height:90px;">
@@ -297,7 +297,7 @@
                         <div class="ps-bottom-r" style="width:155px;border-left:1.5px solid #000;padding:7px 10px;">
                             <div class="ps-slbl" x-text="previewLang==='ta' ? 'ஆன்லைன் கண்காணிப்பு' : 'Track Online'"></div>
                             <div style="border:2px solid #000;padding:6px 8px;text-align:center;margin-top:3px;">
-                                <div style="font-family:'Playfair Display',Georgia,serif;font-size:18px;font-weight:900;letter-spacing:3px;">TRK001</div>
+                                <div style="font-family:'Courier New',Courier,monospace;font-size:14px;font-weight:700;letter-spacing:2px;word-break:break-all;">TRK-D285273D</div>
                                 <div style="font-size:7px;margin-top:2px;" x-text="previewLang==='ta' ? '/track பக்கம் செல்க' : 'Visit /track'"></div>
                             </div>
                             <div class="ps-slbl" style="margin-top:8px;" x-text="previewLang==='ta' ? 'செலுத்திய விவரம்' : 'Payment'"></div>
@@ -408,8 +408,8 @@
 .ps-shop-contact { font-size:8px;margin-top:3px;line-height:1.7; }
 .ps-badge { text-align:right;flex-shrink:0; }
 .ps-type { display:inline-block;border:1.5px solid #000;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:3px 8px;margin-bottom:3px; }
-.ps-num { font-family:'Playfair Display',Georgia,serif;font-size:16px;font-weight:900;line-height:1; }
-.ps-date { font-size:8px;margin-top:2px; }
+.ps-num { font-family:'DM Sans',Arial,sans-serif;font-size:13px;font-weight:900;color:#fff;background:#000;padding:2px 8px;display:inline-block;letter-spacing:.4px;line-height:1.6; }
+.ps-date { font-size:8px;margin-top:3px; }
 
 .ps-info-row { display:flex;border-bottom:2.5px solid #000; }
 .ps-info-cell { flex:1;padding:8px 12px; }
@@ -430,7 +430,7 @@
 .ps-bottom-row { display:flex;border-bottom:2.5px solid #000; }
 .ps-bottom-l { flex:1;border-right:1.5px solid #000;padding:7px 10px; }
 .ps-bottom-r { width:155px;display:flex;flex-direction:column; }
-.ps-slbl { font-size:7px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:2px; }
+.ps-slbl { font-size:7px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:2px;color:#666; }
 .ps-words { border:1.5px solid #000;padding:4px 8px;font-size:8px;font-weight:600;line-height:1.5;margin-top:2px; }
 .ps-payline { display:flex;justify-content:space-between;font-size:9px;padding:2px 0;border-bottom:1px solid #000; }
 .ps-payline:last-child { border-bottom:none; }
@@ -439,8 +439,8 @@
 .ps-grand { background:#fff;font-family:'Playfair Display',Georgia,serif;font-size:11px;font-weight:900;border:1.5px solid #000;padding:5px 9px; }
 .ps-fullpaid { text-align:center;font-size:8px;font-weight:900;padding:4px 9px; }
 
-.ps-cost-row { border-bottom:2.5px solid #000;padding:10px 12px;display:flex;align-items:center;justify-content:space-between; }
-.ps-cost-big { font-family:'Playfair Display',Georgia,serif;font-size:26px;font-weight:900;line-height:1; }
+.ps-cost-row { background:repeating-linear-gradient(45deg,#f6f6f6 0,#f6f6f6 1px,#fff 1px,#fff 9px);border-bottom:2.5px solid #000;padding:10px 12px;display:flex;align-items:center;justify-content:space-between; }
+.ps-cost-big { font-family:'DM Sans',Arial,sans-serif;font-size:24px;font-weight:900;line-height:1;letter-spacing:-.5px; }
 .ps-status { display:inline-block;padding:3px 10px;border:1.5px solid #000;font-size:8px;font-weight:800;letter-spacing:.8px;text-transform:uppercase; }
 .ps-prob { border-bottom:2.5px solid #000;padding:7px 12px; }
 

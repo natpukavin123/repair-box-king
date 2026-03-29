@@ -551,9 +551,9 @@ class SettingController extends Controller
             'products' => [
                 'model' => Product::class,
                 'label' => 'Products',
-                'columns' => ['name', 'sku', 'barcode', 'category', 'brand', 'purchase_price', 'mrp', 'selling_price', 'description', 'opening_stock', 'image_url'],
+                'columns' => ['name', 'sku', 'barcode', 'category', 'subcategory', 'brand', 'purchase_price', 'mrp', 'selling_price', 'description', 'opening_stock', 'image_url'],
                 'unique_key' => 'sku',
-                'rules' => ['name' => 'required|string|max:255', 'sku' => 'nullable|string|max:100', 'barcode' => 'nullable|string|max:100', 'category' => 'nullable|string', 'brand' => 'nullable|string', 'purchase_price' => 'nullable|numeric|min:0', 'mrp' => 'nullable|numeric|min:0', 'selling_price' => 'nullable|numeric|min:0', 'description' => 'nullable|string', 'opening_stock' => 'nullable|integer|min:0', 'image_url' => 'nullable|string|max:500'],
+                'rules' => ['name' => 'required|string|max:255', 'sku' => 'nullable|string|max:100', 'barcode' => 'nullable|string|max:100', 'category' => 'nullable|string', 'subcategory' => 'nullable|string', 'brand' => 'nullable|string', 'purchase_price' => 'nullable|numeric|min:0', 'mrp' => 'nullable|numeric|min:0', 'selling_price' => 'nullable|numeric|min:0', 'description' => 'nullable|string', 'opening_stock' => 'nullable|integer|min:0', 'image_url' => 'nullable|string|max:500'],
             ],
             'parts' => [
                 'model' => Part::class,
@@ -757,10 +757,15 @@ class SettingController extends Controller
                 if ($type === 'products') {
                     $openingStock = isset($rowData['opening_stock']) && $rowData['opening_stock'] !== '' ? (int) $rowData['opening_stock'] : null;
                     $imageUrl = !empty($rowData['image_url']) ? $rowData['image_url'] : null;
-                    $finalData = collect($rowData)->except(['category', 'brand', 'opening_stock', 'image_url'])->toArray();
+                    $finalData = collect($rowData)->except(['category', 'subcategory', 'brand', 'opening_stock', 'image_url'])->toArray();
                     if (!empty($rowData['category'])) {
                         $cat = Category::firstOrCreate(['name' => $rowData['category']]);
                         $finalData['category_id'] = $cat->id;
+                    }
+                    if (!empty($rowData['subcategory'])) {
+                        $catId = $finalData['category_id'] ?? null;
+                        $subcat = Subcategory::firstOrCreate(['name' => $rowData['subcategory'], 'category_id' => $catId]);
+                        $finalData['subcategory_id'] = $subcat->id;
                     }
                     if (!empty($rowData['brand'])) {
                         $brand = Brand::firstOrCreate(['name' => $rowData['brand']]);
