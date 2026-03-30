@@ -959,8 +959,11 @@ a{text-decoration:none;color:inherit;cursor:url("data:image/svg+xml,%3Csvg xmlns
                 @endif
             </div>
             <div class="map-frame anim-swing-r">
-                @if($shopAddress)
-                <iframe src="https://maps.google.com/maps?q={{ urlencode($shopAddress) }}&output=embed&z=15" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Shop Location"></iframe>
+                @if(!empty($landing['map_embed']))
+                <iframe src="{{ $landing['map_embed'] }}" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Shop Location"></iframe>
+                @elseif($shopAddress)
+                @php $mapZoom = !empty($landing['map_zoom']) ? (int) $landing['map_zoom'] : 15; @endphp
+                <iframe src="https://maps.google.com/maps?q={{ urlencode($shopAddress) }}&output=embed&z={{ $mapZoom }}" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Shop Location"></iframe>
                 @else
                 <div class="map-placeholder"><svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg><p style="font-size:14px;">No address configured yet</p></div>
                 @endif

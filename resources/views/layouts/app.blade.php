@@ -1,5 +1,5 @@
 @php
-    $allowedThemes = ['atelier', 'graphite', 'solstice'];
+    $allowedThemes = ['atelier'];
     $allowedMotion = ['enhanced', 'reduced', 'none'];
     $isWorkspaceLayout = trim($__env->yieldContent('content-class')) === 'workspace-content';
 
@@ -16,8 +16,6 @@
 
     $themeNames = [
         'atelier' => 'Atelier Glass',
-        'graphite' => 'Graphite Luxe',
-        'solstice' => 'Solstice Warm',
     ];
 @endphp
 <!DOCTYPE html>
@@ -29,7 +27,7 @@
     <title>@yield('title', 'RepairBox') - Mobile Shop Management</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <style>

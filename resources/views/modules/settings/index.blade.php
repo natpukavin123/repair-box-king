@@ -1116,41 +1116,13 @@
                 <div class="rounded-[28px] border border-white/60 bg-white/80 p-5 shadow-[0_20px_60px_-28px_rgba(15,23,42,0.35)] backdrop-blur">
                     <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
                         <div>
-                            <h4 class="text-xl font-semibold text-slate-900">Theme Studio</h4>
-                            <p class="mt-1 max-w-2xl text-sm text-slate-500">Control the overall app mood, top-bar polish, and motion style.</p>
+                            <h4 class="text-xl font-semibold text-slate-900">Appearance</h4>
+                            <p class="mt-1 max-w-2xl text-sm text-slate-500">Control the motion style for page transitions and hover effects.</p>
                         </div>
-                        <div class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600">
+                        <div class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
                             <span class="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-                            Live preview
+                            Atelier Glass Theme
                         </div>
-                    </div>
-
-                    <div class="mt-5 grid gap-4 xl:grid-cols-3">
-                        <template x-for="theme in appearanceThemes" :key="theme.id">
-                            <button type="button" @click="settings.ui_theme = theme.id; applyAppearancePreview()"
-                                class="group rounded-[24px] border p-4 text-left transition duration-300"
-                                :class="settings.ui_theme === theme.id ? 'border-slate-900 bg-slate-950 text-white shadow-[0_24px_70px_-30px_rgba(15,23,42,0.8)]' : 'border-slate-200 bg-white text-slate-900 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_18px_50px_-30px_rgba(15,23,42,0.35)]'">
-                                <div class="flex items-start justify-between gap-4">
-                                    <div>
-                                        <div class="text-sm font-semibold" x-text="theme.name"></div>
-                                        <div class="mt-1 text-xs" :class="settings.ui_theme === theme.id ? 'text-white/70' : 'text-slate-500'" x-text="theme.description"></div>
-                                    </div>
-                                </div>
-                                <div class="mt-5 rounded-[20px] p-4" :style="theme.preview">
-                                    <div class="flex items-center justify-between rounded-2xl border border-white/20 bg-white/10 px-3 py-3 backdrop-blur-sm">
-                                        <div>
-                                            <div class="text-[11px] uppercase tracking-[0.24em] text-white/70">Preview</div>
-                                            <div class="mt-1 text-sm font-semibold text-white">Dashboard Shell</div>
-                                        </div>
-                                        <div class="flex gap-2">
-                                            <span class="h-3 w-3 rounded-full bg-white/80"></span>
-                                            <span class="h-3 w-3 rounded-full bg-white/45"></span>
-                                            <span class="h-3 w-3 rounded-full bg-white/25"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </button>
-                        </template>
                     </div>
 
                     <div class="mt-5 grid gap-4 md:grid-cols-2">
@@ -1164,11 +1136,11 @@
                             <p class="mt-2 text-xs text-slate-500">Enhanced adds page transitions and hover movement. Reduced keeps the app calmer. Off removes decorative motion.</p>
                         </div>
                         <div class="rounded-[22px] border border-slate-200 bg-slate-50/80 p-4">
-                            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Current Selection</p>
+                            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Current Settings</p>
                             <div class="mt-3 flex items-center justify-between rounded-2xl bg-white px-4 py-3 shadow-sm">
                                 <div>
-                                    <div class="text-sm font-semibold text-slate-900" x-text="selectedTheme.name"></div>
-                                    <div class="text-xs text-slate-500" x-text="selectedTheme.description"></div>
+                                    <div class="text-sm font-semibold text-slate-900">Atelier Glass</div>
+                                    <div class="text-xs text-slate-500">Bright editorial workspace with refined glass panels.</div>
                                 </div>
                                 <div class="text-right">
                                     <div class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">Motion</div>
@@ -1296,6 +1268,31 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Section Subtitle</label>
                         <input x-model="landing.contact_subtitle" type="text" class="form-input-custom" placeholder="e.g. Visit our store or drop us a message...">
+                    </div>
+                </div>
+            </div>
+
+            {{-- Map Information --}}
+            <div class="card">
+                <div class="card-header flex items-center gap-3">
+                    <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-100">
+                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-sm">Map Information</h3>
+                        <p class="text-xs text-gray-500">Google Maps embed for contact section</p>
+                    </div>
+                </div>
+                <div class="card-body space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Map Embed URL</label>
+                        <input x-model="landing.map_embed" type="url" class="form-input-custom" placeholder="e.g. https://www.google.com/maps/embed?pb=...">
+                        <p class="text-xs text-gray-400 mt-1">Paste a Google Maps embed URL. If empty, the map will auto-generate from your shop address.</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Map Zoom Level</label>
+                        <input x-model="landing.map_zoom" type="number" min="1" max="20" class="form-input-custom" placeholder="15">
+                        <p class="text-xs text-gray-400 mt-1">Zoom level 1-20 (used when auto-generating from shop address). Default: 15</p>
                     </div>
                 </div>
             </div>
@@ -1798,18 +1795,6 @@ function settingsPage() {
                 name: 'Atelier Glass',
                 description: 'Bright editorial workspace with refined glass panels.',
                 preview: 'background:linear-gradient(145deg,#0f172a 0%,#2563eb 42%,#8b5cf6 100%)'
-            },
-            {
-                id: 'graphite',
-                name: 'Graphite Luxe',
-                description: 'Smoky neutrals, brass accents, and executive contrast.',
-                preview: 'background:linear-gradient(145deg,#111827 0%,#334155 48%,#f59e0b 100%)'
-            },
-            {
-                id: 'solstice',
-                name: 'Solstice Warm',
-                description: 'Warm daylight palette with copper and sandstone tones.',
-                preview: 'background:linear-gradient(145deg,#7c2d12 0%,#ea580c 38%,#facc15 100%)'
             }
         ],
         notificationSettingKeys: ['notify_email_received','notify_email_completed','notify_whatsapp_received','notify_whatsapp_completed','whatsapp_api_url','whatsapp_api_token','whatsapp_from_number','whatsapp_template_received','whatsapp_template_completed'],
