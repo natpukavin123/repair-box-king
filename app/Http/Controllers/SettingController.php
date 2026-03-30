@@ -27,8 +27,17 @@ class SettingController extends Controller
         return [
             'general' => [
                 'shop_name', 'shop_address', 'shop_phone', 'shop_email', 'shop_slogan',
+                'shop_whatsapp',
                 'currency_symbol', 'invoice_prefix', 'repair_prefix', 'low_stock_threshold',
                 'ui_theme', 'ui_motion',
+            ],
+            'landing' => [
+                'hero_chip', 'hero_title', 'hero_subtitle',
+                'stat1_value', 'stat1_label', 'stat2_value', 'stat2_label', 'stat3_value', 'stat3_label',
+                'services_title', 'services_subtitle',
+                'why_title', 'why_subtitle',
+                'contact_title', 'contact_subtitle',
+                'cta_title', 'cta_subtitle',
             ],
             'notifications' => [
                 'notify_email_received', 'notify_email_completed',
@@ -64,6 +73,7 @@ class SettingController extends Controller
                 'settings.shop_phone'         => 'nullable|string|max:20',
                 'settings.shop_email'         => 'nullable|email|max:150',
                 'settings.shop_slogan'        => 'nullable|string|max:200',
+                'settings.shop_whatsapp'      => 'nullable|string|max:20',
                 'settings.currency_symbol'    => 'nullable|string|max:10',
                 'settings.invoice_prefix'     => 'nullable|string|max:20',
                 'settings.repair_prefix'      => 'nullable|string|max:20',
@@ -71,6 +81,9 @@ class SettingController extends Controller
                 'settings.ui_theme'           => 'nullable|string|in:atelier,graphite,solstice',
                 'settings.ui_motion'          => 'nullable|string|in:enhanced,reduced,none',
                 'shop_icon'                   => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ]),
+            'landing' => array_merge($base, [
+                'settings.*' => 'nullable|string|max:1000',
             ]),
             'notifications' => array_merge($base, [
                 'settings.notify_email_received'     => 'nullable|string|in:0,1',
@@ -104,6 +117,12 @@ class SettingController extends Controller
         // Filter to only allowed keys for this section
         if ($allowedKeys) {
             $incoming = array_intersect_key($incoming, array_flip($allowedKeys));
+        }
+
+        // For landing section, save as a single JSON blob
+        if ($section === 'landing') {
+            Setting::setValue('landing_page', json_encode($incoming));
+            return response()->json(['success' => true, 'message' => 'Landing page updated']);
         }
 
         foreach ($incoming as $key => $value) {

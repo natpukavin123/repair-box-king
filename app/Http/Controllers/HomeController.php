@@ -25,9 +25,13 @@ class HomeController extends Controller
             // Table may not exist yet; silently skip
         }
 
+        // Load landing page customizable content
+        $landingJson = Setting::getValue('landing_page', '{}');
+        $landing = json_decode($landingJson, true) ?: [];
+
         return view('public.home', compact(
             'shopName', 'shopPhone', 'shopEmail', 'shopAddress',
-            'shopSlogan', 'shopIcon', 'shopWhatsapp', 'services'
+            'shopSlogan', 'shopIcon', 'shopWhatsapp', 'services', 'landing'
         ));
     }
 }

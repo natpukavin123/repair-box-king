@@ -13,6 +13,7 @@
     {{-- Tabs --}}
     <div class="secondary-tabs">
         <button @click="tab='general'; updateUrl()" :class="tab==='general' ? 'secondary-tab is-active' : 'secondary-tab'">General</button>
+        <button @click="tab='landing'; updateUrl()" :class="tab==='landing' ? 'secondary-tab is-active' : 'secondary-tab'">Landing Page</button>
         <button @click="tab='master-data'; updateUrl(); $dispatch('md-tab-activated')" :class="tab==='master-data' ? 'secondary-tab is-active' : 'secondary-tab'">Master Data</button>
         <button @click="tab='email-templates'; updateUrl()" :class="tab==='email-templates' ? 'secondary-tab is-active' : 'secondary-tab'">Email Templates</button>
         <button @click="tab='notifications'; updateUrl(); loadNotifications()" :class="tab==='notifications' ? 'secondary-tab is-active' : 'secondary-tab'">Notifications</button>
@@ -1185,6 +1186,153 @@
         </div>
     </div>
 
+    {{-- ══════════════════════════════════════════════════════════
+         Landing Page Settings
+    ══════════════════════════════════════════════════════════ --}}
+    <div x-show="tab==='landing'" x-cloak>
+        <div class="space-y-5" x-data="landingPageSettings()" x-init="loadLanding()">
+
+            {{-- Hero Section --}}
+            <div class="card">
+                <div class="card-header flex items-center gap-3">
+                    <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-100">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-sm">Hero Section</h3>
+                        <p class="text-xs text-gray-500">The main banner area visitors see first</p>
+                    </div>
+                </div>
+                <div class="card-body space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Chip Text</label>
+                        <input x-model="landing.hero_chip" type="text" class="form-input-custom" placeholder="e.g. Trusted by 10,000+ Customers">
+                        <p class="text-xs text-gray-500 mt-1">Small badge text above the title</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                        <input x-model="landing.hero_title" type="text" class="form-input-custom" placeholder="e.g. Expert Device Repair You Can Trust">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Subtitle</label>
+                        <textarea x-model="landing.hero_subtitle" class="form-input-custom" rows="2" placeholder="e.g. Fast, reliable repair for smartphones, tablets & laptops..."></textarea>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t">
+                        <template x-for="n in [1,2,3]" :key="n">
+                            <div class="p-3 rounded-xl border border-gray-200 bg-gray-50/60">
+                                <p class="text-xs font-semibold text-gray-500 mb-2" x-text="'Stat ' + n"></p>
+                                <div class="space-y-2">
+                                    <input x-model="landing['stat'+n+'_value']" type="text" class="form-input-custom" placeholder="e.g. 5000+">
+                                    <input x-model="landing['stat'+n+'_label']" type="text" class="form-input-custom" placeholder="e.g. Repairs Done">
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Services Section --}}
+            <div class="card">
+                <div class="card-header flex items-center gap-3">
+                    <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-100">
+                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-sm">Services Section</h3>
+                        <p class="text-xs text-gray-500">Title and subtitle for the services grid</p>
+                    </div>
+                </div>
+                <div class="card-body space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Section Title</label>
+                        <input x-model="landing.services_title" type="text" class="form-input-custom" placeholder="e.g. Our Repair Services">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Section Subtitle</label>
+                        <input x-model="landing.services_subtitle" type="text" class="form-input-custom" placeholder="e.g. We handle all major brands and devices...">
+                    </div>
+                </div>
+            </div>
+
+            {{-- Why Choose Us --}}
+            <div class="card">
+                <div class="card-header flex items-center gap-3">
+                    <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-purple-100">
+                        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-sm">Why Choose Us</h3>
+                        <p class="text-xs text-gray-500">Highlight your advantages</p>
+                    </div>
+                </div>
+                <div class="card-body space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Section Title</label>
+                        <input x-model="landing.why_title" type="text" class="form-input-custom" placeholder="e.g. Why Choose RepairBox?">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Section Subtitle</label>
+                        <input x-model="landing.why_subtitle" type="text" class="form-input-custom" placeholder="e.g. Trusted by thousands for quality repairs...">
+                    </div>
+                </div>
+            </div>
+
+            {{-- Contact Section --}}
+            <div class="card">
+                <div class="card-header flex items-center gap-3">
+                    <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-amber-100">
+                        <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-sm">Contact Section</h3>
+                        <p class="text-xs text-gray-500">Heading for the contact area</p>
+                    </div>
+                </div>
+                <div class="card-body space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Section Title</label>
+                        <input x-model="landing.contact_title" type="text" class="form-input-custom" placeholder="e.g. Get In Touch">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Section Subtitle</label>
+                        <input x-model="landing.contact_subtitle" type="text" class="form-input-custom" placeholder="e.g. Visit our store or drop us a message...">
+                    </div>
+                </div>
+            </div>
+
+            {{-- CTA Banner --}}
+            <div class="card">
+                <div class="card-header flex items-center gap-3">
+                    <div class="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-100">
+                        <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-sm">Call to Action Banner</h3>
+                        <p class="text-xs text-gray-500">Bottom CTA section</p>
+                    </div>
+                </div>
+                <div class="card-body space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">CTA Title</label>
+                        <input x-model="landing.cta_title" type="text" class="form-input-custom" placeholder="e.g. Ready to Fix Your Device?">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">CTA Subtitle</label>
+                        <input x-model="landing.cta_subtitle" type="text" class="form-input-custom" placeholder="e.g. Walk in or book online — we'll handle the rest.">
+                    </div>
+                </div>
+            </div>
+
+            {{-- Save --}}
+            <div class="flex items-center gap-4">
+                <button @click="saveLanding()" class="btn-primary" :disabled="savingLanding">
+                    <span x-show="savingLanding" class="spinner mr-1"></span> Save Landing Page Settings
+                </button>
+                <a href="/" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Preview Landing Page &rarr;</a>
+            </div>
+        </div>
+    </div>
+
     {{-- Email Templates --}}
     <div x-show="tab==='email-templates'" class="card">
         <div class="card-header"><h3 class="text-lg font-semibold">Email Templates</h3></div>
@@ -2002,6 +2150,49 @@ function settingsPage() {
         }
     };
 }
+
+function landingPageSettings() {
+    return {
+        landing: {},
+        savingLanding: false,
+        async loadLanding() {
+            try {
+                const r = await RepairBox.ajax('/admin/settings');
+                if (r.data && r.data.landing_page) {
+                    try { this.landing = JSON.parse(r.data.landing_page); } catch(e) { this.landing = {}; }
+                }
+            } catch(e) { console.error('Failed to load landing settings', e); }
+        },
+        async saveLanding() {
+            this.savingLanding = true;
+            try {
+                const formData = new FormData();
+                formData.append('_method', 'PUT');
+                formData.append('section', 'landing');
+                Object.keys(this.landing).forEach(k => {
+                    formData.append('settings[' + k + ']', this.landing[k] || '');
+                });
+                const response = await fetch('/admin/settings', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    },
+                    body: formData
+                });
+                if (!response.ok) {
+                    const err = await response.json().catch(() => null);
+                    throw new Error(err?.message || 'HTTP ' + response.status);
+                }
+                const r = await response.json();
+                if (r.success !== false) RepairBox.toast('Landing page settings saved', 'success');
+                else RepairBox.toast(r.message || 'Error', 'error');
+            } catch(e) { RepairBox.toast('Error: ' + e.message, 'error'); }
+            this.savingLanding = false;
+        }
+    };
+}
+
 function masterDataPanel() {
     const sectionConfig = {
         vendors:    { label: 'Vendor Management', singular: 'Vendor',   url: '/admin/vendors',    deleteUrl: null },

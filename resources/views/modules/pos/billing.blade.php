@@ -131,19 +131,13 @@
         min-height: 0;
         overflow: hidden;
     }
-
-    @media (min-width: 1024px) {
-        .pos-main-grid {
-            grid-template-columns: 3fr 1fr;
-        }
-    }
 </style>
 
-<div x-data="posBilling()" x-init="init()" class="sales-workspace h-full">
-    <div class="pos-main-grid grid grid-cols-1 gap-4">
+<div x-data="posBilling()" x-init="init()" class="workspace-screen sales-workspace w-full">
+    <div class="pos-main-grid grid w-full lg:flex-1 lg:min-h-0 grid-cols-1 gap-2 lg:grid-cols-3 lg:grid-rows-1">
 
         {{-- LEFT: Product / Service Search --}}
-        <div class="flex flex-col min-h-0" style="height:100%">
+        <div class="flex lg:min-h-0 flex-col lg:overflow-hidden lg:col-span-2">
 
             {{-- Search bar + type selector --}}
             <div class="sales-toolbar mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -397,7 +391,7 @@
         </div>
 
         {{-- RIGHT: Cart & Customer --}}
-        <div class="relative flex flex-col gap-3 order-first lg:order-none overflow-hidden" style="height:100%" :style="custOpen ? 'z-index:95;' : 'z-index:10;'">
+        <div class="relative flex flex-col min-h-0 gap-3 order-first lg:order-none overflow-hidden" :style="custOpen ? 'z-index:95;' : 'z-index:10;'">
 
             {{-- Customer selector --}}
             <div class="card sales-panel relative shrink-0" :style="custOpen ? 'overflow:visible; z-index:110;' : 'overflow:visible; z-index:10;'">
