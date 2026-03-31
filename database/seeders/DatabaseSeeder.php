@@ -18,10 +18,10 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // === ROLES ===
-        $admin = Role::create(['name' => 'Admin', 'description' => 'Full system access']);
-        $stockMgr = Role::create(['name' => 'Stock Manager', 'description' => 'Manage inventory and purchases']);
-        $tech = Role::create(['name' => 'Technician', 'description' => 'Handle repairs']);
-        $billing = Role::create(['name' => 'Billing Staff', 'description' => 'POS and billing']);
+        $admin = Role::firstOrCreate(['name' => 'Admin'], ['description' => 'Full system access']);
+        $stockMgr = Role::firstOrCreate(['name' => 'Stock Manager'], ['description' => 'Manage inventory and purchases']);
+        $tech = Role::firstOrCreate(['name' => 'Technician'], ['description' => 'Handle repairs']);
+        $billing = Role::firstOrCreate(['name' => 'Billing Staff'], ['description' => 'POS and billing']);
 
         // === PERMISSIONS ===
         $modules = ['dashboard', 'categories', 'products', 'inventory',
@@ -31,50 +31,52 @@ class DatabaseSeeder extends Seeder
         $permIds = [];
         foreach ($modules as $mod) {
             foreach ($actions as $act) {
-                $p = Permission::create(['name' => "{$mod}.{$act}", 'module' => $mod]);
+                $p = Permission::firstOrCreate(['name' => "{$mod}.{$act}"], ['module' => $mod]);
                 $permIds[$mod][] = $p->id;
             }
         }
         // Admin gets all
-        $admin->permissions()->attach(Permission::pluck('id'));
+        $admin->permissions()->syncWithoutDetaching(Permission::pluck('id'));
         // Stock Manager gets inventory-related
+        $stockPerms = collect();
         foreach (['dashboard', 'categories', 'products', 'inventory'] as $m) {
-            $stockMgr->permissions()->attach($permIds[$m]);
+            $stockPerms = $stockPerms->merge($permIds[$m]);
         }
+        $stockMgr->permissions()->syncWithoutDetaching($stockPerms);
         // Technician gets repairs
+        $techPerms = collect();
         foreach (['dashboard', 'repairs', 'products', 'inventory'] as $m) {
-            $tech->permissions()->attach($permIds[$m]);
+            $techPerms = $techPerms->merge($permIds[$m]);
         }
+        $tech->permissions()->syncWithoutDetaching($techPerms);
         // Billing gets POS
+        $billPerms = collect();
         foreach (['dashboard', 'pos', 'invoices', 'customers', 'products', 'recharges'] as $m) {
-            $billing->permissions()->attach($permIds[$m]);
+            $billPerms = $billPerms->merge($permIds[$m]);
         }
+        $billing->permissions()->syncWithoutDetaching($billPerms);
 
         // === USERS ===
-        User::create([
+        User::firstOrCreate(['email' => 'admin@repairbox.com'], [
             'name' => 'Administrator',
-            'email' => 'admin@repairbox.com',
             'password' => Hash::make('password'),
             'role_id' => $admin->id,
             'status' => 'active',
         ]);
-        User::create([
+        User::firstOrCreate(['email' => 'stock@repairbox.com'], [
             'name' => 'Stock Manager',
-            'email' => 'stock@repairbox.com',
             'password' => Hash::make('password'),
             'role_id' => $stockMgr->id,
             'status' => 'active',
         ]);
-        $techUser = User::create([
+        $techUser = User::firstOrCreate(['email' => 'tech@repairbox.com'], [
             'name' => 'Rajesh Kumar',
-            'email' => 'tech@repairbox.com',
             'password' => Hash::make('password'),
             'role_id' => $tech->id,
             'status' => 'active',
         ]);
-        User::create([
+        User::firstOrCreate(['email' => 'billing@repairbox.com'], [
             'name' => 'Billing Staff',
-            'email' => 'billing@repairbox.com',
             'password' => Hash::make('password'),
             'role_id' => $billing->id,
             'status' => 'active',

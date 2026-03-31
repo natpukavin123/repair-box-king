@@ -490,9 +490,14 @@
                     <div class="px-4 py-2 space-y-2">
                         {{-- Device info --}}
                         <div class="grid grid-cols-2 gap-2">
-                            <div>
+                            <div x-data="brandDropdown(brandList, (v) => form.device_brand = v)" x-init="selected = form.device_brand" x-effect="if (form.device_brand !== selected) { query = form.device_brand; selected = form.device_brand; }" @click.away="open = false" class="relative">
                                 <label class="text-xs font-medium text-gray-600 mb-1 block">Device Brand *</label>
-                                <input x-model="form.device_brand" list="brand-list" type="text" class="form-input-custom repair-form-input text-sm" placeholder="Samsung, Apple..." autocomplete="off">
+                                <input type="text" x-model="query" @focus="open = true" @input="open = true; selected = query; updateValue(query)" @keydown.arrow-down.prevent="highlightNext()" @keydown.arrow-up.prevent="highlightPrev()" @keydown.enter.prevent="selectHighlighted()" @keydown.escape="open = false" class="form-input-custom repair-form-input text-sm" placeholder="Type to search brands..." autocomplete="off">
+                                <div x-show="open && filtered.length > 0" x-cloak class="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg">
+                                    <template x-for="(brand, idx) in filtered" :key="brand">
+                                        <div @click="pick(brand)" :class="idx === highlighted ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50'" class="cursor-pointer px-3 py-2 text-sm" x-text="brand"></div>
+                                    </template>
+                                </div>
                             </div>
                             <div>
                                 <label class="text-xs font-medium text-gray-600 mb-1 block">Device Model *</label>
@@ -946,9 +951,50 @@ function repairsPage() {
 }
 </script>
 
-<datalist id="brand-list">
-    @foreach($brands as $brand)
-        <option value="{{ $brand }}"></option>
-    @endforeach
-</datalist>
+<script>
+function brandDropdown(brands, onChange) {
+    return {
+        open: false,
+        query: '',
+        selected: '',
+        highlighted: -1,
+        brands: brands,
+        get filtered() {
+            if (!this.query.trim()) return this.brands;
+            const q = this.query.toLowerCase();
+            return this.brands.filter(b => b.toLowerCase().includes(q));
+        },
+        pick(brand) {
+            this.query = brand;
+            this.selected = brand;
+            this.open = false;
+            this.highlighted = -1;
+            onChange(brand);
+        },
+        updateValue(val) { onChange(val); },
+        highlightNext() {
+            if (this.filtered.length === 0) return;
+            this.highlighted = (this.highlighted + 1) % this.filtered.length;
+            this.scrollToHighlighted();
+        },
+        highlightPrev() {
+            if (this.filtered.length === 0) return;
+            this.highlighted = this.highlighted <= 0 ? this.filtered.length - 1 : this.highlighted - 1;
+            this.scrollToHighlighted();
+        },
+        selectHighlighted() {
+            if (this.highlighted >= 0 && this.highlighted < this.filtered.length) {
+                this.pick(this.filtered[this.highlighted]);
+            }
+        },
+        scrollToHighlighted() {
+            this.$nextTick(() => {
+                const container = this.$el.querySelector('.overflow-y-auto');
+                const item = container?.children[this.highlighted];
+                if (item) item.scrollIntoView({ block: 'nearest' });
+            });
+        }
+    };
+}
+</script>
 @endpush

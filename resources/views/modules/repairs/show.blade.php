@@ -1091,9 +1091,14 @@
                         </div>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <div>
+                            <div x-data="brandDropdown(@json($brands), (v) => editForm.device_brand = v)" x-init="query = editForm.device_brand; selected = editForm.device_brand" x-effect="if (editForm.device_brand !== selected) { query = editForm.device_brand; selected = editForm.device_brand; }" @click.away="open = false" class="relative">
                                 <label class="block text-sm font-semibold text-slate-700 mb-2">Device Brand <span class="text-red-500">*</span></label>
-                                <input x-model="editForm.device_brand" list="repair-brand-list" type="text" class="form-input-custom w-full text-sm" placeholder="Samsung, Apple, Xiaomi">
+                                <input type="text" x-model="query" @focus="open = true" @input="open = true; selected = query; updateValue(query)" @keydown.arrow-down.prevent="highlightNext()" @keydown.arrow-up.prevent="highlightPrev()" @keydown.enter.prevent="selectHighlighted()" @keydown.escape="open = false" class="form-input-custom w-full text-sm" placeholder="Type to search brands..." autocomplete="off">
+                                <div x-show="open && filtered.length > 0" x-cloak class="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg">
+                                    <template x-for="(brand, idx) in filtered" :key="brand">
+                                        <div @click="pick(brand)" :class="idx === highlighted ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50'" class="cursor-pointer px-3 py-2 text-sm" x-text="brand"></div>
+                                    </template>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-2">Device Model <span class="text-red-500">*</span></label>
@@ -1143,11 +1148,52 @@
         </div>
     </div>
 
-    <datalist id="repair-brand-list">
-        @foreach($brands as $brand)
-            <option value="{{ $brand }}"></option>
-        @endforeach
-    </datalist>
+    <script>
+    function brandDropdown(brands, onChange) {
+        return {
+            open: false,
+            query: '',
+            selected: '',
+            highlighted: -1,
+            brands: brands,
+            get filtered() {
+                if (!this.query.trim()) return this.brands;
+                const q = this.query.toLowerCase();
+                return this.brands.filter(b => b.toLowerCase().includes(q));
+            },
+            pick(brand) {
+                this.query = brand;
+                this.selected = brand;
+                this.open = false;
+                this.highlighted = -1;
+                onChange(brand);
+            },
+            updateValue(val) { onChange(val); },
+            highlightNext() {
+                if (this.filtered.length === 0) return;
+                this.highlighted = (this.highlighted + 1) % this.filtered.length;
+                this.scrollToHighlighted();
+            },
+            highlightPrev() {
+                if (this.filtered.length === 0) return;
+                this.highlighted = this.highlighted <= 0 ? this.filtered.length - 1 : this.highlighted - 1;
+                this.scrollToHighlighted();
+            },
+            selectHighlighted() {
+                if (this.highlighted >= 0 && this.highlighted < this.filtered.length) {
+                    this.pick(this.filtered[this.highlighted]);
+                }
+            },
+            scrollToHighlighted() {
+                this.$nextTick(() => {
+                    const container = this.$el.querySelector('.overflow-y-auto');
+                    const item = container?.children[this.highlighted];
+                    if (item) item.scrollIntoView({ block: 'nearest' });
+                });
+            }
+        };
+    }
+    </script>
 
     <!-- ===== COMPLETED CONFIRMATION MODAL ===== -->
     <div x-show="showCompletedConfirm" class="modal-overlay" x-cloak>
