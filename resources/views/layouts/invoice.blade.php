@@ -298,7 +298,7 @@
     <div class="hdr">
         @if($shopIcon)
             <div class="logo-ring" style="background: #fff; border: 2px solid #333; border-radius: 50%;">
-                <img src="{{ asset('storage/' . $shopIcon) }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">
+                <img src="{{ image_url($shopIcon) }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">
             </div>
         @else
             <div class="logo-ring">

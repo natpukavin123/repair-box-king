@@ -226,7 +226,7 @@
                 {{-- SALES INVOICE --}}
                 <div x-show="activeTab === 'sales-invoice'" class="ps-card" x-cloak>
                     <div class="ps-hdr">
-                        <div class="ps-logo">@if($shopIcon)<img src="{{ asset('storage/'.$shopIcon) }}">@else<span class="ps-logo-text">REPAIR<br>BOX</span>@endif</div>
+                        <div class="ps-logo">@if($shopIcon)<img src="{{ image_url($shopIcon) }}">@else<span class="ps-logo-text">REPAIR<br>BOX</span>@endif</div>
                         <div class="ps-shop">
                             <div class="ps-shop-name" x-text="previewLang==='ta' ? (s.invoice_shop_name_ta || '{{ e($shopName) }}') : '{{ e($shopName) }}'"></div>
                             <div class="ps-shop-slogan" x-text="previewLang==='ta' ? (s.invoice_shop_slogan_ta || '{{ e($shopSlogan) }}') : '{{ e($shopSlogan) }}'"></div>
@@ -267,7 +267,7 @@
                 {{-- REPAIR RECEIPT --}}
                 <div x-show="activeTab === 'repair-receipt'" class="ps-card" x-cloak>
                     <div class="ps-hdr">
-                        <div class="ps-logo">@if($shopIcon)<img src="{{ asset('storage/'.$shopIcon) }}">@else<span class="ps-logo-text">REPAIR<br>BOX</span>@endif</div>
+                        <div class="ps-logo">@if($shopIcon)<img src="{{ image_url($shopIcon) }}">@else<span class="ps-logo-text">REPAIR<br>BOX</span>@endif</div>
                         <div class="ps-shop">
                             <div class="ps-shop-name" x-text="previewLang==='ta' ? (s.receipt_shop_name_ta || '{{ e($shopName) }}') : '{{ e($shopName) }}'"></div>
                             <div class="ps-shop-slogan" x-text="previewLang==='ta' ? (s.receipt_shop_slogan_ta || '{{ e($shopSlogan) }}') : '{{ e($shopSlogan) }}'"></div>
@@ -311,7 +311,7 @@
                 {{-- REPAIR INVOICE --}}
                 <div x-show="activeTab === 'repair-invoice'" class="ps-card" x-cloak>
                     <div class="ps-hdr">
-                        <div class="ps-logo">@if($shopIcon)<img src="{{ asset('storage/'.$shopIcon) }}">@else<span class="ps-logo-text">REPAIR<br>BOX</span>@endif</div>
+                        <div class="ps-logo">@if($shopIcon)<img src="{{ image_url($shopIcon) }}">@else<span class="ps-logo-text">REPAIR<br>BOX</span>@endif</div>
                         <div class="ps-shop">
                             <div class="ps-shop-name" x-text="previewLang==='ta' ? (s.receipt_shop_name_ta || '{{ e($shopName) }}') : '{{ e($shopName) }}'"></div>
                             <div class="ps-shop-slogan" x-text="previewLang==='ta' ? (s.receipt_shop_slogan_ta || '{{ e($shopSlogan) }}') : '{{ e($shopSlogan) }}'"></div>

@@ -656,7 +656,7 @@ a{text-decoration:none;color:inherit;cursor:url("data:image/svg+xml,%3Csvg xmlns
     <div class="container navbar-inner">
         <a href="{{ route('home') }}" class="nav-brand">
             <div class="nav-logo">
-                @if($shopIcon)<img src="{{ asset('storage/'.$shopIcon) }}" alt="{{ $shopName }}">
+                @if($shopIcon)<img src="{{ image_url($shopIcon) }}" alt="{{ $shopName }}">
                 @else<div class="nav-logo-letters">{{ strtoupper(substr($shopName,0,2)) }}</div>@endif
             </div>
             <div><div class="nav-shop-name">{{ $shopName }}</div><div class="nav-slogan">{{ $shopSlogan }}</div></div>
@@ -881,8 +881,8 @@ a{text-decoration:none;color:inherit;cursor:url("data:image/svg+xml,%3Csvg xmlns
                 @foreach($services as $idx => $svc)
                 <div class="service-card anim-flip delay-{{ ($idx % 8) + 1 }}" data-tilt>
                     <div class="service-icon">
-                        @if($svc->image)<img src="{{ asset('storage/'.$svc->image) }}" alt="{{ $svc->name }}">
-                        @elseif($svc->thumbnail)<img src="{{ asset('storage/'.$svc->thumbnail) }}" alt="{{ $svc->name }}">
+                        @if($svc->image)<img src="{{ image_url($svc->image) }}" alt="{{ $svc->name }}">
+                        @elseif($svc->thumbnail)<img src="{{ image_url($svc->thumbnail) }}" alt="{{ $svc->name }}">
                         @else<svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>
                         @endif
                     </div>
@@ -1035,7 +1035,7 @@ a{text-decoration:none;color:inherit;cursor:url("data:image/svg+xml,%3Csvg xmlns
             <div class="anim-blur">
                 <div class="footer-brand">
                     <div class="footer-brand-logo">
-                        @if($shopIcon)<img src="{{ asset('storage/'.$shopIcon) }}" alt="{{ $shopName }}">
+                        @if($shopIcon)<img src="{{ image_url($shopIcon) }}" alt="{{ $shopName }}">
                         @else<span style="font-size:11px;font-weight:800;color:#fff;text-align:center;line-height:1.2;">{{ strtoupper(substr($shopName,0,2)) }}</span>@endif
                     </div>
                     <div class="footer-brand-name">{{ $shopName }}</div>

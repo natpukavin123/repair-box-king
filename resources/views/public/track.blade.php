@@ -160,7 +160,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f1f5f9;color:#1e293b;m
         <a href="{{ route('track.landing') }}" class="nav-brand">
             <div class="nav-logo">
                 @if($shopIcon)
-                    <img src="{{ asset('storage/'.$shopIcon) }}" alt="{{ $shopName }}">
+                    <img src="{{ image_url($shopIcon) }}" alt="{{ $shopName }}">
                 @else
                     <div class="nav-logo-txt">REPAIR<br>BOX</div>
                 @endif

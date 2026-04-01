@@ -306,7 +306,7 @@ table.sum-tbl .row-full td{color:#000;font-weight:900;text-align:center;border-b
 
             <div class="inv-hdr">
                 @if($shopIcon)
-                <div class="inv-logo"><img src="{{ asset('storage/'.$shopIcon) }}" alt="{{ $shopName }}"></div>
+                <div class="inv-logo"><img src="{{ image_url($shopIcon) }}" alt="{{ $shopName }}"></div>
                 @else
                 <div class="inv-logo"><div class="inv-logo-txt">REPAIR<br>BOX</div></div>
                 @endif

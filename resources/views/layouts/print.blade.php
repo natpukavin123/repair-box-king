@@ -106,7 +106,7 @@
         <div class="header">
             @if($shopIcon)
                 <div style="margin-bottom: 8px; display: flex; justify-content: center;">
-                    <img src="{{ asset('storage/' . $shopIcon) }}" style="height: 40px; object-fit: contain;">
+                    <img src="{{ image_url($shopIcon) }}" style="height: 40px; object-fit: contain;">
                 </div>
             @endif
             <h1>{{ $invoiceHeaderTitle }}</h1>

@@ -99,7 +99,7 @@
         <a href="/admin/dashboard" class="brand-link">
             @if($shopIcon)
                 <div class="brand-logo">
-                    <img src="{{ asset('storage/' . $shopIcon) }}" alt="Logo" class="w-full h-full object-contain">
+                    <img src="{{ image_url($shopIcon) }}" alt="Logo" class="w-full h-full object-contain">
                 </div>
             @else
                 <div class="brand-logo brand-logo-fallback">

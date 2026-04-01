@@ -19,12 +19,13 @@ class ImageService
 
     /**
      * Get the public URL for a stored image path.
+     * Handles both full URLs (new R2 uploads) and relative paths (legacy data).
      */
     public function url(?string $path): ?string
     {
         if (!$path) return null;
 
-        // Already a full URL (e.g. migrated data or S3 absolute URL)
+        // Already a full URL (R2, S3, or migrated data)
         if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
             return $path;
         }
@@ -56,26 +57,59 @@ class ImageService
     }
 
     /**
-     * Store an uploaded file to the configured disk.
+     * Extract relative storage path from a full URL for disk operations.
      */
-    public function store(UploadedFile $file, string $folder): string
+    public function relativePath(string $url): string
     {
-        return $file->store($folder, $this->disk());
+        // S3/R2: strip the AWS_URL prefix
+        $awsUrl = config('filesystems.disks.s3.url');
+        if ($awsUrl && str_starts_with($url, rtrim($awsUrl, '/'))) {
+            return ltrim(substr($url, strlen(rtrim($awsUrl, '/'))), '/');
+        }
+
+        // CDN URL
+        $cdn = config('app.image_cdn_url');
+        if ($cdn && str_starts_with($url, rtrim($cdn, '/'))) {
+            return ltrim(substr($url, strlen(rtrim($cdn, '/'))), '/');
+        }
+
+        // Local: strip APP_URL/storage prefix
+        $localPrefix = rtrim(config('app.url'), '/') . '/storage';
+        if (str_starts_with($url, $localPrefix)) {
+            return ltrim(substr($url, strlen($localPrefix)), '/');
+        }
+
+        return $url;
     }
 
     /**
-     * Delete a file from the configured disk.
+     * Store an uploaded file and return its full public URL.
+     */
+    public function store(UploadedFile $file, string $folder): string
+    {
+        $path = $file->store($folder, $this->disk());
+        return Storage::disk($this->disk())->url($path);
+    }
+
+    /**
+     * Delete a file from the configured disk. Handles both full URLs and relative paths.
      */
     public function delete(?string $path): void
     {
-        if ($path && !str_starts_with($path, 'http')) {
-            Storage::disk($this->disk())->delete($path);
+        if (!$path) return;
+
+        // Convert full URL to relative path for disk deletion
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            $path = $this->relativePath($path);
         }
+
+        Storage::disk($this->disk())->delete($path);
     }
 
     /**
      * Generate a 200×200 max thumbnail (JPEG, quality 85).
      * Works with both local and cloud disks.
+     * Accepts and returns full URLs.
      */
     public function makeThumb(string $storedPath, string $thumbFolder): ?string
     {
@@ -83,20 +117,27 @@ class ImageService
 
         $disk    = $this->disk();
         $isLocal = ($disk === 'public');
-        $thumbFilename = pathinfo($storedPath, PATHINFO_FILENAME) . '_thumb.jpg';
+
+        // Convert full URL to relative path for disk operations
+        $relativePath = $storedPath;
+        if (str_starts_with($storedPath, 'http://') || str_starts_with($storedPath, 'https://')) {
+            $relativePath = $this->relativePath($storedPath);
+        }
+
+        $thumbFilename = pathinfo($relativePath, PATHINFO_FILENAME) . '_thumb.jpg';
         $tempFile = null;
 
         // Get a local file path for GD processing
         if ($isLocal) {
-            $localPath = Storage::disk($disk)->path($storedPath);
+            $localPath = Storage::disk($disk)->path($relativePath);
         } else {
             $tempFile  = tempnam(sys_get_temp_dir(), 'img_');
-            file_put_contents($tempFile, Storage::disk($disk)->get($storedPath));
+            file_put_contents($tempFile, Storage::disk($disk)->get($relativePath));
             $localPath = $tempFile;
         }
 
         try {
-            $ext = strtolower(pathinfo($storedPath, PATHINFO_EXTENSION));
+            $ext = strtolower(pathinfo($relativePath, PATHINFO_EXTENSION));
             $image = match ($ext) {
                 'jpg', 'jpeg' => @imagecreatefromjpeg($localPath),
                 'png'         => @imagecreatefrompng($localPath),
@@ -114,6 +155,8 @@ class ImageService
             $thumb = imagecreatetruecolor($nw, $nh);
             imagecopyresampled($thumb, $image, 0, 0, 0, 0, $nw, $nh, $sw, $sh);
 
+            $thumbRelativePath = $thumbFolder . '/' . $thumbFilename;
+
             if ($isLocal) {
                 $dir = Storage::disk($disk)->path($thumbFolder);
                 if (!is_dir($dir)) mkdir($dir, 0755, true);
@@ -123,7 +166,7 @@ class ImageService
                 $tempThumb = tempnam(sys_get_temp_dir(), 'thumb_');
                 imagejpeg($thumb, $tempThumb, 85);
                 Storage::disk($disk)->put(
-                    $thumbFolder . '/' . $thumbFilename,
+                    $thumbRelativePath,
                     file_get_contents($tempThumb),
                     'public'
                 );
@@ -133,7 +176,8 @@ class ImageService
             imagedestroy($image);
             imagedestroy($thumb);
 
-            return $thumbFolder . '/' . $thumbFilename;
+            // Return full URL
+            return Storage::disk($disk)->url($thumbRelativePath);
         } finally {
             if ($tempFile && file_exists($tempFile)) {
                 unlink($tempFile);
@@ -143,7 +187,7 @@ class ImageService
 
     /**
      * Full upload handler: validate, store image + thumbnail, update model.
-     * Replaces duplicated uploadImage() logic across all controllers.
+     * Stores full URLs in the database.
      *
      * @param  Request  $request   The HTTP request with 'image' and/or 'thumbnail' files
      * @param  Model    $model     The Eloquent model to update (must have image & thumbnail columns)
@@ -165,20 +209,20 @@ class ImageService
                 $this->delete($model->thumbnail);
             }
 
-            $path = $this->store($request->file('image'), $folder);
-            $updates['image'] = $path;
+            $url = $this->store($request->file('image'), $folder);
+            $updates['image'] = $url;
 
             // Auto-generate thumbnail if none provided
             if (!$request->hasFile('thumbnail')) {
-                $thumbPath = $this->makeThumb($path, $folder . '/thumbs');
-                if ($thumbPath) $updates['thumbnail'] = $thumbPath;
+                $thumbUrl = $this->makeThumb($url, $folder . '/thumbs');
+                if ($thumbUrl) $updates['thumbnail'] = $thumbUrl;
             }
         }
 
         if ($request->hasFile('thumbnail')) {
             $this->delete($model->thumbnail);
-            $path = $this->store($request->file('thumbnail'), $folder . '/thumbs');
-            $updates['thumbnail'] = $path;
+            $url = $this->store($request->file('thumbnail'), $folder . '/thumbs');
+            $updates['thumbnail'] = $url;
         }
 
         if ($updates) $model->update($updates);
@@ -186,8 +230,8 @@ class ImageService
         $fresh = $model->fresh();
         return [
             'success'   => true,
-            'image_url' => $this->url($fresh->image),
-            'thumb_url' => $this->url($fresh->thumbnail),
+            'image_url' => $fresh->image,
+            'thumb_url' => $fresh->thumbnail,
         ];
     }
 }
