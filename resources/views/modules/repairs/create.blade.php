@@ -154,7 +154,60 @@
                             </div>
 
                             <label class="block text-sm font-semibold text-slate-700 mb-2">Problem Description <span class="text-red-500">*</span></label>
-                            <textarea x-model="form.problem_description" class="form-input-custom w-full text-sm" rows="10" placeholder="Describe the issue clearly: no power, display broken, charging issue, speaker not working, water damage, etc."></textarea>
+
+                            {{-- Added issue chips --}}
+                            <div class="flex flex-wrap gap-2 mb-3" x-show="problemIssues.length > 0">
+                                <template x-for="(issue, idx) in problemIssues" :key="idx">
+                                    <span class="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-800">
+                                        <span x-text="issue"></span>
+                                        <button type="button" @click="removeProblemIssue(idx)" class="ml-1 text-amber-400 hover:text-red-500 text-lg leading-none font-bold">&times;</button>
+                                    </span>
+                                </template>
+                            </div>
+
+                            {{-- Input + autocomplete dropdown --}}
+                            <div class="relative">
+                                <div class="flex gap-2">
+                                    <div class="relative flex-1">
+                                        <input
+                                            type="text"
+                                            x-model="problemQuery"
+                                            @input="problemShowSugg = true"
+                                            @keydown.enter.prevent="addProblemIssue()"
+                                            @keydown.escape="problemQuery = ''"
+                                            @blur="setTimeout(() => { problemShowSugg = false }, 150)"
+                                            class="form-input-custom w-full text-sm"
+                                            placeholder="Type issue, press Enter to add — e.g. screen cracked">
+                                        <div x-show="problemQuery.trim().length > 0 && getSuggestions().length > 0" x-cloak
+                                            class="absolute z-50 left-0 right-0 mt-1 rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden">
+                                            <template x-for="s in getSuggestions()" :key="s">
+                                                <button type="button" @mousedown.prevent="pickSuggestion(s)"
+                                                    class="flex w-full items-center gap-2 border-b border-slate-100 px-4 py-2.5 text-left text-sm text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition last:border-0">
+                                                    <svg class="w-3.5 h-3.5 shrink-0 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                                    <span x-text="s"></span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <button type="button" @click="addProblemIssue()"
+                                        class="shrink-0 inline-flex items-center gap-1 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600 transition">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                        Add
+                                    </button>
+                                </div>
+                            </div>
+
+                            {{-- Quick-pick suggestion pills --}}
+                            <div class="mt-3">
+                                <p class="text-xs text-slate-400 mb-2">Common issues — tap to add quickly:</p>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <template x-for="s in getQuickSuggestions()" :key="s">
+                                        <button type="button" @mousedown.prevent="pickSuggestion(s)"
+                                            class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700 transition"
+                                            x-text="s"></button>
+                                    </template>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -301,6 +354,39 @@ function createRepairPage() {
         newCust: { name: '', mobile_number: '', email: '', address: '' },
         brandList: @json($brands),
 
+        // Problem description — chip / tag state
+        problemIssues: [],
+        problemQuery: '',
+        problemShowSugg: false,
+        allSuggestions: [
+            'Screen cracked','Display not working','Touch not responding','Display flickering',
+            'Black screen','LCD damaged','Display lines / spots','Ghost touch',
+            'Battery draining fast','Battery not charging','Battery swollen','Phone not turning on',
+            'Charging port not working','Charging very slow','USB port damaged',
+            'Speaker not working','Microphone not working','Earpiece not working','No sound',
+            'Sound distorted','Headphone jack not working',
+            'Camera not working','Camera blurry','Front camera not working','Flash not working',
+            'Camera app crashing','Video recording issue',
+            'No network signal','SIM not detecting','WiFi not connecting','Bluetooth not working',
+            'Mobile data not working','Call keeps dropping',
+            'Water damage','Phone overheating','Phone hanging / freezing','Phone restarting itself',
+            'Fingerprint not working','Face unlock issue','Power button not working',
+            'Volume button not working','Home button not working','Vibration not working',
+            'Software issue / stuck','App crashing','Phone running slow','Storage full',
+        ],
+
+        getSuggestions() {
+            if (!this.problemQuery.trim()) return [];
+            const q = this.problemQuery.toLowerCase();
+            return this.allSuggestions
+                .filter(s => s.toLowerCase().includes(q) && !this.problemIssues.includes(s))
+                .slice(0, 8);
+        },
+
+        getQuickSuggestions() {
+            return this.allSuggestions.filter(s => !this.problemIssues.includes(s)).slice(0, 14);
+        },
+
         form: {
             customer_id: null,
             device_brand: '',
@@ -316,7 +402,7 @@ function createRepairPage() {
 
         isStepComplete(step) {
             if (step === 1) return !!this.form.customer_id;
-            if (step === 2) return !!this.form.device_brand.trim() && !!this.form.device_model.trim() && !!this.form.problem_description.trim();
+            if (step === 2) return !!this.form.device_brand.trim() && !!this.form.device_model.trim() && (this.problemIssues.length > 0 || !!this.form.problem_description.trim());
             return this.isStepComplete(1) && this.isStepComplete(2);
         },
 
@@ -338,7 +424,7 @@ function createRepairPage() {
             if (this.currentStep === 2) {
                 if (!this.form.device_brand.trim()) { RepairBox.toast('Device brand is required', 'error'); return; }
                 if (!this.form.device_model.trim()) { RepairBox.toast('Device model is required', 'error'); return; }
-                if (!this.form.problem_description.trim()) { RepairBox.toast('Problem description is required', 'error'); return; }
+                if (this.problemIssues.length === 0 && !this.form.problem_description.trim()) { RepairBox.toast('Problem description is required', 'error'); return; }
             }
             if (this.currentStep < this.steps.length) {
                 this.currentStep += 1;
@@ -398,6 +484,31 @@ function createRepairPage() {
             this.custOpen = false;
         },
 
+        addProblemIssue() {
+            const v = this.problemQuery.trim();
+            if (!v) return;
+            if (!this.problemIssues.includes(v)) {
+                this.problemIssues.push(v);
+                this.form.problem_description = this.problemIssues.join(', ');
+            }
+            this.problemQuery = '';
+            this.problemShowSugg = false;
+        },
+
+        pickSuggestion(s) {
+            if (!this.problemIssues.includes(s)) {
+                this.problemIssues.push(s);
+                this.form.problem_description = this.problemIssues.join(', ');
+            }
+            this.problemQuery = '';
+            this.problemShowSugg = false;
+        },
+
+        removeProblemIssue(idx) {
+            this.problemIssues.splice(idx, 1);
+            this.form.problem_description = this.problemIssues.join(', ');
+        },
+
         async saveNewCust() {
             this.customerFormTried = true;
             this.customerSubmitError = '';
@@ -433,7 +544,9 @@ function createRepairPage() {
             if (!this.form.customer_id) { RepairBox.toast('Please select a customer', 'error'); this.currentStep = 1; return; }
             if (!this.form.device_brand.trim()) { RepairBox.toast('Device brand is required', 'error'); this.currentStep = 2; return; }
             if (!this.form.device_model.trim()) { RepairBox.toast('Device model is required', 'error'); this.currentStep = 2; return; }
-            if (!this.form.problem_description.trim()) { RepairBox.toast('Problem description is required', 'error'); this.currentStep = 2; return; }
+            // auto-add any typed-but-not-yet-added query
+            if (this.problemQuery.trim()) this.addProblemIssue();
+            if (this.problemIssues.length === 0 && !this.form.problem_description.trim()) { RepairBox.toast('Problem description is required', 'error'); this.currentStep = 2; return; }
 
             this.saving = true;
             const r = await RepairBox.ajax('/admin/repairs', 'POST', this.form);

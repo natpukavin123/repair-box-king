@@ -512,7 +512,53 @@
 
                         <div>
                             <label class="text-xs font-medium text-gray-600 mb-1 block">Problem Description *</label>
-                            <textarea x-model="form.problem_description" class="form-input-custom repair-form-input text-sm resize-none" rows="3" placeholder="Describe the issue: display broken, charging issue, etc."></textarea>
+
+                            {{-- Added chips --}}
+                            <div class="flex flex-wrap gap-1.5 mb-2" x-show="probIssues.length > 0">
+                                <template x-for="(issue, idx) in probIssues" :key="idx">
+                                    <span class="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800">
+                                        <span x-text="issue"></span>
+                                        <button type="button" @click="removeProbIssue(idx)" class="ml-0.5 text-amber-400 hover:text-red-500 text-sm leading-none font-bold">&times;</button>
+                                    </span>
+                                </template>
+                            </div>
+
+                            {{-- Autocomplete input --}}
+                            <div class="relative flex gap-1.5">
+                                <div class="relative flex-1">
+                                    <input type="text"
+                                        x-model="probQuery"
+                                        @input="probShowSugg = true"
+                                        @keydown.enter.prevent="addProbIssue()"
+                                        @keydown.escape="probQuery = ''"
+                                        @blur="setTimeout(() => { probShowSugg = false }, 150)"
+                                        class="form-input-custom repair-form-input text-sm w-full"
+                                        placeholder="Type issue, press Enter to add">
+                                    <div x-show="probShowSugg && probQuery.trim().length > 0 && getProbSuggestions().length > 0" x-cloak
+                                        class="absolute z-50 left-0 right-0 top-full mt-1 rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden">
+                                        <template x-for="s in getProbSuggestions()" :key="s">
+                                            <button type="button" @mousedown.prevent="pickProbSugg(s)"
+                                                class="flex w-full items-center gap-2 border-b border-slate-100 px-3 py-2 text-left text-xs text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition last:border-0">
+                                                <svg class="w-3 h-3 shrink-0 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                                <span x-text="s"></span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                                <button type="button" @click="addProbIssue()"
+                                    class="shrink-0 inline-flex items-center justify-center rounded-lg bg-amber-500 px-2.5 text-white hover:bg-amber-600 transition text-xs font-semibold">
+                                    + Add
+                                </button>
+                            </div>
+
+                            {{-- Quick-pick pills --}}
+                            <div class="mt-2 flex flex-wrap gap-1">
+                                <template x-for="s in getQuickProbSugg()" :key="s">
+                                    <button type="button" @mousedown.prevent="pickProbSugg(s)"
+                                        class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-500 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700 transition"
+                                        x-text="s"></button>
+                                </template>
+                            </div>
                         </div>
 
                         {{-- Optional details (collapsible) --}}
@@ -577,10 +623,10 @@
                 <div class="repair-actionbar shrink-0 border-t px-4 py-2">
                     <button @click="saveRepair()"
                         class="btn-primary w-full py-2.5 text-sm font-semibold"
-                        :disabled="saving || !canCreate()">
+                        :disabled="saving">
                         <span x-show="saving" class="spinner mr-2"></span>
                         <svg x-show="!saving" class="w-4 h-4 inline mr-1.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        Create Repair Ticket
+                        + Create Repair Ticket
                     </button>
                 </div>
             </div>
@@ -699,6 +745,57 @@ function repairsPage() {
         newCust: { name: '', mobile_number: '', email: '', address: '' },
 
         brandList: @json($brands),
+
+        // Problem description chip state
+        probIssues: [],
+        probQuery: '',
+        probShowSugg: false,
+        allProbSugg: [
+            'Screen cracked','Display not working','Touch not responding','Display flickering',
+            'Black screen','LCD damaged','Display lines / spots','Ghost touch',
+            'Battery draining fast','Battery not charging','Battery swollen','Phone not turning on',
+            'Charging port not working','Charging very slow','USB port damaged',
+            'Speaker not working','Microphone not working','Earpiece not working','No sound',
+            'Sound distorted','Headphone jack not working',
+            'Camera not working','Camera blurry','Front camera not working','Flash not working',
+            'Camera app crashing','Video recording issue',
+            'No network signal','SIM not detecting','WiFi not connecting','Bluetooth not working',
+            'Mobile data not working','Call keeps dropping',
+            'Water damage','Phone overheating','Phone hanging / freezing','Phone restarting itself',
+            'Fingerprint not working','Face unlock issue','Power button not working',
+            'Volume button not working','Home button not working','Vibration not working',
+            'Software issue / stuck','App crashing','Phone running slow','Storage full',
+        ],
+        getProbSuggestions() {
+            if (!this.probQuery.trim()) return [];
+            const q = this.probQuery.toLowerCase();
+            return this.allProbSugg.filter(s => s.toLowerCase().includes(q) && !this.probIssues.includes(s)).slice(0, 8);
+        },
+        getQuickProbSugg() {
+            return this.allProbSugg.filter(s => !this.probIssues.includes(s)).slice(0, 12);
+        },
+        addProbIssue() {
+            const v = this.probQuery.trim();
+            if (!v) return;
+            if (!this.probIssues.includes(v)) {
+                this.probIssues.push(v);
+                this.form.problem_description = this.probIssues.join(', ');
+            }
+            this.probQuery = '';
+            this.probShowSugg = false;
+        },
+        pickProbSugg(s) {
+            if (!this.probIssues.includes(s)) {
+                this.probIssues.push(s);
+                this.form.problem_description = this.probIssues.join(', ');
+            }
+            this.probQuery = '';
+            this.probShowSugg = false;
+        },
+        removeProbIssue(idx) {
+            this.probIssues.splice(idx, 1);
+            this.form.problem_description = this.probIssues.join(', ');
+        },
 
         form: {
             customer_id: null,
@@ -908,12 +1005,14 @@ function repairsPage() {
 
         // Create repair
         canCreate() {
-            return this.form.customer_id && this.form.device_brand.trim() && this.form.device_model.trim() && this.form.problem_description.trim();
+            return this.form.customer_id && this.form.device_brand.trim() && this.form.device_model.trim() && (this.probIssues.length > 0 || this.form.problem_description.trim());
         },
         hasFormData() {
             return this.form.device_brand || this.form.device_model || this.form.imei || this.form.problem_description || this.form.estimated_cost || this.form.advance_amount;
         },
         resetForm() {
+            this.probIssues = [];
+            this.probQuery = '';
             this.form = {
                 customer_id: this.form.customer_id,
                 device_brand: '', device_model: '', imei: '', problem_description: '',
@@ -924,7 +1023,8 @@ function repairsPage() {
             if (!this.form.customer_id) { RepairBox.toast('Please select a customer', 'error'); return; }
             if (!this.form.device_brand.trim()) { RepairBox.toast('Device brand is required', 'error'); return; }
             if (!this.form.device_model.trim()) { RepairBox.toast('Device model is required', 'error'); return; }
-            if (!this.form.problem_description.trim()) { RepairBox.toast('Problem description is required', 'error'); return; }
+            if (this.probQuery.trim()) this.addProbIssue();
+            if (this.probIssues.length === 0 && !this.form.problem_description.trim()) { RepairBox.toast('Problem description is required', 'error'); return; }
 
             this.saving = true;
             const r = await RepairBox.ajax('/admin/repairs', 'POST', this.form);
@@ -941,6 +1041,9 @@ function repairsPage() {
             this.showSuccess = false;
             this.createdRepair = null;
             this.selectedCust = null;
+            this.probIssues = [];
+            this.probQuery = '';
+            this.probShowSugg = false;
             this.form = {
                 customer_id: null, device_brand: '', device_model: '', imei: '', problem_description: '',
                 estimated_cost: '', expected_delivery_date: '', advance_amount: '', advance_method: 'cash', advance_reference: '',
