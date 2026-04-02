@@ -1106,6 +1106,41 @@
                 <div>
                     <button @click="saveSettings()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save Shop Settings</button>
                 </div>
+
+                {{-- ─── Shop Timings ─── --}}
+                <div class="pt-5 border-t">
+                    <h4 class="text-md font-semibold mb-1">Shop Timings</h4>
+                    <p class="text-xs text-gray-500 mb-4">These appear on your website contact section and in Google search results.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Open Days</label>
+                            <select x-model="settings.shop_open_days" class="form-select-custom">
+                                <option value="">— Select —</option>
+                                <option value="Monday – Sunday">Monday – Sunday (All Days)</option>
+                                <option value="Monday – Saturday">Monday – Saturday</option>
+                                <option value="Monday – Friday">Monday – Friday</option>
+                                <option value="Tuesday – Sunday">Tuesday – Sunday</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Holiday / Closed Note</label>
+                            <input x-model="settings.shop_holiday" type="text" class="form-input-custom" placeholder="e.g. Sunday Closed">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Opening Time</label>
+                            <input x-model="settings.shop_open_time" type="time" class="form-input-custom">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Closing Time</label>
+                            <input x-model="settings.shop_close_time" type="time" class="form-input-custom">
+                        </div>
+                    </div>
+                    <div x-show="settings.shop_open_days && settings.shop_open_time && settings.shop_close_time" class="mt-3 inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 border border-blue-100 text-xs text-blue-700">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <span>Preview: </span>
+                        <strong x-text="settings.shop_open_days + ' · ' + settings.shop_open_time + ' – ' + settings.shop_close_time"></strong>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1770,7 +1805,7 @@
 function settingsPage() {
     return {
         tab: 'general', saving: false, iconFile: null, previewIcon: '',
-        settings: {}, settingKeys: ['shop_name','shop_address','shop_phone','shop_email','shop_slogan','currency_symbol','invoice_prefix','repair_prefix','low_stock_threshold'],
+        settings: {}, settingKeys: ['shop_name','shop_address','shop_phone','shop_email','shop_slogan','shop_whatsapp','currency_symbol','invoice_prefix','repair_prefix','low_stock_threshold'],
         selectedNotifyTemplate: 'whatsapp_template_received',
         // Print settings state
         printTab: 'sales-invoice', printLang: 'en', printSettings: {},
@@ -2015,7 +2050,7 @@ function settingsPage() {
         },
         async saveSettings() {
             this.saving = true;
-            const generalKeys = ['shop_name','shop_address','shop_phone','shop_email','shop_slogan','currency_symbol','invoice_prefix','repair_prefix','low_stock_threshold','ui_theme','ui_motion'];
+            const generalKeys = ['shop_name','shop_address','shop_phone','shop_email','shop_slogan','shop_whatsapp','shop_open_days','shop_open_time','shop_close_time','shop_holiday','currency_symbol','invoice_prefix','repair_prefix','low_stock_threshold','ui_theme','ui_motion'];
             try {
                 const formData = new FormData();
                 formData.append('_method', 'PUT');

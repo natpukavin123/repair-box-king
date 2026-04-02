@@ -1,0 +1,26 @@
+{
+  "name": "RepairBox",
+  "short_name": "RepairBox",
+  "description": "Professional device repair management & customer portal",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#030712",
+  "theme_color": "#2563eb",
+  "categories": ["business", "utilities"],
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Track Repair",
+      "short_name": "Track",
+      "description": "Check your repair status",
+      "url": "/track"
+    }
+  ]
+}

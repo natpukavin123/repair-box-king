@@ -28,6 +28,7 @@ class SettingController extends Controller
             'general' => [
                 'shop_name', 'shop_address', 'shop_phone', 'shop_email', 'shop_slogan',
                 'shop_whatsapp',
+                'shop_open_days', 'shop_open_time', 'shop_close_time', 'shop_holiday',
                 'currency_symbol', 'invoice_prefix', 'repair_prefix', 'low_stock_threshold',
                 'ui_theme', 'ui_motion',
             ],
@@ -74,6 +75,10 @@ class SettingController extends Controller
                 'settings.shop_email'         => 'nullable|email|max:150',
                 'settings.shop_slogan'        => 'nullable|string|max:200',
                 'settings.shop_whatsapp'      => 'nullable|string|max:20',
+                'settings.shop_open_days'     => 'nullable|string|max:100',
+                'settings.shop_open_time'     => 'nullable|string|max:10',
+                'settings.shop_close_time'    => 'nullable|string|max:10',
+                'settings.shop_holiday'       => 'nullable|string|max:200',
                 'settings.currency_symbol'    => 'nullable|string|max:10',
                 'settings.invoice_prefix'     => 'nullable|string|max:20',
                 'settings.repair_prefix'      => 'nullable|string|max:20',

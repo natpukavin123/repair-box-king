@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         );
         $middleware->web(append: [
             \App\Http\Middleware\CheckInstalled::class,
+            \App\Http\Middleware\SecurityHeaders::class,
         ]);
         $middleware->alias([
             'permission' => \App\Http\Middleware\CheckPermission::class,
