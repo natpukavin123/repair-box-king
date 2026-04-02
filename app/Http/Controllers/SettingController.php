@@ -822,6 +822,12 @@ class SettingController extends Controller
                     $rowData = $finalData;
                 }
 
+                // Set defaults for parts price fields (empty strings break decimal columns)
+                if ($type === 'parts') {
+                    $rowData['cost_price']    = isset($rowData['cost_price'])    && $rowData['cost_price']    !== '' ? $rowData['cost_price']    : 0;
+                    $rowData['selling_price'] = isset($rowData['selling_price']) && $rowData['selling_price'] !== '' ? $rowData['selling_price'] : 0;
+                }
+
                 $uniqueKey = $config['unique_key'];
                 $uniqueValue = $rowData[$uniqueKey] ?? '';
 
