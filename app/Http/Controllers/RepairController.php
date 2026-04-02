@@ -401,12 +401,14 @@ class RepairController extends Controller
 
     public function trackingLanding()
     {
-        $shopName    = \App\Models\Setting::getValue('shop_name', 'RepairBox');
-        $shopPhone   = \App\Models\Setting::getValue('shop_phone', '');
-        $shopEmail   = \App\Models\Setting::getValue('shop_email', '');
-        $shopSlogan  = \App\Models\Setting::getValue('shop_slogan', 'Your Trusted Mobile Partner');
-        $shopIcon    = \App\Models\Setting::getValue('shop_icon', '');
-        return view('public.track', compact('shopName', 'shopPhone', 'shopEmail', 'shopSlogan', 'shopIcon'));
+        $shopName      = \App\Models\Setting::getValue('shop_name', 'RepairBox');
+        $shopPhone     = \App\Models\Setting::getValue('shop_phone', '');
+        $shopEmail     = \App\Models\Setting::getValue('shop_email', '');
+        $shopSlogan    = \App\Models\Setting::getValue('shop_slogan', 'Your Trusted Mobile Partner');
+        $shopIcon      = \App\Models\Setting::getValue('shop_icon', '');
+        $shopWhatsapp  = \App\Models\Setting::getValue('shop_whatsapp', '');
+        $shopAddress   = \App\Models\Setting::getValue('shop_address', '');
+        return view('public.track', compact('shopName', 'shopPhone', 'shopEmail', 'shopSlogan', 'shopIcon', 'shopWhatsapp', 'shopAddress'));
     }
 
     public function track($trackingId)
@@ -423,13 +425,15 @@ class RepairController extends Controller
             ->first();
         $notFound = $repair === null;
 
-        $shopName    = \App\Models\Setting::getValue('shop_name', 'RepairBox');
-        $shopPhone   = \App\Models\Setting::getValue('shop_phone', '');
-        $shopEmail   = \App\Models\Setting::getValue('shop_email', '');
-        $shopSlogan  = \App\Models\Setting::getValue('shop_slogan', 'Your Trusted Mobile Partner');
-        $shopIcon    = \App\Models\Setting::getValue('shop_icon', '');
+        $shopName      = \App\Models\Setting::getValue('shop_name', 'RepairBox');
+        $shopPhone     = \App\Models\Setting::getValue('shop_phone', '');
+        $shopEmail     = \App\Models\Setting::getValue('shop_email', '');
+        $shopSlogan    = \App\Models\Setting::getValue('shop_slogan', 'Your Trusted Mobile Partner');
+        $shopIcon      = \App\Models\Setting::getValue('shop_icon', '');
+        $shopWhatsapp  = \App\Models\Setting::getValue('shop_whatsapp', '');
+        $shopAddress   = \App\Models\Setting::getValue('shop_address', '');
 
-        return view('public.track', compact('repair', 'notFound', 'shopName', 'shopPhone', 'shopEmail', 'shopSlogan', 'shopIcon'));
+        return view('public.track', compact('repair', 'notFound', 'shopName', 'shopPhone', 'shopEmail', 'shopSlogan', 'shopIcon', 'shopWhatsapp', 'shopAddress'));
     }
 
     public function print(Repair $repair)
