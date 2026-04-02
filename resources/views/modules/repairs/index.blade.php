@@ -314,6 +314,13 @@
                                 <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="window.location.href = '/admin/repairs/' + r.id">
                                     <td class="px-3 py-2">
                                         <span class="font-semibold text-primary-600 text-sm" x-text="r.ticket_number"></span>
+                                        <template x-if="r.tracking_id">
+                                            <div @click.stop="navigator.clipboard.writeText(r.tracking_id).then(() => RepairBox.toast('Tracking ID copied', 'success'))"
+                                                class="mt-0.5 inline-flex items-center gap-1 cursor-pointer rounded bg-gray-100 hover:bg-primary-50 hover:text-primary-700 px-1.5 py-0.5 text-[10px] font-mono text-gray-500 transition-colors" title="Click to copy tracking ID">
+                                                <svg class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                                <span x-text="r.tracking_id"></span>
+                                            </div>
+                                        </template>
                                     </td>
                                     <td class="px-3 py-2">
                                         <div class="font-medium text-gray-800 text-sm leading-tight" x-text="r.customer ? r.customer.name : '-'"></div>
