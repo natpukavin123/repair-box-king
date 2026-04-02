@@ -11,12 +11,13 @@
         <div class="card-body p-0">
             <div class="table-scroll">
                 <table class="data-table">
-                    <thead class="sticky top-0 z-10 bg-gray-50"><tr><th>#</th><th>Name</th><th>Image</th><th>Actions</th></tr></thead>
+                    <thead class="sticky top-0 z-10 bg-gray-50"><tr><th>#</th><th>Name</th><th>Models</th><th>Image</th><th>Actions</th></tr></thead>
                     <tbody>
                         <template x-for="(item, i) in items" :key="item.id">
                             <tr>
                                 <td x-text="i+1"></td>
                                 <td class="font-medium" x-text="item.name"></td>
+                                <td><span class="text-xs text-gray-500" x-text="item.models && item.models.length ? item.models.length + ' model(s)' : '—'"></span></td>
                                 <td>
                                     <template x-if="item.thumbnail || item.image">
                                         <img :src="RepairBox.imageUrl(item.thumbnail || item.image)" class="w-8 h-8 rounded object-cover">
@@ -31,12 +32,13 @@
                                 </td>
                             </tr>
                         </template>
-                        <tr x-show="items.length === 0 && !loading"><td colspan="4" class="text-center text-gray-400 py-8">No brands found</td></tr>
+                        <tr x-show="items.length === 0 && !loading"><td colspan="5" class="text-center text-gray-400 py-8">No brands found</td></tr>
                         <template x-if="loading">
                             <template x-for="i in 10" :key="'sk'+i">
                                 <tr>
                                     <td><div class="skeleton h-3 w-8"></div></td>
                                     <td><div class="skeleton h-3 w-36"></div></td>
+                                    <td><div class="skeleton h-3 w-16"></div></td>
                                     <td><div class="skeleton h-8 w-8 rounded"></div></td>
                                     <td><div class="skeleton h-3 w-16"></div></td>
                                 </tr>
@@ -54,6 +56,24 @@
             <div class="modal-body">
                 <div class="space-y-4">
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label><input x-model="form.name" type="text" class="form-input-custom"></div>
+
+                    {{-- Device Models --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Device Models <span class="text-gray-400 font-normal">(optional)</span></label>
+                        <div class="flex gap-2 mb-2">
+                            <input type="text" x-model="newModel" @keydown.enter.prevent="addModel()" placeholder="e.g. Galaxy S24, iPhone 15..." class="form-input-custom flex-1 text-sm">
+                            <button type="button" @click="addModel()" class="btn-secondary text-sm px-3">Add</button>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5" x-show="form.models && form.models.length > 0">
+                            <template x-for="(m, idx) in form.models" :key="idx">
+                                <span class="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-800">
+                                    <span x-text="m"></span>
+                                    <button type="button" @click="form.models.splice(idx,1)" class="ml-0.5 text-blue-400 hover:text-red-500 text-sm leading-none font-bold">&times;</button>
+                                </span>
+                            </template>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">These models will appear as suggestions when creating repairs for this brand.</p>
+                    </div>
 
                     {{-- Image Upload --}}
                     <div>
@@ -92,16 +112,26 @@
 function brandsPage() {
     return {
         items: [], showModal: false, editing: null, saving: false, loading: true,
-        form: { name: '' },
+        form: { name: '', models: [] },
+        newModel: '',
         imageFile: null, imagePreview: null,
 
         async load() { this.loading = true; const r = await RepairBox.ajax('/admin/brands'); if(r.data) this.items = r.data; this.loading = false; },
         edit(item) {
             this.editing = item.id;
-            this.form = { name: item.name };
+            this.form = { name: item.name, models: item.models ? [...item.models] : [] };
+            this.newModel = '';
             this.imageFile = null;
             this.imagePreview = RepairBox.imageUrl(item.thumbnail || item.image);
             this.showModal = true;
+        },
+
+        addModel() {
+            const m = this.newModel.trim();
+            if (!m) return;
+            if (!this.form.models) this.form.models = [];
+            if (!this.form.models.includes(m)) this.form.models.push(m);
+            this.newModel = '';
         },
 
         handlePick(e) {

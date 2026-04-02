@@ -554,9 +554,9 @@ class SettingController extends Controller
             'brands' => [
                 'model' => Brand::class,
                 'label' => 'Brands',
-                'columns' => ['name'],
+                'columns' => ['name', 'models'],
                 'unique_key' => 'name',
-                'rules' => ['name' => 'required|string|max:150'],
+                'rules' => ['name' => 'required|string|max:150', 'models' => 'nullable|string'],
             ],
             'categories' => [
                 'model' => Category::class,
@@ -826,6 +826,14 @@ class SettingController extends Controller
                 if ($type === 'parts') {
                     $rowData['cost_price']    = isset($rowData['cost_price'])    && $rowData['cost_price']    !== '' ? $rowData['cost_price']    : 0;
                     $rowData['selling_price'] = isset($rowData['selling_price']) && $rowData['selling_price'] !== '' ? $rowData['selling_price'] : 0;
+                }
+
+                // Convert semicolon-separated models string to array for brands
+                if ($type === 'brands' && isset($rowData['models'])) {
+                    $rawModels = trim($rowData['models']);
+                    $rowData['models'] = $rawModels !== ''
+                        ? array_values(array_filter(array_map('trim', explode(';', $rawModels))))
+                        : null;
                 }
 
                 $uniqueKey = $config['unique_key'];

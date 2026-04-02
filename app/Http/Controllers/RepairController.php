@@ -74,14 +74,18 @@ class RepairController extends Controller
         }
 
         $statusMeta = Repair::STATUS_META;
-        $brands = \App\Models\Brand::where('status', 'active')->orderBy('name')->pluck('name');
-        return view('modules.repairs.index', compact('statusMeta', 'brands'));
+        $brandModelMap = \App\Models\Brand::where('status', 'active')->orderBy('name')->get(['name', 'models'])
+            ->map(fn($b) => ['name' => $b->name, 'models' => $b->models ?? []])->values();
+        $brands = $brandModelMap->pluck('name');
+        return view('modules.repairs.index', compact('statusMeta', 'brands', 'brandModelMap'));
     }
 
     public function create()
     {
-        $brands = \App\Models\Brand::where('status', 'active')->orderBy('name')->pluck('name');
-        return view('modules.repairs.create', compact('brands'));
+        $brandModelMap = \App\Models\Brand::where('status', 'active')->orderBy('name')->get(['name', 'models'])
+            ->map(fn($b) => ['name' => $b->name, 'models' => $b->models ?? []])->values();
+        $brands = $brandModelMap->pluck('name');
+        return view('modules.repairs.create', compact('brands', 'brandModelMap'));
     }
 
     public function store(RepairRequest $request, RepairService $service)
@@ -139,8 +143,10 @@ class RepairController extends Controller
         }
 
         $statusMeta = Repair::STATUS_META;
-        $brands = \App\Models\Brand::where('status', 'active')->orderBy('name')->pluck('name');
-        return view('modules.repairs.show', compact('repair', 'statusMeta', 'brands'));
+        $brandModelMap = \App\Models\Brand::where('status', 'active')->orderBy('name')->get(['name', 'models'])
+            ->map(fn($b) => ['name' => $b->name, 'models' => $b->models ?? []])->values();
+        $brands = $brandModelMap->pluck('name');
+        return view('modules.repairs.show', compact('repair', 'statusMeta', 'brands', 'brandModelMap'));
     }
 
     public function update(RepairRequest $request, Repair $repair)

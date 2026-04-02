@@ -300,6 +300,7 @@
                                     <tr class="bg-gray-50">
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Models</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Image</th>
                                         <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
                                     </tr>
@@ -309,6 +310,7 @@
                                         <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openMdEdit(item)">
                                             <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
                                             <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
+                                            <td class="px-3 py-2 text-sm text-gray-500" x-text="item.models && item.models.length ? item.models.length + ' model(s)' : '—'"></td>
                                             <td class="px-3 py-2">
                                                 <template x-if="item.thumbnail || item.image">
                                                     <img :src="RepairBox.imageUrl(item.thumbnail || item.image)" class="w-8 h-8 rounded object-cover">
@@ -328,7 +330,7 @@
                                         </tr>
                                     </template>
                                     <tr x-show="mdItems.length === 0 && !mdLoading">
-                                        <td colspan="4" class="text-center py-12">
+                                        <td colspan="5" class="text-center py-12">
                                             <p class="text-gray-400 font-medium">No brands found</p>
                                         </td>
                                     </tr>
@@ -684,7 +686,23 @@
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
                                 <input x-model="mdForm.name" type="text" class="form-input-custom" placeholder="Brand name"></div>
 
-                            {{-- Image Upload --}}
+                            {{-- Device Models --}}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Device Models <span class="text-gray-400 font-normal">(optional)</span></label>
+                                <div class="flex gap-2 mb-2">
+                                    <input type="text" x-model="mdNewModel" @keydown.enter.prevent="addMdModel()" placeholder="e.g. Galaxy S24, iPhone 15..." class="form-input-custom flex-1 text-sm">
+                                    <button type="button" @click="addMdModel()" class="btn-secondary text-sm px-3">Add</button>
+                                </div>
+                                <div class="flex flex-wrap gap-1.5" x-show="mdForm.models && mdForm.models.length > 0">
+                                    <template x-for="(m, idx) in (mdForm.models || [])" :key="idx">
+                                        <span class="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-800">
+                                            <span x-text="m"></span>
+                                            <button type="button" @click="mdForm.models.splice(idx,1)" class="ml-0.5 text-blue-400 hover:text-red-500 text-sm leading-none font-bold">&times;</button>
+                                        </span>
+                                    </template>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1">Shown as suggestions when creating a repair for this brand.</p>
+                            </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Image <span class="text-gray-400 font-normal">(optional)</span></label>
                                 <div class="border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50 transition-all"
@@ -1615,6 +1633,9 @@
                         <span class="font-medium">Matching key:</span>
                         <span x-text="getUniqueKeyLabel()"></span> — existing records with the same value will be <strong>updated</strong>, new ones will be <strong>created</strong>.
                     </p>
+                    <p x-show="importType === 'brands'" class="text-xs text-blue-600 mt-1">
+                        <span class="font-medium">Models column:</span> enter multiple models separated by <code class="bg-blue-100 px-1 rounded">;</code> e.g. <em>Galaxy S24;Galaxy A55;Galaxy M35</em>
+                    </p>
                 </div>
 
                 {{-- Validate button --}}
@@ -1814,7 +1835,7 @@ function settingsPage() {
         importResults: null, importSummary: { total: 0, creates: 0, updates: 0, errors: 0 },
         importDone: false, importDoneMessage: '',
         importTemplates: [
-            { type: 'brands', label: 'Brands', columns: ['name'] },
+            { type: 'brands', label: 'Brands', columns: ['name', 'models'] },
             { type: 'categories', label: 'Categories', columns: ['name', 'description'] },
             { type: 'subcategories', label: 'Subcategories', columns: ['category', 'name'] },
             { type: 'customers', label: 'Customers', columns: ['name', 'mobile_number', 'email', 'address', 'notes'] },
@@ -2254,6 +2275,7 @@ function masterDataPanel() {
             'Keyboard Repair', 'Motherboard Repair', 'SIM Tray Replace', 'General Service',
         ],
         svcNewQuickFill: '',
+        mdNewModel: '',
         mdImageFile: null, mdImagePreview: null,
         mdSubcategories: [],
 
@@ -2316,6 +2338,11 @@ function masterDataPanel() {
             this.mdImageFile = null;
             this.mdImagePreview = RepairBox.imageUrl(item.thumbnail || item.image);
 
+            if (this.mdSection === 'brands') {
+                this.mdForm.models = item.models ? [...item.models] : [];
+                this.mdNewModel = '';
+            }
+
             if (this.mdSection === 'services' && !this.mdForm.quick_fills) {
                 this.mdForm.quick_fills = [];
             }
@@ -2326,10 +2353,18 @@ function masterDataPanel() {
             this.showMdModal = true;
         },
 
+        addMdModel() {
+            const m = this.mdNewModel.trim();
+            if (!m) return;
+            if (!this.mdForm.models) this.mdForm.models = [];
+            if (!this.mdForm.models.includes(m)) this.mdForm.models.push(m);
+            this.mdNewModel = '';
+        },
+
         getDefaultForm() {
             switch(this.mdSection) {
                 case 'vendors': return { name: '', phone: '', specialization: '', address: '' };
-                case 'brands': return { name: '', logo_url: '' };
+                case 'brands': return { name: '', logo_url: '', models: [] };
                 case 'categories': return { name: '', description: '' };
                 case 'parts': return { name: '', sku: '', cost_price: '', selling_price: '' };
                 case 'products': return { name: '', sku: '', category_id: '', subcategory_id: '', brand_id: '', purchase_price: '', mrp: '', selling_price: '', description: '', opening_stock: '' };

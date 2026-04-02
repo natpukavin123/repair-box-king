@@ -10,10 +10,13 @@ class BrandRequest extends FormRequest
 
     public function rules(): array
     {
-        $id = $this->route('brand');
+        $brand = $this->route('brand');
+        $id = $brand instanceof \App\Models\Brand ? $brand->id : $brand;
         return [
             'name' => "required|string|max:150|unique:brands,name,{$id}",
             'status' => 'in:active,inactive',
+            'models' => 'nullable|array',
+            'models.*' => 'string|max:150',
         ];
     }
 }

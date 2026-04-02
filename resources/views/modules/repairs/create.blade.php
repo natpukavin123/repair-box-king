@@ -120,7 +120,7 @@
                             </div>
 
                             <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-                                <div x-data="brandDropdown(brandList, (v) => form.device_brand = v)" x-init="selected = form.device_brand" x-effect="if (form.device_brand !== selected) { query = form.device_brand; selected = form.device_brand; }" @click.away="open = false" class="relative">
+                                <div x-data="brandDropdown(brandList, (v) => { form.device_brand = v; form.device_model = ''; modelOpen = false; })" x-init="selected = form.device_brand" x-effect="if (form.device_brand !== selected) { query = form.device_brand; selected = form.device_brand; }" @click.away="open = false" class="relative">
                                     <label class="block text-sm font-semibold text-slate-700 mb-2">Device Brand <span class="text-red-500">*</span></label>
                                     <input type="text" x-model="query" @focus="open = true" @input="open = true; selected = query; updateValue(query)" @keydown.arrow-down.prevent="highlightNext()" @keydown.arrow-up.prevent="highlightPrev()" @keydown.enter.prevent="selectHighlighted()" @keydown.escape="open = false" class="form-input-custom w-full text-sm" placeholder="Type to search brands..." autocomplete="off">
                                     <div x-show="open && filtered.length > 0" x-cloak class="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg">
@@ -131,7 +131,20 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-slate-700 mb-2">Device Model <span class="text-red-500">*</span></label>
-                                    <input x-model="form.device_model" type="text" class="form-input-custom w-full text-sm" placeholder="Galaxy S24, iPhone 15, Redmi Note 13">
+                                    <div class="relative" @click.away="modelOpen = false">
+                                        <input x-model="form.device_model" type="text"
+                                            @focus="modelOpen = currentModels().length > 0"
+                                            @input="modelOpen = true"
+                                            @keydown.escape="modelOpen = false"
+                                            @keydown.enter.prevent="if(filteredModels().length===1){ pickModel(filteredModels()[0]) }"
+                                            class="form-input-custom w-full text-sm" placeholder="Galaxy S24, iPhone 15, Redmi Note 13" autocomplete="off">
+                                        <div x-show="modelOpen && filteredModels().length > 0" x-cloak
+                                            class="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg">
+                                            <template x-for="m in filteredModels()" :key="m">
+                                                <div @mousedown.prevent="pickModel(m)" class="cursor-pointer px-3 py-2 text-sm text-slate-700 hover:bg-slate-50" x-text="m"></div>
+                                            </template>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="md:col-span-2">
                                     <label class="block text-sm font-semibold text-slate-700 mb-2">IMEI / Serial No.</label>
@@ -352,7 +365,9 @@ function createRepairPage() {
         selectedCust: null,
 
         newCust: { name: '', mobile_number: '', email: '', address: '' },
+        brandModelMap: @json($brandModelMap),
         brandList: @json($brands),
+        modelOpen: false,
 
         // Problem description — chip / tag state
         problemIssues: [],
@@ -507,6 +522,19 @@ function createRepairPage() {
         removeProblemIssue(idx) {
             this.problemIssues.splice(idx, 1);
             this.form.problem_description = this.problemIssues.join(', ');
+        },
+
+        currentModels() {
+            const bm = this.brandModelMap.find(b => b.name === this.form.device_brand);
+            return (bm && bm.models) ? bm.models : [];
+        },
+        filteredModels() {
+            const q = (this.form.device_model || '').toLowerCase();
+            return this.currentModels().filter(m => !q || m.toLowerCase().includes(q));
+        },
+        pickModel(m) {
+            this.form.device_model = m;
+            this.modelOpen = false;
         },
 
         async saveNewCust() {
