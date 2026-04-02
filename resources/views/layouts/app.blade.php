@@ -25,6 +25,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'RepairBox') - Mobile Shop Management</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563eb">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -140,6 +142,12 @@
                     <div class="user-chip-name">{{ auth()->user()->name ?? 'User' }}</div>
                 </div>
             </div>
+
+            <!-- PWA Install Button -->
+            <button id="pwa-install-btn" title="Install App" class="icon-action" style="color: #60a5fa;">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                <span class="hidden lg:inline text-xs font-medium">Install</span>
+            </button>
 
             <form method="POST" action="/logout">
                 @csrf
@@ -314,6 +322,49 @@ if (pageLoader) {
 // Prevent browser from navigating to files dropped outside a drop zone
 document.addEventListener('dragover', function(e) { e.preventDefault(); });
 document.addEventListener('drop', function(e) { e.preventDefault(); });
+
+// PWA Install
+(function() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(function() {});
+    }
+
+    var installBtn = document.getElementById('pwa-install-btn');
+    if (!installBtn) return;
+
+    // Hide button only when already running as an installed PWA
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+        installBtn.classList.add('hidden');
+        return;
+    }
+
+    // Capture native install prompt whenever it fires
+    window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        window.__pwaPrompt = e;
+    });
+
+    installBtn.addEventListener('click', async function() {
+        if (window.__pwaPrompt) {
+            // Native browser install dialog
+            window.__pwaPrompt.prompt();
+            var result = await window.__pwaPrompt.userChoice;
+            if (result.outcome === 'accepted') {
+                window.__pwaPrompt = null;
+                installBtn.classList.add('hidden');
+            }
+        } else {
+            // Fallback instructions when native prompt isn't available
+            RepairBox.toast('To install: open browser menu → "Install app" or "Add to Home Screen"', 'info');
+        }
+    });
+
+    window.addEventListener('appinstalled', function() {
+        window.__pwaPrompt = null;
+        installBtn.classList.add('hidden');
+        RepairBox.toast('App installed successfully!', 'success');
+    });
+})();
 </script>
 @stack('scripts')
 </body>
