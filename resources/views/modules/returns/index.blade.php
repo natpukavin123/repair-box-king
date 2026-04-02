@@ -128,16 +128,16 @@ function returnsPage() {
             history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
         },
         async load() {
-            const cr = await RepairBox.ajax('/returns');
+            const cr = await RepairBox.ajax('/admin/returns');
             if(cr.data) this.customerReturns = cr.data;
         },
-        async loadRefunds() { const r = await RepairBox.ajax('/returns/refunds'); if(r.data) this.refunds = r.data; },
+        async loadRefunds() { const r = await RepairBox.ajax('/admin/returns/refunds'); if(r.data) this.refunds = r.data; },
         async saveCustReturn() {
-            const r = await RepairBox.ajax('/returns/customer', 'POST', this.custReturnForm);
+            const r = await RepairBox.ajax('/admin/returns/customer', 'POST', this.custReturnForm);
             if(r.success !== false) { RepairBox.toast('Return submitted', 'success'); this.showCustReturn = false; this.load(); }
         },
         async updateStatus(type, id, status) {
-            const r = await RepairBox.ajax(`/returns/${type}/${id}/status`, 'PUT', {status});
+            const r = await RepairBox.ajax(`/admin/returns/${type}/${id}/status`, 'PUT', {status});
             if(r.success !== false) { RepairBox.toast('Status updated', 'success'); this.load(); }
         }
     };

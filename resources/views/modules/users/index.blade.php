@@ -108,12 +108,12 @@ function usersPage() {
         async save() {
             this.saving = true;
             const data = {...this.form}; if(!data.password) { delete data.password; delete data.password_confirmation; }
-            const r = await RepairBox.ajax(`/users/${this.editing}`, 'PUT', data);
+            const r = await RepairBox.ajax(`/admin/users/${this.editing}`, 'PUT', data);
             this.saving = false; if(r.success !== false) { RepairBox.toast('Updated', 'success'); this.showModal = false; this.load(); }
         },
         async remove(u) {
             if(!await RepairBox.confirm('Delete this user?')) return;
-            const r = await RepairBox.ajax(`/users/${u.id}`, 'DELETE'); if(r.success !== false) { RepairBox.toast('Deleted', 'success'); this.load(); }
+            const r = await RepairBox.ajax(`/admin/users/${u.id}`, 'DELETE'); if(r.success !== false) { RepairBox.toast('Deleted', 'success'); this.load(); }
         }
     };
 }

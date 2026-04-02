@@ -792,7 +792,7 @@ function poPage() {
 
         async changeStatus(item, status) {
             if (!status || status === item.status) return;
-            const r = await RepairBox.ajax(`/po/${item.id}/status`, 'PUT', { status });
+            const r = await RepairBox.ajax(`/admin/po/${item.id}/status`, 'PUT', { status });
             if (r.success === false) return;
             item.status = status;
             RepairBox.toast(r.message || 'Status updated', 'success');

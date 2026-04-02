@@ -137,7 +137,7 @@ function categorySubcategoriesPage() {
 
         async remove(item) {
             if (!await RepairBox.confirm('Delete this subcategory?')) return;
-            const r = await RepairBox.ajax(`/subcategories/${item.id}`, 'DELETE');
+            const r = await RepairBox.ajax(`/admin/subcategories/${item.id}`, 'DELETE');
             if (r.success !== false) {
                 RepairBox.toast('Deleted successfully', 'success');
                 if (this.items.length === 1 && this.page > 1) this.page--;

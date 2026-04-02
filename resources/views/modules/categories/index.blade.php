@@ -129,13 +129,13 @@ function categoriesPage() {
         },
         async save() {
             this.saving = true;
-            const r = await RepairBox.ajax(`/categories/${this.editing}`, 'PUT', this.form);
+            const r = await RepairBox.ajax(`/admin/categories/${this.editing}`, 'PUT', this.form);
             this.saving = false;
             if (r.success !== false) { RepairBox.toast('Category updated', 'success'); this.showModal = false; this.load(); }
         },
         async remove(item) {
             if (!await RepairBox.confirm('Delete this category?')) return;
-            const r = await RepairBox.ajax(`/categories/${item.id}`, 'DELETE');
+            const r = await RepairBox.ajax(`/admin/categories/${item.id}`, 'DELETE');
             if (r.success !== false) { RepairBox.toast('Category deleted', 'success'); this.load(); }
         },
         // Subcategory methods
@@ -155,13 +155,13 @@ function categoriesPage() {
         },
         async updateSub() {
             this.savingSub = true;
-            const r = await RepairBox.ajax(`/subcategories/${this.editingSubId}`, 'PUT', this.subForm);
+            const r = await RepairBox.ajax(`/admin/subcategories/${this.editingSubId}`, 'PUT', this.subForm);
             this.savingSub = false;
             if (r.success !== false) { RepairBox.toast('Subcategory updated', 'success'); this.showSubModal = false; this.load(); }
         },
         async removeSub(sub) {
             if (!await RepairBox.confirm('Delete this subcategory?')) return;
-            const r = await RepairBox.ajax(`/subcategories/${sub.id}`, 'DELETE');
+            const r = await RepairBox.ajax(`/admin/subcategories/${sub.id}`, 'DELETE');
             if (r.success !== false) { RepairBox.toast('Subcategory deleted', 'success'); this.load(); }
         }
     };

@@ -173,7 +173,7 @@ function vendorsPage() {
         },
         async load() {
             this.loading = true;
-            const r = await RepairBox.ajax(`/vendors?page=${this.page}${this.search ? '&search='+encodeURIComponent(this.search) : ''}`);
+            const r = await RepairBox.ajax(`/admin/vendors?page=${this.page}${this.search ? '&search='+encodeURIComponent(this.search) : ''}`);
             if(r.data) { this.items = r.data.data || r.data; this.lastPage = r.data.last_page || 1; }
             this.updateUrl();
             this.loading = false;
@@ -205,7 +205,7 @@ function vendorsPage() {
 
         async save() {
             this.saving = true;
-            const r = await RepairBox.ajax(`/vendors/${this.editing}`, 'PUT', this.form);
+            const r = await RepairBox.ajax(`/admin/vendors/${this.editing}`, 'PUT', this.form);
             if (r.success !== false) {
                 if (this.imageFile) {
                     const fd = new FormData();

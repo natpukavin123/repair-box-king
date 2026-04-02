@@ -234,7 +234,7 @@ function menusPage() {
         },
 
         async toggleActive(menu) {
-            const r = await RepairBox.ajax(`/menus/${menu.id}`, 'PUT', { ...menu, is_active: !menu.is_active });
+            const r = await RepairBox.ajax(`/admin/menus/${menu.id}`, 'PUT', { ...menu, is_active: !menu.is_active });
             if (r.success !== false) {
                 RepairBox.toast(menu.is_active ? 'Menu hidden' : 'Menu visible', 'success');
                 this.load();
@@ -243,7 +243,7 @@ function menusPage() {
 
         async remove(menu) {
             if (!await RepairBox.confirm('Delete this menu item?')) return;
-            const r = await RepairBox.ajax(`/menus/${menu.id}`, 'DELETE');
+            const r = await RepairBox.ajax(`/admin/menus/${menu.id}`, 'DELETE');
             if (r.success !== false) {
                 RepairBox.toast('Menu deleted', 'success');
                 this.load();

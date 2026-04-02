@@ -1452,7 +1452,7 @@ function repairDetail() {
         },
         async addPart() {
             if (!this.partForm.part_id) { RepairBox.toast('Please search & select a part', 'error'); return; }
-            const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/admin/parts', 'POST', { part_id: this.partForm.part_id, quantity: this.partForm.quantity, cost_price: this.partForm.cost_price });
+            const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/parts', 'POST', { part_id: this.partForm.part_id, quantity: this.partForm.quantity, cost_price: this.partForm.cost_price });
             if (r.success !== false) {
                 RepairBox.toast('Part added', 'success');
                 this.partForm = { part_id: null, _name: '', quantity: 1, cost_price: '' };
@@ -1461,7 +1461,7 @@ function repairDetail() {
         },
         async removePart(partId) {
             if (!confirm('Remove this part?')) return;
-            const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/admin/parts/' + partId, 'DELETE');
+            const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/parts/' + partId, 'DELETE');
             if (r.success !== false) { RepairBox.toast('Part removed', 'success'); await this.reload(); }
         },
 

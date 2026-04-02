@@ -194,7 +194,7 @@ function rolesPage() {
 
         async openEdit(role) {
             await this.loadPermissions();
-            const r = await RepairBox.ajax(`/roles/${role.id}`);
+            const r = await RepairBox.ajax(`/admin/roles/${role.id}`);
             if (r.data) {
                 this.editing = role.id;
                 this.isSystemRole = r.data.name === 'Admin';
@@ -250,7 +250,7 @@ function rolesPage() {
 
         async save() {
             this.saving = true;
-            const url = this.editing ? `/roles/${this.editing}` : '/admin/roles';
+            const url = this.editing ? `/admin/roles/${this.editing}` : '/admin/roles';
             const method = this.editing ? 'PUT' : 'POST';
             const r = await RepairBox.ajax(url, method, this.form);
             this.saving = false;
@@ -264,7 +264,7 @@ function rolesPage() {
         async remove() {
             if (!await RepairBox.confirm('Delete this role? This cannot be undone.')) return;
             this.saving = true;
-            const r = await RepairBox.ajax(`/roles/${this.editing}`, 'DELETE');
+            const r = await RepairBox.ajax(`/admin/roles/${this.editing}`, 'DELETE');
             this.saving = false;
             if (r.success !== false) {
                 RepairBox.toast('Role deleted', 'success');

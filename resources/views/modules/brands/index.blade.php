@@ -123,7 +123,7 @@ function brandsPage() {
 
         async save() {
             this.saving = true;
-            const r = await RepairBox.ajax(`/brands/${this.editing}`, 'PUT', this.form);
+            const r = await RepairBox.ajax(`/admin/brands/${this.editing}`, 'PUT', this.form);
             if (r.success !== false) {
                 if (this.imageFile) {
                     const fd = new FormData();
@@ -138,7 +138,7 @@ function brandsPage() {
         },
         async remove(item) {
             if (!await RepairBox.confirm('Delete this brand?')) return;
-            const r = await RepairBox.ajax(`/brands/${item.id}`, 'DELETE');
+            const r = await RepairBox.ajax(`/admin/brands/${item.id}`, 'DELETE');
             if (r.success !== false) { RepairBox.toast('Deleted', 'success'); this.load(); }
         }
     };

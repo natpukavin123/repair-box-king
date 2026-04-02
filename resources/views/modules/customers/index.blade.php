@@ -171,15 +171,15 @@ function customersPage() {
             }
 
             this.saving = true;
-            const r = await RepairBox.ajax(`/customers/${this.editing}`, 'PUT', validation.payload);
+            const r = await RepairBox.ajax(`/admin/customers/${this.editing}`, 'PUT', validation.payload);
             this.saving = false;
             if (r.success !== false) { RepairBox.toast('Updated', 'success'); this.closeEditModal(); this.load(); return; }
             this.submitError = r.message || 'Unable to update customer. Please check the details and try again.';
         },
-        async view(c) { const r = await RepairBox.ajax(`/customers/${c.id}`); if(r.data) { this.detail = r.data; this.showDetail = true; } },
+        async view(c) { const r = await RepairBox.ajax(`/admin/customers/${c.id}`); if(r.data) { this.detail = r.data; this.showDetail = true; } },
         async remove(c) {
             if (!await RepairBox.confirm('Delete this customer?')) return;
-            const r = await RepairBox.ajax(`/customers/${c.id}`, 'DELETE');
+            const r = await RepairBox.ajax(`/admin/customers/${c.id}`, 'DELETE');
             if (r.success !== false) { RepairBox.toast('Deleted', 'success'); this.load(); }
         }
     };

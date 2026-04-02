@@ -176,7 +176,7 @@ function partsPage() {
 
         async save() {
             this.saving = true;
-            const r = await RepairBox.ajax(`/parts/${this.editing}`, 'PUT', this.form);
+            const r = await RepairBox.ajax(`/admin/parts/${this.editing}`, 'PUT', this.form);
             if (r.success !== false) {
                 if (this.imageFile) {
                     const fd = new FormData();
@@ -191,7 +191,7 @@ function partsPage() {
         },
         async remove(item) {
             if (!await RepairBox.confirm('Delete this part?')) return;
-            const r = await RepairBox.ajax(`/parts/${item.id}`, 'DELETE');
+            const r = await RepairBox.ajax(`/admin/parts/${item.id}`, 'DELETE');
             if (r.success !== false) { RepairBox.toast('Deleted', 'success'); this.load(); }
         }
     };

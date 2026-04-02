@@ -141,13 +141,13 @@ function subcategoriesPage() {
         edit(item) { this.editing = item.id; this.form = { name: item.name, category_id: item.category_id }; this.showModal = true; },
         async save() {
             this.saving = true;
-            const r = await RepairBox.ajax(`/subcategories/${this.editing}`, 'PUT', this.form);
+            const r = await RepairBox.ajax(`/admin/subcategories/${this.editing}`, 'PUT', this.form);
             this.saving = false;
             if (r.success !== false) { RepairBox.toast('Updated', 'success'); this.showModal = false; this.load(); }
         },
         async remove(item) {
             if (!await RepairBox.confirm('Delete this subcategory?')) return;
-            const r = await RepairBox.ajax(`/subcategories/${item.id}`, 'DELETE');
+            const r = await RepairBox.ajax(`/admin/subcategories/${item.id}`, 'DELETE');
             if (r.success !== false) { RepairBox.toast('Deleted', 'success'); this.load(); }
         }
     };

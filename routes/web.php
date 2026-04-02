@@ -8,7 +8,8 @@ use App\Http\Controllers\{
     RechargeController, ExpenseController, LedgerController,
     PoRequestController, UserController, SettingController, ReportController,
     PartController, RepairReturnController, RoleController, MenuController,
-    CreditNoteController, SetupController, DevToolsController, HomeController
+    CreditNoteController, SetupController, DevToolsController, HomeController,
+    ReturnController
 };
 
 // ─── Setup Wizard (public — no auth needed) ────────────────────────────────
@@ -90,6 +91,12 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('repairs/{repair}/print', [RepairController::class, 'print'])->name('repairs.print');
     Route::get('repairs/{repair}/invoice', [RepairController::class, 'invoice'])->name('repairs.invoice');
     Route::get('repairs/{repair}/cost-breakdown', [RepairController::class, 'costBreakdown'])->name('repairs.cost-breakdown');
+
+    // Customer Returns
+    Route::get('returns', [ReturnController::class, 'index']);
+    Route::get('returns/refunds', [ReturnController::class, 'refunds']);
+    Route::post('returns/customer', [ReturnController::class, 'storeCustomerReturn']);
+    Route::put('returns/{type}/{id}/status', [ReturnController::class, 'updateStatus']);
 
     // Repair Returns
     Route::get('repairs/{repair}/returns/create', [RepairReturnController::class, 'create'])->name('repair-returns.create');

@@ -257,7 +257,7 @@ function productsPage() {
         },
         async save() {
             this.saving = true;
-            const r = await RepairBox.ajax(`/products/${this.editing}`, 'PUT', this.form);
+            const r = await RepairBox.ajax(`/admin/products/${this.editing}`, 'PUT', this.form);
             if (r.success !== false) {
                 if (this.imageFile || this.thumbFile) {
                     const fd = new FormData();
@@ -271,7 +271,7 @@ function productsPage() {
         },
         async remove(item) {
             if (!await RepairBox.confirm('Delete this product?')) return;
-            const r = await RepairBox.ajax(`/products/${item.id}`, 'DELETE');
+            const r = await RepairBox.ajax(`/admin/products/${item.id}`, 'DELETE');
             if (r.success !== false) { RepairBox.toast('Deleted', 'success'); this.load(); }
         }
     };

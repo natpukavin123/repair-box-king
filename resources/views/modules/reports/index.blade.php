@@ -116,7 +116,7 @@ function reportsPage() {
         async fetchReport() {
             if(!this.from || !this.to) { RepairBox.toast('Select date range', 'error'); return; }
             this.loading = true;
-            const r = await RepairBox.ajax(`/reports/${this.type}?from=${this.from}&to=${this.to}`);
+            const r = await RepairBox.ajax(`/admin/reports/${this.type}?from=${this.from}&to=${this.to}`);
             this.loading = false;
             if(r.data) { if(this.type === 'sales') this.salesData = r.data; else this.profitData = r.data; }
             this.updateUrl();
