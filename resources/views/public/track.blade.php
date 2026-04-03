@@ -24,11 +24,72 @@
     $balance         = $currentRepair ? max(0, ($currentRepair->estimated_cost + ($currentRepair->service_charge ?? 0)) - $totalPaid) : 0;
 @endphp
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" prefix="og: https://ogp.me/ns#">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Track Repair &mdash; {{ $shopName }}</title>
+@php
+    $trackTitle   = 'Track Your Repair — ' . $shopName;
+    $trackDesc    = 'Check the real-time repair status of your device at ' . $shopName . '. Enter your tracking ID to get live updates on your repair.';
+    $trackUrl     = rtrim(config('app.url', url('/')), '/') . '/track';
+    $shopLogoUrl  = !empty($shopIcon) ? image_url($shopIcon) : '';
+    $shopFavUrl   = !empty($shopFavicon) ? image_url($shopFavicon) : '';
+@endphp
+<title>{{ $trackTitle }}</title>
+<meta name="description" content="{{ $trackDesc }}">
+<meta name="robots" content="index, follow">
+<meta name="author" content="{{ $shopName }}">
+<link rel="canonical" href="{{ $trackUrl }}">
+
+{{-- Open Graph --}}
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{ $shopName }}">
+<meta property="og:title" content="{{ $trackTitle }}">
+<meta property="og:description" content="{{ $trackDesc }}">
+<meta property="og:url" content="{{ $trackUrl }}">
+@if($shopLogoUrl)
+<meta property="og:image" content="{{ $shopLogoUrl }}">
+<meta property="og:image:alt" content="{{ $shopName }}">
+@endif
+
+{{-- Twitter Card --}}
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="{{ $trackTitle }}">
+<meta name="twitter:description" content="{{ $trackDesc }}">
+@if($shopLogoUrl)
+<meta name="twitter:image" content="{{ $shopLogoUrl }}">
+@endif
+
+{{-- Favicon --}}
+@if($shopFavUrl)
+<link rel="icon" type="image/png" href="{{ $shopFavUrl }}">
+<link rel="shortcut icon" type="image/png" href="{{ $shopFavUrl }}">
+<link rel="apple-touch-icon" href="{{ $shopFavUrl }}">
+@elseif($shopLogoUrl)
+<link rel="icon" type="image/png" href="{{ $shopLogoUrl }}">
+<link rel="shortcut icon" type="image/png" href="{{ $shopLogoUrl }}">
+<link rel="apple-touch-icon" href="{{ $shopLogoUrl }}">
+@else
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+@endif
+
+<meta name="theme-color" content="#020617">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="{{ $shopName }}">
+
+{{-- JSON-LD --}}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "{{ $trackTitle }}",
+  "description": "{{ $trackDesc }}",
+  "url": "{{ $trackUrl }}",
+  "isPartOf": { "@type": "WebSite", "name": "{{ $shopName }}", "url": "{{ rtrim(config('app.url', url('/')), '/') }}/" }
+}
+</script>
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}

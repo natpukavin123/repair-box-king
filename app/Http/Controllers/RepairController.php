@@ -412,9 +412,10 @@ class RepairController extends Controller
         $shopEmail     = \App\Models\Setting::getValue('shop_email', '');
         $shopSlogan    = \App\Models\Setting::getValue('shop_slogan', 'Your Trusted Mobile Partner');
         $shopIcon      = \App\Models\Setting::getValue('shop_icon', '');
+        $shopFavicon   = \App\Models\Setting::getValue('shop_favicon', '');
         $shopWhatsapp  = \App\Models\Setting::getValue('shop_whatsapp', '');
         $shopAddress   = \App\Models\Setting::getValue('shop_address', '');
-        return view('public.track', compact('shopName', 'shopPhone', 'shopEmail', 'shopSlogan', 'shopIcon', 'shopWhatsapp', 'shopAddress'));
+        return view('public.track', compact('shopName', 'shopPhone', 'shopEmail', 'shopSlogan', 'shopIcon', 'shopFavicon', 'shopWhatsapp', 'shopAddress'));
     }
 
     public function track($trackingId)
@@ -436,10 +437,11 @@ class RepairController extends Controller
         $shopEmail     = \App\Models\Setting::getValue('shop_email', '');
         $shopSlogan    = \App\Models\Setting::getValue('shop_slogan', 'Your Trusted Mobile Partner');
         $shopIcon      = \App\Models\Setting::getValue('shop_icon', '');
+        $shopFavicon   = \App\Models\Setting::getValue('shop_favicon', '');
         $shopWhatsapp  = \App\Models\Setting::getValue('shop_whatsapp', '');
         $shopAddress   = \App\Models\Setting::getValue('shop_address', '');
 
-        return view('public.track', compact('repair', 'notFound', 'shopName', 'shopPhone', 'shopEmail', 'shopSlogan', 'shopIcon', 'shopWhatsapp', 'shopAddress'));
+        return view('public.track', compact('repair', 'notFound', 'shopName', 'shopPhone', 'shopEmail', 'shopSlogan', 'shopIcon', 'shopFavicon', 'shopWhatsapp', 'shopAddress'));
     }
 
     public function print(Repair $repair)

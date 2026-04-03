@@ -63,12 +63,26 @@
 <meta name="twitter:image:alt" content="{{ $shopName }}">
 @endif
 
+{{-- ── Favicon ── --}}
+@php $shopFaviconUrl = (!empty($shopFavicon)) ? image_url($shopFavicon) : ''; @endphp
+@if($shopFaviconUrl)
+<link rel="icon" type="image/png" href="{{ $shopFaviconUrl }}">
+<link rel="shortcut icon" type="image/png" href="{{ $shopFaviconUrl }}">
+@elseif($shopLogoUrl)
+<link rel="icon" type="image/png" href="{{ $shopLogoUrl }}">
+<link rel="shortcut icon" type="image/png" href="{{ $shopLogoUrl }}">
+@else
+<link rel="icon" href="/favicon.ico" type="image/x-icon">
+@endif
+
 {{-- ── Mobile / PWA hints ── --}}
 <meta name="theme-color" content="#020617">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="{{ $shopName }}">
-@if($shopLogoUrl)
+@if($shopFaviconUrl)
+<link rel="apple-touch-icon" href="{{ $shopFaviconUrl }}">
+@elseif($shopLogoUrl)
 <link rel="apple-touch-icon" href="{{ $shopLogoUrl }}">
 @endif
 

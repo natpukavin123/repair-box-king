@@ -17,6 +17,7 @@ class HomeController extends Controller
         $shopAddress = Setting::getValue('shop_address', '');
         $shopSlogan  = Setting::getValue('shop_slogan', 'Your Trusted Mobile Partner');
         $shopIcon    = Setting::getValue('shop_icon', '');
+        $shopFavicon = Setting::getValue('shop_favicon', '');
         $shopWhatsapp  = Setting::getValue('shop_whatsapp', $shopPhone);
         $shopOpenDays  = Setting::getValue('shop_open_days', '');
         $shopOpenTime  = Setting::getValue('shop_open_time', '');
@@ -37,7 +38,7 @@ class HomeController extends Controller
 
         return view('public.home', compact(
             'shopName', 'shopPhone', 'shopEmail', 'shopAddress',
-            'shopSlogan', 'shopIcon', 'shopWhatsapp', 'services', 'landing',
+            'shopSlogan', 'shopIcon', 'shopFavicon', 'shopWhatsapp', 'services', 'landing',
             'shopOpenDays', 'shopOpenTime', 'shopCloseTime', 'shopHoliday'
         ));
     }
