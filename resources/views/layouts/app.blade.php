@@ -157,22 +157,29 @@
                 </button>
             </form>
 
-            <!-- Mobile hamburger -->
-            <button @click="mobileMenuOpen = !mobileMenuOpen" class="icon-action md:hidden" :class="mobileMenuOpen ? 'is-active' : ''">
+            <!-- Mobile hamburger - only shown on md+ if needed or hidden completely -->
+            <button @click="mobileMenuOpen = !mobileMenuOpen" class="icon-action hidden" :class="mobileMenuOpen ? 'is-active' : ''">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
             </button>
         </div>
     </div>
 
     <!-- Mobile dropdown menu -->
-    <div x-show="mobileMenuOpen" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-1" @click.away="mobileMenuOpen = false" class="topnav-mobile-panel md:hidden">
-        @foreach($navItems as $item)
-            <a href="{{ $item['route'] }}" class="mobile-nav-link {{ request()->is($item['match']) ? 'active' : '' }}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/></svg>
-                {{ $item['name'] }}
-            </a>
-        @endforeach
-    </div>
+    {{-- Mobile dropdown kept for md+ if ever needed, hidden via md:hidden --}}
+</nav>
+
+<!-- Bottom Navigation Bar (mobile only) -->
+<nav class="bottom-nav md:hidden no-print" aria-label="Mobile navigation">
+    @foreach($navItems as $item)
+        <a href="{{ $item['route'] }}" class="bottom-nav-item {{ request()->is($item['match']) ? 'active' : '' }}">
+            <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/></svg>
+            <span class="bottom-nav-label">{{ $item['name'] }}</span>
+        </a>
+    @endforeach
+    <a href="/admin/settings" class="bottom-nav-item {{ request()->is('admin/settings*') ? 'active' : '' }}">
+        <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <span class="bottom-nav-label">Settings</span>
+    </a>
 </nav>
 
 <!-- Main Content -->

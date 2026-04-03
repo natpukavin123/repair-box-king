@@ -6,34 +6,34 @@
 <div x-data="{ ready: false }" x-init="ready = true" x-show="!ready" class="animate-pulse">
     <div class="mb-5">
         <div class="h-4 w-28 bg-gray-200 rounded mb-3"></div>
-        <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3 flex-wrap">
                 <div class="h-8 w-40 bg-gray-200 rounded"></div>
                 <div class="h-6 w-20 bg-gray-200 rounded-full"></div>
             </div>
             <div class="flex items-center gap-2">
-                <div class="h-9 w-20 bg-gray-200 rounded-lg"></div>
-                <div class="h-9 w-20 bg-gray-200 rounded-lg"></div>
+                <div class="h-9 w-9 sm:w-20 bg-gray-200 rounded-lg"></div>
+                <div class="h-9 w-9 sm:w-20 bg-gray-200 rounded-lg"></div>
             </div>
         </div>
     </div>
-    <div class="bg-white rounded-xl shadow-sm border p-4 mb-5">
-        <div class="flex items-center justify-between max-w-2xl mx-auto">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 bg-gray-200 rounded-full"></div>
-                <div class="w-8 h-0.5 bg-gray-200"></div>
-                <div class="w-9 h-9 bg-gray-200 rounded-full"></div>
-                <div class="w-8 h-0.5 bg-gray-200"></div>
-                <div class="w-9 h-9 bg-gray-200 rounded-full"></div>
-                <div class="w-8 h-0.5 bg-gray-200"></div>
-                <div class="w-9 h-9 bg-gray-200 rounded-full"></div>
-                <div class="w-8 h-0.5 bg-gray-200"></div>
-                <div class="w-9 h-9 bg-gray-200 rounded-full"></div>
+    <div class="bg-white rounded-xl shadow-sm border p-3 sm:p-4 mb-5">
+        <div class="flex items-center justify-between max-w-2xl sm:mx-auto overflow-x-auto">
+            <div class="flex items-center gap-1.5 sm:gap-3 min-w-max">
+                <div class="w-7 h-7 sm:w-9 sm:h-9 bg-gray-200 rounded-full"></div>
+                <div class="w-6 h-0.5 bg-gray-200"></div>
+                <div class="w-7 h-7 sm:w-9 sm:h-9 bg-gray-200 rounded-full"></div>
+                <div class="w-6 h-0.5 bg-gray-200"></div>
+                <div class="w-7 h-7 sm:w-9 sm:h-9 bg-gray-200 rounded-full"></div>
+                <div class="w-6 h-0.5 bg-gray-200"></div>
+                <div class="w-7 h-7 sm:w-9 sm:h-9 bg-gray-200 rounded-full"></div>
+                <div class="w-6 h-0.5 bg-gray-200"></div>
+                <div class="w-7 h-7 sm:w-9 sm:h-9 bg-gray-200 rounded-full"></div>
             </div>
         </div>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
-        <div class="lg:col-span-2 space-y-5">
+        <div class="order-2 lg:order-1 lg:col-span-2 space-y-5">
             <div class="bg-white rounded-xl shadow-sm border p-5">
                 <div class="h-5 w-32 bg-gray-200 rounded mb-4"></div>
                 <div class="space-y-3">
@@ -88,34 +88,34 @@
                 </template>
             </div>
             <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                <button x-show="!repair.is_locked" @click="openEditModal()" class="btn-secondary text-sm inline-flex items-center gap-1.5">
+                <button x-show="!repair.is_locked" @click="openEditModal()" class="btn-secondary text-sm inline-flex items-center gap-1.5" title="Edit Intake">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                    Edit Intake
+                    <span class="hidden sm:inline">Edit Intake</span>
                 </button>
-                <a :href="'/admin/repairs/' + repair.id + '/print'" target="_blank" class="btn-secondary text-sm inline-flex items-center gap-1.5">
+                <a :href="'/admin/repairs/' + repair.id + '/print'" target="_blank" class="btn-secondary text-sm inline-flex items-center gap-1.5" title="Print">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                    Print
+                    <span class="hidden sm:inline">Print</span>
                 </a>
-                <a x-show="repair.is_fully_paid" :href="'/admin/repairs/' + repair.id + '/invoice'" target="_blank" class="btn-primary text-sm inline-flex items-center gap-1.5">
+                <a x-show="repair.is_fully_paid" :href="'/admin/repairs/' + repair.id + '/invoice'" target="_blank" class="btn-primary text-sm inline-flex items-center gap-1.5" title="Invoice">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                    Invoice
+                    <span class="hidden sm:inline">Invoice</span>
                 </a>
-                <a x-show="(repair.repair_returns || []).length > 0" @click.prevent="document.getElementById('returns-section')?.scrollIntoView({behavior:'smooth'})" href="#returns-section" class="btn-secondary text-sm inline-flex items-center gap-1.5 !border-orange-300 !text-orange-700 hover:!bg-orange-50">
+                <a x-show="(repair.repair_returns || []).length > 0" @click.prevent="document.getElementById('returns-section')?.scrollIntoView({behavior:'smooth'})" href="#returns-section" class="btn-secondary text-sm inline-flex items-center gap-1.5 !border-orange-300 !text-orange-700 hover:!bg-orange-50" title="Returns">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
-                    Returns
+                    <span class="hidden sm:inline">Returns</span>
                 </a>
             </div>
         </div>
     </div>
 
-    <div class="rounded-[28px] border border-slate-200 bg-[linear-gradient(135deg,rgba(79,70,229,0.07),rgba(14,165,233,0.04),rgba(255,255,255,0.96))] p-5 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.34)] mb-5">
-        <div class="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-            <div>
+    <div class="rounded-[28px] border border-slate-200 bg-[linear-gradient(135deg,rgba(79,70,229,0.07),rgba(14,165,233,0.04),rgba(255,255,255,0.96))] p-4 sm:p-5 shadow-[0_24px_70px_-42px_rgba(15,23,42,0.34)] mb-5">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div class="lg:max-w-xs">
                 <p class="text-xs font-semibold uppercase tracking-[0.26em] text-slate-500">Intake Overview</p>
-                <h3 class="mt-2 text-lg font-semibold text-slate-900">Core intake details stay visible</h3>
-                <p class="mt-1 max-w-2xl text-sm text-slate-600">Customer, device, and issue summary are shown upfront so the repair record matches the new guided intake flow.</p>
+                <h3 class="mt-1.5 text-base sm:text-lg font-semibold text-slate-900">Core intake details stay visible</h3>
+                <p class="mt-1 text-sm text-slate-600 hidden sm:block">Customer, device, and issue summary are shown upfront so the repair record matches the new guided intake flow.</p>
             </div>
-            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 xl:min-w-[620px]">
+            <div class="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4 lg:min-w-[560px]">
                 <div class="rounded-2xl border border-white/70 bg-white/85 p-4 shadow-sm">
                     <div class="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400">Customer</div>
                     <div class="mt-2 text-sm font-semibold text-slate-900" x-text="repair.customer?.name || 'Walk-in'"></div>
@@ -140,26 +140,29 @@
     </div>
 
     <!-- ===== PROGRESS BAR ===== -->
-    <div class="bg-white rounded-xl shadow-sm border p-4 mb-5" x-show="repair.status !== 'cancelled'">
-        <div class="mobile-scroll">
-        <div class="flex items-center justify-between max-w-2xl mx-auto min-w-[640px] sm:min-w-0">
+    <div class="bg-white rounded-xl shadow-sm border p-3 sm:p-4 mb-5" x-show="repair.status !== 'cancelled'">
+        <!-- Mobile: horizontal scrollable compact steps -->
+        <div class="overflow-x-auto -mx-1 px-1">
+        <div class="flex items-center justify-between min-w-max sm:min-w-0 max-w-2xl sm:mx-auto">
             <template x-for="(step, idx) in progressSteps" :key="step.key">
                 <div class="flex items-center" :class="idx < progressSteps.length - 1 ? 'flex-1' : ''">
                     <div class="flex flex-col items-center">
-                        <div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all border-2"
+                        <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all border-2"
                             :class="stepReached(repair.status, step.key)
                                 ? (repair.status === step.key ? statusDotCurrent(step.key) : 'bg-green-500 border-green-500 text-white')
                                 : 'bg-white border-gray-200 text-gray-300'"
                             x-text="idx + 1">
                         </div>
-                        <span class="text-[10px] mt-1 font-medium" :class="stepReached(repair.status, step.key) ? 'text-gray-700' : 'text-gray-300'" x-text="step.label"></span>
+                        <span class="hidden sm:block text-[10px] mt-1 font-medium whitespace-nowrap" :class="stepReached(repair.status, step.key) ? 'text-gray-700' : 'text-gray-300'" x-text="step.label"></span>
                     </div>
-                    <div x-show="idx < progressSteps.length - 1" class="flex-1 h-0.5 mx-2 mt-[-14px]"
+                    <div x-show="idx < progressSteps.length - 1" class="flex-1 h-0.5 mx-1 sm:mx-2 mt-0 sm:mt-[-14px]"
                         :class="stepReached(repair.status, step.key) && stepReached(repair.status, progressSteps[idx+1]?.key) ? 'bg-green-500' : 'bg-gray-200'"></div>
                 </div>
             </template>
         </div>
         </div>
+        <!-- Mobile current step label -->
+        <p class="sm:hidden text-center text-xs font-semibold mt-2" :class="statusBadgeClass(repair.status)" x-text="statusLabel(repair.status)"></p>
     </div>
     <div x-show="repair.status === 'cancelled'" class="bg-red-50 border border-red-200 rounded-xl p-4 mb-5 flex items-center gap-3">
         <svg class="w-6 h-6 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
@@ -173,8 +176,8 @@
     <!-- ===== TWO COLUMN LAYOUT ===== -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-        <!-- LEFT COLUMN (2/3) -->
-        <div class="lg:col-span-2 space-y-5">
+        <!-- LEFT COLUMN (2/3) — order-2 on mobile so sidebar shows first -->
+        <div class="lg:col-span-2 space-y-5 order-2 lg:order-1">
 
             <!-- ===== CLOSED - DOWNLOAD INVOICE ===== -->
             <template x-if="repair.status === 'closed'">
@@ -196,10 +199,10 @@
             </template>
 
             <!-- TABS NAVIGATION -->
-            <div class="bg-white rounded-xl shadow-sm border border-b-0 rounded-b-none p-2 mobile-scroll">
-                <div class="flex gap-1 min-w-max">
-                <button @click="activeTab = 'work'" class="px-5 py-2.5 rounded-lg text-sm font-semibold transition" :class="activeTab === 'work' ? 'bg-primary-50 text-primary-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'">Work Order</button>
-                <button @click="activeTab = 'history'" class="px-5 py-2.5 rounded-lg text-sm font-semibold transition" :class="activeTab === 'history' ? 'bg-primary-50 text-primary-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'">Status & History</button>
+            <div class="bg-white rounded-xl shadow-sm border border-b-0 rounded-b-none p-2">
+                <div class="grid grid-cols-2 sm:flex sm:gap-1">
+                <button @click="activeTab = 'work'" class="py-2.5 px-3 sm:px-5 rounded-lg text-sm font-semibold transition text-center" :class="activeTab === 'work' ? 'bg-primary-50 text-primary-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'">Work Order</button>
+                <button @click="activeTab = 'history'" class="py-2.5 px-3 sm:px-5 rounded-lg text-sm font-semibold transition text-center" :class="activeTab === 'history' ? 'bg-primary-50 text-primary-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'">Status & Activity</button>
                 </div>
             </div>
 
@@ -209,9 +212,9 @@
                 <div x-show="activeTab === 'work'" class="p-5 space-y-6">
 
             <!-- Info Cards -->
-            <div class="bg-white rounded-xl shadow-sm border p-5">
+            <div class="bg-white rounded-xl shadow-sm border p-4 sm:p-5">
                 <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Repair Details</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                     <div>
                         <div class="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1">Customer</div>
                         <div class="text-sm font-semibold text-gray-800" x-text="repair.customer?.name || 'Walk-in'"></div>
@@ -266,33 +269,35 @@
 
                     <div x-data="{ tab: 'parts' }" class="h-full">
                         <!-- Tab Buttons -->
-                        <div class="flex border-b bg-gray-50 px-5">
-                            <button @click="tab = 'parts'" :class="tab === 'parts' ? 'border-b-2 border-indigo-600 text-indigo-600 bg-white' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-3 text-sm font-semibold transition-all">
-                                <span class="flex items-center gap-2">
+                        <div class="overflow-x-auto">
+                        <div class="flex border-b bg-gray-50 min-w-max">
+                            <button @click="tab = 'parts'" :class="tab === 'parts' ? 'border-b-2 border-indigo-600 text-indigo-600 bg-white' : 'text-gray-500 hover:text-gray-700'" class="px-3 sm:px-4 py-3 text-sm font-semibold transition-all flex-1 sm:flex-none">
+                                <span class="flex items-center gap-1.5">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0"/></svg>
                                     Parts
                                 </span>
                             </button>
-                            <button @click="tab = 'services'" :class="tab === 'services' ? 'border-b-2 border-indigo-600 text-indigo-600 bg-white' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-3 text-sm font-semibold transition-all">
-                                <span class="flex items-center gap-2">
+                            <button @click="tab = 'services'" :class="tab === 'services' ? 'border-b-2 border-indigo-600 text-indigo-600 bg-white' : 'text-gray-500 hover:text-gray-700'" class="px-3 sm:px-4 py-3 text-sm font-semibold transition-all flex-1 sm:flex-none">
+                                <span class="flex items-center gap-1.5">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                                     Services
                                 </span>
                             </button>
-                            <button @click="tab = 'charge'" :class="tab === 'charge' ? 'border-b-2 border-indigo-600 text-indigo-600 bg-white' : 'text-gray-500 hover:text-gray-700'" class="px-4 py-3 text-sm font-semibold transition-all">
-                                <span class="flex items-center gap-2">
+                            <button @click="tab = 'charge'" :class="tab === 'charge' ? 'border-b-2 border-indigo-600 text-indigo-600 bg-white' : 'text-gray-500 hover:text-gray-700'" class="px-3 sm:px-4 py-3 text-sm font-semibold transition-all flex-1 sm:flex-none">
+                                <span class="flex items-center gap-1.5">
                                     <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                                    Our Service Fee
+                                    <span class="hidden sm:inline">Service Fee</span><span class="sm:hidden">Fee</span>
                                 </span>
                             </button>
+                        </div>
                         </div>
 
                         <!-- PARTS TAB CONTENT -->
                         <div x-show="tab === 'parts'" class="p-5 space-y-4">
                             <!-- Existing Parts -->
                             <div x-show="(repair.parts || []).length > 0">
-                                <div class="mb-4">
-                                    <table class="w-full text-sm">
+                                <div class="mb-4 overflow-x-auto -mx-5 px-5">
+                                    <table class="w-full text-sm min-w-[420px]">
                                         <thead>
                                             <tr class="border-b-2">
                                                 <th class="text-left pb-3 font-semibold text-gray-700">Part Name</th>
@@ -353,10 +358,10 @@
                                     Selected: <span class="font-semibold" x-text="partForm._name"></span>
                                     <button @click="partForm.part_id = null; partForm._name = ''" class="text-red-400 ml-1.5 hover:text-red-600">&times;</button>
                                 </div>
-                                <div class="grid grid-cols-3 gap-2">
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
                                     <input x-model="partForm.quantity" type="number" min="1" class="form-input-custom text-sm" placeholder="Qty">
                                     <input x-model="partForm.cost_price" type="number" step="0.01" class="form-input-custom text-sm" placeholder="Price ₹">
-                                    <button @click="addPart()" class="btn-primary text-sm font-semibold">Add Part</button>
+                                    <button @click="addPart()" class="btn-primary text-sm font-semibold col-span-2 sm:col-span-1">Add Part</button>
                                 </div>
                             </div>
                             <div x-show="(repair.parts || []).length === 0" class="text-center py-8 text-gray-400">
@@ -369,7 +374,8 @@
                         <div x-show="tab === 'services'" class="p-5 space-y-4">
                             <!-- Existing Services List -->
                             <div x-show="(repair.repair_services || []).length > 0">
-                                <table class="w-full text-sm">
+                                <div class="overflow-x-auto -mx-5 px-5">
+                                <table class="w-full text-sm min-w-[360px]">
                                     <thead>
                                         <tr class="border-b-2">
                                             <th class="text-left pb-3 font-semibold text-gray-700">Service</th>
@@ -403,12 +409,11 @@
                                         </tr>
                                     </tfoot>
                                 </table>
+                                </div>
                             </div>
-
-                            <!-- Add Service Form -->
                             <div x-show="repair.status === 'in_progress'" class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-4 border-2 border-dashed border-gray-300">
                                 <p class="text-xs font-semibold text-gray-600 uppercase mb-3">Add New Service</p>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
                                     <!-- Service Type -->
                                     <div class="relative">
                                         <input x-model="svcForm.service_type_name" @input.debounce.300ms="searchServiceTypes(1)" @focus="if(svcTypeResults.length === 0) searchServiceTypes(1)" @click.away="setTimeout(() => svcTypeResults = [], 200)" type="text" class="form-input-custom text-sm w-full" placeholder="Service type (search or custom)...">
@@ -445,7 +450,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-3 gap-2 mb-3">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
                                     <input x-model="svcForm.customer_charge" type="number" step="0.01" class="form-input-custom text-sm" placeholder="Cust. Charge ₹">
                                     <input x-model="svcForm.vendor_charge" type="number" step="0.01" class="form-input-custom text-sm" placeholder="Vendor Charge ₹">
                                     <input x-model="svcForm.reference_no" type="text" class="form-input-custom text-sm" placeholder="Ref No">
@@ -467,10 +472,12 @@
                                 <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                                 Additional Service Fee
                             </p>
-                            <div class="flex items-center gap-3 flex-wrap">
+                            <div class="grid grid-cols-1 sm:flex sm:items-center sm:gap-3 gap-2 flex-wrap">
                                 <label class="text-sm font-medium text-gray-700">Enter Charge (₹):</label>
-                                <input x-model="serviceChargeInput" type="number" step="0.01" min="0" class="form-input-custom text-sm w-36" placeholder="0.00">
-                                <button @click="saveServiceCharge()" class="btn-primary text-sm whitespace-nowrap">Apply Charge</button>
+                                <div class="flex gap-2">
+                                    <input x-model="serviceChargeInput" type="number" step="0.01" min="0" class="form-input-custom text-sm flex-1 sm:w-36" placeholder="0.00">
+                                    <button @click="saveServiceCharge()" class="btn-primary text-sm whitespace-nowrap">Apply</button>
+                                </div>
                                 <span x-show="repair.service_charge > 0" class="text-xs text-green-600 font-medium flex items-center gap-1">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                     Applied
@@ -497,7 +504,8 @@
                         </h3>
                     </div>
                     <div class="p-5">
-                        <table class="w-full text-sm">
+                        <div class="overflow-x-auto -mx-5 px-5">
+                        <table class="w-full text-sm min-w-[360px]">
                             <thead>
                                 <tr class="border-b-2">
                                     <th class="text-left pb-3 font-semibold text-gray-700">Part Name</th>
@@ -523,6 +531,7 @@
                                 </tr>
                             </tfoot>
                         </table>
+                        </div>
                     </div>
                 </div>
             </template>
@@ -537,7 +546,8 @@
                         </h3>
                     </div>
                     <div class="p-5">
-                        <table class="w-full text-sm">
+                        <div class="overflow-x-auto -mx-5 px-5">
+                        <table class="w-full text-sm min-w-[320px]">
                             <thead>
                                 <tr class="border-b-2">
                                     <th class="text-left pb-3 font-semibold text-gray-700">Service</th>
@@ -564,6 +574,7 @@
                                 </tr>
                             </tfoot>
                         </table>
+                        </div>
                     </div>
                 </div>
             </template>
@@ -577,35 +588,41 @@
                 </div> <!-- End Work Tab -->
 
                 <!-- TAB 2: HISTORY -->
-                <div x-show="activeTab === 'history'" class="p-5" x-cloak>
+                <div x-show="activeTab === 'history'" class="p-4 sm:p-5" x-cloak>
                     <!-- ===== STATUS HISTORY ===== -->
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-4 flex items-center gap-2">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Activity &amp; Status Log
+                    </h4>
                     <div class="relative">
-                        <div class="absolute left-3 top-0 bottom-0 w-0.5 bg-gray-200"></div>
-                        <div class="space-y-4">
+                        <div class="absolute left-3 top-0 bottom-0 w-0.5 bg-gray-100"></div>
+                        <div class="space-y-3">
                             <template x-for="sh in (repair.status_history || []).slice().reverse()" :key="sh.id">
                                 <div class="relative flex items-start gap-3 pl-8">
-                                    <div class="absolute left-1.5 top-1 w-3.5 h-3.5 rounded-full border-2 border-white"
+                                    <div class="absolute left-1.5 top-2 w-3 h-3 rounded-full border-2 border-white shadow-sm"
                                          :class="sh.notes && !['received','in_progress','completed','payment','closed','cancelled'].includes(sh.status)
                                                  ? 'bg-indigo-400'
                                                  : statusDotBg(sh.status)"
                                     ></div>
-                                    <div class="flex-1">
-                                        <div class="flex items-center gap-2 flex-wrap">
-                                            <!-- Activity note (part/service log) -->
-                                            <template x-if="sh.notes && sh.notes.startsWith('Part ') || sh.notes && sh.notes.startsWith('Service ')">
-                                                <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
-                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                                                    Activity
-                                                </span>
-                                            </template>
-                                            <!-- Status change badge -->
-                                            <template x-if="!(sh.notes && sh.notes.startsWith('Part ') || sh.notes && sh.notes.startsWith('Service '))">
-                                                <span class="text-sm font-semibold" x-text="statusLabel(sh.status)"></span>
-                                            </template>
-                                            <span class="text-xs text-gray-400" x-text="formatDateTime(sh.created_at)"></span>
+                                    <div class="flex-1 bg-gray-50 rounded-lg px-3 py-2.5 border border-gray-100">
+                                        <div class="flex items-start justify-between gap-2 flex-wrap">
+                                            <div class="flex items-center gap-1.5 flex-wrap">
+                                                <!-- Activity note (part/service log) -->
+                                                <template x-if="sh.notes && sh.notes.startsWith('Part ') || sh.notes && sh.notes.startsWith('Service ')">
+                                                    <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                                        Activity
+                                                    </span>
+                                                </template>
+                                                <!-- Status change badge -->
+                                                <template x-if="!(sh.notes && sh.notes.startsWith('Part ') || sh.notes && sh.notes.startsWith('Service '))">
+                                                    <span class="text-xs font-bold text-gray-800" x-text="statusLabel(sh.status)"></span>
+                                                </template>
+                                            </div>
+                                            <span class="text-[10px] text-gray-400 whitespace-nowrap" x-text="formatDateTime(sh.created_at)"></span>
                                         </div>
-                                        <p class="text-xs text-gray-600 mt-0.5 font-medium" x-show="sh.notes" x-text="sh.notes"></p>
-                                        <p class="text-xs text-gray-400" x-show="sh.updater" x-text="'by ' + (sh.updater?.name || '')"></p>
+                                        <p class="text-xs text-gray-600 mt-1 leading-relaxed" x-show="sh.notes" x-text="sh.notes"></p>
+                                        <p class="text-[10px] text-gray-400 mt-1" x-show="sh.updater" x-text="'by ' + (sh.updater?.name || '')"></p>
                                     </div>
                                 </div>
                             </template>
@@ -616,8 +633,8 @@
             </div>
         </div>
 
-        <!-- RIGHT COLUMN (1/3) -->
-        <div class="space-y-5">
+        <!-- RIGHT COLUMN (1/3) — order-1 on mobile so it shows before main content -->
+        <div class="space-y-5 order-1 lg:order-2">
 
             <!-- ===== REPAIR OPERATIONS PANEL (Compact) ===== -->
             <template x-if="!repair.is_locked && repair.status !== 'cancelled'">
@@ -633,18 +650,18 @@
                         <!-- Status Transitions -->
                         <div>
                             <label class="text-xs font-bold text-gray-600 uppercase block mb-2.5">Change Status</label>
-                            <div class="space-y-2">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
                                 <template x-for="nextStatus in (repair.status === 'payment'
                                         ? (balanceDue() > 0
                                             ? (repair.allowed_transitions || []).filter(s => s === 'cancelled')
                                             : (repair.allowed_transitions || []).filter(s => ['closed', 'cancelled'].includes(s)))
                                         : (repair.allowed_transitions || []))" :key="nextStatus">
-                                    <button @click="nextStatus === 'cancelled' ? (showCancel = true) : handleStatusTransition(nextStatus)" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all hover:scale-[1.02] hover:shadow-md" :class="statusTransitionBtnClass(nextStatus)">
-                                        <template x-if="nextStatus === 'in_progress'"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></template>
-                                        <template x-if="nextStatus === 'completed'"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></template>
-                                        <template x-if="nextStatus === 'payment'"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></template>
-                                        <template x-if="nextStatus === 'closed'"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></template>
-                                        <template x-if="nextStatus === 'cancelled'"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></template>
+                                    <button @click="nextStatus === 'cancelled' ? (showCancel = true) : handleStatusTransition(nextStatus)" class="w-full flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all hover:scale-[1.01] hover:shadow-md" :class="statusTransitionBtnClass(nextStatus)">
+                                        <template x-if="nextStatus === 'in_progress'"><svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></template>
+                                        <template x-if="nextStatus === 'completed'"><svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></template>
+                                        <template x-if="nextStatus === 'payment'"><svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></template>
+                                        <template x-if="nextStatus === 'closed'"><svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></template>
+                                        <template x-if="nextStatus === 'cancelled'"><svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></template>
                                         <span x-text="statusLabel(nextStatus)"></span>
                                     </button>
                                 </template>

@@ -1702,4 +1702,96 @@ body[data-motion='none'] *::after {
     scroll-behavior: auto !important;
 }
 
+/* ===== BOTTOM NAVIGATION BAR (mobile only) ===== */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-around;
+    padding: 0 0.25rem env(safe-area-inset-bottom, 0.25rem) 0.25rem;
+    background: var(--app-panel);
+    backdrop-filter: blur(20px) saturate(1.5);
+    border-top: 1px solid var(--app-panel-border);
+    box-shadow: 0 -4px 24px -8px rgba(15, 23, 42, 0.12);
+    gap: 0;
+}
+
+.bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    padding: 0.55rem 0.25rem 0.4rem;
+    border-radius: 0;
+    color: var(--app-text-faint);
+    font-size: 0.6rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    transition: color 0.18s ease, background 0.18s ease;
+    position: relative;
+    text-decoration: none;
+}
+
+.bottom-nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: 2rem;
+    height: 2.5px;
+    border-radius: 0 0 4px 4px;
+    background: linear-gradient(135deg, var(--app-primary), var(--app-accent));
+    transition: transform 0.2s ease;
+}
+
+.bottom-nav-item.active::before {
+    transform: translateX(-50%) scaleX(1);
+}
+
+.bottom-nav-item:hover {
+    color: var(--app-primary);
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.bottom-nav-item.active {
+    color: var(--app-primary);
+}
+
+.bottom-nav-icon {
+    width: 1.35rem;
+    height: 1.35rem;
+    flex-shrink: 0;
+    transition: transform 0.18s ease;
+}
+
+.bottom-nav-item.active .bottom-nav-icon {
+    transform: scale(1.1);
+}
+
+.bottom-nav-label {
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+/* Add bottom padding to main content so it doesn't hide behind the bottom nav */
+@media (max-width: 767px) {
+    .app-main-shell {
+        padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+    }
+    /* Hide hamburger button on mobile since bottom nav replaces it */
+    .topnav .md\:hidden[x-data],
+    .topnav button[aria-label="menu"] {
+        display: none;
+    }
+}
+
 /* End of theme styles */
