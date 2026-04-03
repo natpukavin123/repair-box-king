@@ -244,6 +244,21 @@
                         </div>
                         <span>Customers</span>
                     </button>
+
+                    {{-- ── Team Access ── --}}
+                    <div class="px-3 pt-3 pb-1 border-t border-gray-100 mt-1"><p class="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Team Access</p></div>
+                    <button @click="switchSection('users')" :class="mdSection==='users' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
+                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#0ea5e9,#0284c7);">
+                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        </div>
+                        <span>Users</span>
+                    </button>
+                    <button @click="switchSection('roles')" :class="mdSection==='roles' ? 'md-menu-item is-active' : 'md-menu-item'" class="w-full text-left">
+                        <div class="md-menu-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+                            <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                        </div>
+                        <span>Roles & Permissions</span>
+                    </button>
                 </div>
             </div>
 
@@ -706,6 +721,107 @@
                             </table>
                         </template>
 
+                        {{-- Users Table --}}
+                        <template x-if="mdSection==='users'">
+                            <table class="data-table w-full">
+                                <thead class="sticky top-0 z-10">
+                                    <tr class="bg-gray-50">
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Email</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Role</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Status</th>
+                                        <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <template x-for="(item, idx) in mdItems" :key="item.id">
+                                        <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openMdEdit(item)">
+                                            <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
+                                            <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
+                                            <td class="px-3 py-2 text-sm text-gray-600" x-text="item.email"></td>
+                                            <td class="px-3 py-2">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700" x-text="item.role ? item.role.name : '-'"></span>
+                                            </td>
+                                            <td class="px-3 py-2">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold"
+                                                    :class="(item.status||'active')==='active' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'"
+                                                    x-text="item.status||'active'"></span>
+                                            </td>
+                                            <td class="px-3 py-2 text-center" @click.stop>
+                                                <button @click="openMdEdit(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition" title="Edit">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                </button>
+                                                <button @click="deleteMdItem(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition" title="Delete">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="mdItems.length === 0 && !mdLoading">
+                                        <td colspan="6" class="text-center py-12">
+                                            <p class="text-gray-400 font-medium">No users found</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </template>
+
+                        {{-- Roles Table --}}
+                        <template x-if="mdSection==='roles'">
+                            <table class="data-table w-full">
+                                <thead class="sticky top-0 z-10">
+                                    <tr class="bg-gray-50">
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Role</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase md-col-hide">Description</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Users</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase md-col-hide">Permissions</th>
+                                        <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <template x-for="(item, idx) in mdItems" :key="item.id">
+                                        <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openMdEdit(item)">
+                                            <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
+                                            <td class="px-3 py-2 font-medium text-gray-800 text-sm">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                                                         :class="item.name === 'Admin' ? 'bg-amber-100 text-amber-700' : 'bg-primary-100 text-primary-700'">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                                                    </div>
+                                                    <div>
+                                                        <span x-text="item.name"></span>
+                                                        <template x-if="item.name === 'Admin'">
+                                                            <span class="ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-semibold">System</span>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-3 py-2 text-sm text-gray-500 md-col-hide" x-text="item.description || '-'"></td>
+                                            <td class="px-3 py-2 text-sm" x-text="(item.users_count || 0) + ' users'"></td>
+                                            <td class="px-3 py-2 text-sm md-col-hide" x-text="(item.permissions_count || 0) + ' permissions'"></td>
+                                            <td class="px-3 py-2 text-center" @click.stop>
+                                                <button @click="openMdEdit(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition" title="Edit">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                </button>
+                                                <template x-if="item.name !== 'Admin'">
+                                                    <button @click="deleteMdItem(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition" title="Delete">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                    </button>
+                                                </template>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="mdItems.length === 0 && !mdLoading">
+                                        <td colspan="6" class="text-center py-12">
+                                            <p class="text-gray-400 font-medium">No roles found</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </template>
+
                         </div>
                     </div>
                 </div>
@@ -1075,6 +1191,53 @@
                                 <div><label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                                     <select x-model="mdForm.status" class="form-select-custom"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
                             </template>
+                        </div>
+                    </template>
+
+                    {{-- Users Form --}}
+                    <template x-if="mdSection==='users'">
+                        <div class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                                <input x-model="mdForm.name" type="text" class="form-input-custom" placeholder="Full name"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                                <input x-model="mdForm.email" type="email" class="form-input-custom" placeholder="Email address"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">
+                                Password <span x-show="mdEditing" class="text-gray-400 font-normal">(leave blank to keep)</span><span x-show="!mdEditing" class="text-red-500">*</span>
+                            </label>
+                                <input x-model="mdForm.password" type="password" class="form-input-custom" placeholder="Password"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                                <input x-model="mdForm.password_confirmation" type="password" class="form-input-custom" placeholder="Confirm password"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Role *</label>
+                                <select x-model="mdForm.role_id" class="form-select-custom">
+                                    <option value="">Select role</option>
+                                    <template x-for="r in mdRolesList" :key="r.id">
+                                        <option :value="r.id" x-text="r.name"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                <select x-model="mdForm.status" class="form-select-custom">
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+                    </template>
+
+                    {{-- Roles Form --}}
+                    <template x-if="mdSection==='roles'">
+                        <div class="space-y-4">
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Role Name *</label>
+                                <input x-model="mdForm.name" type="text" class="form-input-custom" placeholder="e.g. Manager, Technician"></div>
+                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                <textarea x-model="mdForm.description" class="form-input-custom" rows="2" placeholder="Brief description of this role"></textarea></div>
+                            <div class="rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex items-start gap-3">
+                                <svg class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <div>
+                                    <p class="text-xs font-medium text-amber-800">Permissions can be assigned from the Roles page</p>
+                                    <a href="/admin/roles" target="_blank" class="text-xs text-amber-700 underline hover:text-amber-900">Open Roles & Permissions →</a>
+                                </div>
+                            </div>
                         </div>
                     </template>
                 </div>
@@ -2427,6 +2590,8 @@ function masterDataPanel() {
         customers:  { label: 'Customers',         singular: 'Customer', url: '/admin/customers',  deleteUrl: '/admin/customers' },
         'recharge-providers': { label: 'Recharge Providers', singular: 'Provider', url: '/admin/recharge-providers', deleteUrl: '/admin/recharge-providers' },
         services:  { label: 'Services', singular: 'Service', url: '/admin/service-types', deleteUrl: '/admin/service-types' },
+        users:     { label: 'Users',    singular: 'User',    url: '/admin/users',         deleteUrl: '/admin/users' },
+        roles:     { label: 'Roles & Permissions', singular: 'Role', url: '/admin/roles', deleteUrl: '/admin/roles' },
     };
 
     return {
@@ -2441,6 +2606,7 @@ function masterDataPanel() {
         mdCategories: [],
         mdBrands: [],
         mdProducts: [],
+        mdRolesList: [],
         showCatSubModal: false,
         catSubItem: null,
         catSubItems: [],
@@ -2498,7 +2664,7 @@ function masterDataPanel() {
             this.mdLoading = false;
         },
 
-        openMdAdd() {
+        async openMdAdd() {
             this.mdEditing = null;
             this.mdForm = this.getDefaultForm();
             this.mdImageFile = null;
@@ -2510,10 +2676,13 @@ function masterDataPanel() {
             if (this.mdSection === 'inventory') {
                 this.loadProducts();
             }
+            if (this.mdSection === 'users') {
+                await this.loadRolesList();
+            }
             this.showMdModal = true;
         },
 
-        openMdEdit(item) {
+        async openMdEdit(item) {
             if (this.mdSection === 'inventory') return;
             this.mdEditing = item.id;
             this.mdForm = { ...item };
@@ -2531,6 +2700,11 @@ function masterDataPanel() {
 
             if (this.mdSection === 'products') {
                 this.loadDropdowns();
+            }
+            if (this.mdSection === 'users') {
+                this.mdForm.password = '';
+                this.mdForm.password_confirmation = '';
+                await this.loadRolesList();
             }
             this.showMdModal = true;
         },
@@ -2554,6 +2728,8 @@ function masterDataPanel() {
                 case 'inventory': return { product_id: '', adjustment_type: 'addition', quantity: '', reason: '' };
                 case 'recharge-providers': return { name: '', provider_type: '' };
                 case 'services': return { name: '', default_price: '', description: '', quick_fills: [] };
+                case 'users': return { name: '', email: '', password: '', password_confirmation: '', role_id: '', status: 'active' };
+                case 'roles': return { name: '', description: '' };
                 default: return {};
             }
         },
@@ -2580,6 +2756,11 @@ function masterDataPanel() {
         async loadProducts() {
             const r = await RepairBox.ajax('/admin/products');
             this.mdProducts = Array.isArray(r) ? r : (r.data || []);
+        },
+
+        async loadRolesList() {
+            const r = await RepairBox.ajax('/admin/roles');
+            this.mdRolesList = Array.isArray(r) ? r : (r.data || []);
         },
 
         async openCatSubModal(item) {
@@ -2687,9 +2868,29 @@ function masterDataPanel() {
             if (this.mdSection === 'inventory' && (!this.mdForm.product_id || !this.mdForm.quantity)) {
                 return RepairBox.toast('Product and quantity are required', 'error');
             }
+            if (this.mdSection === 'users' && !this.mdEditing && !this.mdForm.password) {
+                return RepairBox.toast('Password is required', 'error');
+            }
 
             this.mdSaving = true;
             const cfg = sectionConfig[this.mdSection];
+
+            if (this.mdSection === 'users') {
+                const data = { ...this.mdForm };
+                if (!data.password) { delete data.password; delete data.password_confirmation; }
+                const url = this.mdEditing ? `${cfg.url}/${this.mdEditing}` : cfg.url;
+                const method = this.mdEditing ? 'PUT' : 'POST';
+                const r = await RepairBox.ajax(url, method, data);
+                this.mdSaving = false;
+                if (r.success !== false) {
+                    RepairBox.toast(this.mdEditing ? 'User updated' : 'User created', 'success');
+                    this.showMdModal = false;
+                    this.mdEditing = null;
+                    this.mdForm = {};
+                    await this.loadMdData();
+                }
+                return;
+            }
 
             if (this.mdSection === 'inventory') {
                 const r = await RepairBox.ajax('/admin/inventory/adjust', 'POST', this.mdForm);
