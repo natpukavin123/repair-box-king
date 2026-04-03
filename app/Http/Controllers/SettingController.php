@@ -259,6 +259,10 @@ class SettingController extends Controller
             'quick_fills'   => 'nullable|array',
             'quick_fills.*' => 'string|max:100',
         ]);
+        $existing = ServiceType::whereRaw('LOWER(name) = ?', [strtolower($data['name'])])->first();
+        if ($existing) {
+            return response()->json(['success' => true, 'data' => array_merge($existing->toArray(), ['_existing' => true])]);
+        }
         $st = ServiceType::create($data);
         return response()->json(['success' => true, 'data' => $st]);
     }

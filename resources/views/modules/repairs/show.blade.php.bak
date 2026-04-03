@@ -412,7 +412,7 @@
                                     <!-- Service Type -->
                                     <div class="relative">
                                         <input x-model="svcForm.service_type_name" @input.debounce.300ms="searchServiceTypes(1)" @focus="if(svcTypeResults.length === 0) searchServiceTypes(1)" @click.away="setTimeout(() => svcTypeResults = [], 200)" type="text" class="form-input-custom text-sm w-full" placeholder="Service type (search or custom)...">
-                                        <div x-show="svcTypeResults.length > 0 || (svcForm.service_type_name && svcForm.service_type_name.trim().length > 0 && !svcTypeLoading && !svcForm.service_type_id)" class="absolute z-50 w-full bg-white border rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto top-full" @scroll="handleSvcTypeScroll($event)">
+                                        <div x-show="svcTypeResults.length > 0 || (svcForm.service_type_name && svcForm.service_type_name.trim().length > 0 && !svcTypeLoading)" class="absolute z-50 w-full bg-white border rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto top-full" @scroll="handleSvcTypeScroll($event)">
                                             <template x-for="st in svcTypeResults" :key="st.id">
                                                 <button @click="selectServiceType(st)" class="w-full text-left px-3 py-2.5 hover:bg-indigo-50 text-sm border-b last:border-0 transition">
                                                     <span class="font-medium text-gray-800" x-text="st.name"></span>
@@ -420,7 +420,7 @@
                                                 </button>
                                             </template>
                                             <div x-show="svcTypeLoading" class="px-3 py-2 text-xs text-gray-400 text-center">Loading...</div>
-                                            <button x-show="svcForm.service_type_name && svcForm.service_type_name.trim().length > 0 && !svcTypeLoading && !svcForm.service_type_id" @click="createAndSelectServiceType()" class="w-full text-left px-3 py-2.5 hover:bg-green-50 text-sm border-t transition flex items-center gap-2 text-green-700 font-semibold">
+                                            <button x-show="svcForm.service_type_name && svcForm.service_type_name.trim().length > 0 && !svcTypeLoading" @click="createAndSelectServiceType()" class="w-full text-left px-3 py-2.5 hover:bg-green-50 text-sm border-t transition flex items-center gap-2 text-green-700 font-semibold">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                                                 Create "<span x-text="svcForm.service_type_name.trim()"></span>"
                                             </button>
@@ -1091,7 +1091,7 @@
                         </div>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <div x-data="brandDropdown(@json($brands), (v) => editForm.device_brand = v)" x-init="query = selected = editForm.device_brand" x-effect="filtered = query.trim() ? (brands || []).filter(b => b.toLowerCase().includes(query.toLowerCase())) : (brands || []).slice(); editForm.device_brand !== selected && (query = selected = editForm.device_brand)" @click.outside="open = false" class="relative">
+                            <div x-data="brandDropdown(@json($brands), (v) => editForm.device_brand = v)" x-init="query = editForm.device_brand; selected = editForm.device_brand" x-effect="if (editForm.device_brand !== selected) { query = editForm.device_brand; selected = editForm.device_brand; }" @click.away="open = false" class="relative">
                                 <label class="block text-sm font-semibold text-slate-700 mb-2">Device Brand <span class="text-red-500">*</span></label>
                                 <input type="text" x-model="query" @focus="open = true" @input="open = true; selected = query; updateValue(query)" @keydown.arrow-down.prevent="highlightNext()" @keydown.arrow-up.prevent="highlightPrev()" @keydown.enter.prevent="selectHighlighted()" @keydown.escape="open = false" class="form-input-custom w-full text-sm" placeholder="Type to search brands..." autocomplete="off">
                                 <div x-show="open && filtered.length > 0" x-cloak class="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg">
@@ -1156,7 +1156,11 @@
             selected: '',
             highlighted: -1,
             brands: brands,
-            filtered: brands ? brands.slice() : [],
+            get filtered() {
+                if (!this.query.trim()) return this.brands;
+                const q = this.query.toLowerCase();
+                return this.brands.filter(b => b.toLowerCase().includes(q));
+            },
             pick(brand) {
                 this.query = brand;
                 this.selected = brand;
@@ -1490,16 +1494,9 @@ function repairDetail() {
         async createAndSelectServiceType() {
             const name = (this.svcForm.service_type_name || '').trim();
             if (!name) return;
-            // If an existing result matches exactly, select it instead of creating a duplicate
-            const existing = this.svcTypeResults.find(st => st.name.toLowerCase() === name.toLowerCase());
-            if (existing) {
-                this.selectServiceType(existing);
-                return;
-            }
             const r = await RepairBox.ajax('/admin/service-types', 'POST', { name: name });
             if (r.success !== false && r.data) {
-                const msg = r.data._existing ? 'Service type "' + name + '" already exists — selected' : 'Service type "' + name + '" created';
-                RepairBox.toast(msg, 'success');
+                RepairBox.toast('Service type "' + name + '" created', 'success');
                 this.selectServiceType(r.data);
             }
         },
