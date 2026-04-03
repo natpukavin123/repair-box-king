@@ -12,6 +12,20 @@ use App\Http\Controllers\{
     ReturnController, BlogController, FaqController, SeoPageController
 };
 
+// ─── Dynamic Favicon ──────────────────────────────────────────────────────
+Route::get('/favicon.ico', function () {
+    $favicon = \App\Models\Setting::getValue('shop_favicon', '');
+    if ($favicon) {
+        $url = app(\App\Services\ImageService::class)->url($favicon);
+        return redirect($url);
+    }
+    $path = public_path('favicon.ico');
+    if (file_exists($path) && filesize($path) > 0) {
+        return response()->file($path, ['Content-Type' => 'image/x-icon']);
+    }
+    abort(404);
+})->name('favicon');
+
 // ─── Setup Wizard (public — no auth needed) ────────────────────────────────
 Route::prefix('setup')->name('setup.')->group(function () {
     Route::get('/',          [SetupController::class, 'index'])->name('index');

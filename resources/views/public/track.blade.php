@@ -62,15 +62,16 @@
 
 {{-- Favicon --}}
 @if($shopFavUrl)
-<link rel="icon" type="image/png" href="{{ $shopFavUrl }}">
-<link rel="shortcut icon" type="image/png" href="{{ $shopFavUrl }}">
-<link rel="apple-touch-icon" href="{{ $shopFavUrl }}">
+<link rel="icon" type="image/png" href="{{ $shopFavUrl }}?v=2">
+<link rel="shortcut icon" type="image/png" href="{{ $shopFavUrl }}?v=2">
+<link rel="apple-touch-icon" href="{{ $shopFavUrl }}?v=2">
 @elseif($shopLogoUrl)
-<link rel="icon" type="image/png" href="{{ $shopLogoUrl }}">
-<link rel="shortcut icon" type="image/png" href="{{ $shopLogoUrl }}">
-<link rel="apple-touch-icon" href="{{ $shopLogoUrl }}">
+<link rel="icon" type="image/png" href="{{ $shopLogoUrl }}?v=2">
+<link rel="shortcut icon" type="image/png" href="{{ $shopLogoUrl }}?v=2">
+<link rel="apple-touch-icon" href="{{ $shopLogoUrl }}?v=2">
 @else
-<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<link rel="icon" href="/favicon.ico?v=2" type="image/x-icon">
+<link rel="shortcut icon" href="/favicon.ico?v=2" type="image/x-icon">
 @endif
 
 <meta name="theme-color" content="#020617">

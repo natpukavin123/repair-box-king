@@ -29,9 +29,11 @@
     <meta name="theme-color" content="#2563eb">
     @php $shopFavicon = \App\Models\Setting::getValue('shop_favicon', ''); @endphp
     @if($shopFavicon)
-        <link rel="icon" href="{{ app(\App\Services\ImageService::class)->url($shopFavicon) }}" type="image/png">
+        <link rel="icon" href="{{ app(\App\Services\ImageService::class)->url($shopFavicon) }}?v=2" type="image/png">
+        <link rel="shortcut icon" href="{{ app(\App\Services\ImageService::class)->url($shopFavicon) }}?v=2" type="image/png">
     @else
-        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/favicon.ico?v=2" type="image/x-icon">
+        <link rel="shortcut icon" href="/favicon.ico?v=2" type="image/x-icon">
     @endif
     <script>window.__pwaPrompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__pwaPrompt=e;});</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">

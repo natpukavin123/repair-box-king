@@ -153,6 +153,17 @@ class SettingController extends Controller
 
             $path = $img->store($request->file('shop_favicon'), 'shop');
             Setting::setValue('shop_favicon', $path);
+
+            // Update public/favicon.ico so Google and browsers get the new icon
+            try {
+                $faviconUrl = $img->url($path);
+                $content = @file_get_contents($faviconUrl);
+                if ($content) {
+                    file_put_contents(public_path('favicon.ico'), $content);
+                }
+            } catch (\Throwable $e) {
+                // Non-critical — favicon.ico update failed silently
+            }
         }
 
         return response()->json(['success' => true, 'message' => 'Settings updated']);

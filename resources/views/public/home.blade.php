@@ -67,13 +67,14 @@
 {{-- ── Favicon ── --}}
 @php $shopFaviconUrl = (!empty($shopFavicon)) ? image_url($shopFavicon) : ''; @endphp
 @if($shopFaviconUrl)
-<link rel="icon" type="image/png" href="{{ $shopFaviconUrl }}">
-<link rel="shortcut icon" type="image/png" href="{{ $shopFaviconUrl }}">
+<link rel="icon" type="image/png" href="{{ $shopFaviconUrl }}?v=2">
+<link rel="shortcut icon" type="image/png" href="{{ $shopFaviconUrl }}?v=2">
 @elseif($shopLogoUrl)
-<link rel="icon" type="image/png" href="{{ $shopLogoUrl }}">
-<link rel="shortcut icon" type="image/png" href="{{ $shopLogoUrl }}">
+<link rel="icon" type="image/png" href="{{ $shopLogoUrl }}?v=2">
+<link rel="shortcut icon" type="image/png" href="{{ $shopLogoUrl }}?v=2">
 @else
-<link rel="icon" href="/favicon.ico" type="image/x-icon">
+<link rel="icon" href="/favicon.ico?v=2" type="image/x-icon">
+<link rel="shortcut icon" href="/favicon.ico?v=2" type="image/x-icon">
 @endif
 
 {{-- ── Mobile / PWA hints ── --}}
