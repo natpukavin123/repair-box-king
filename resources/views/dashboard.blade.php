@@ -149,8 +149,25 @@
             gap: 0.75rem;
         }
 
-        .pipeline-card {
-            min-width: 100%;
+        .pipeline-grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 8px !important;
+            align-items: stretch !important;
+        }
+        .pipeline-grid .pipeline-card {
+            flex: none !important;
+            min-width: unset !important;
+            padding: 12px !important;
+        }
+        .pipeline-grid .pipeline-icon {
+            width: 34px !important;
+            height: 34px !important;
+            border-radius: 10px !important;
+            flex-shrink: 0;
+        }
+        .pipeline-grid [style*='font-size:24px;font-weight:800'] {
+            font-size: 20px !important;
         }
 
         .chart-card canvas {
@@ -193,6 +210,42 @@
         .dashboard-wrap [style*='font-size:24px;font-weight:800'],
         .dashboard-wrap [style*='font-size:26px;font-weight:800'] {
             font-size: 20px !important;
+        }
+    }
+
+    @media (min-width: 640px) and (max-width: 1023px) {
+        .pipeline-grid {
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 10px !important;
+        }
+        .pipeline-grid .pipeline-card {
+            padding: 14px !important;
+        }
+        .pipeline-grid .pipeline-icon {
+            width: 38px !important;
+            height: 38px !important;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .pipeline-grid {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            align-items: center !important;
+            gap: 12px !important;
+        }
+        .pipeline-grid .pipeline-card {
+            flex: 1 !important;
+            min-width: 130px !important;
+            padding: 18px !important;
+        }
+        .pipeline-grid .pipeline-icon {
+            width: 42px !important;
+            height: 42px !important;
+            border-radius: 12px !important;
+        }
+        .pipeline-grid [style*='font-size:24px;font-weight:800'] {
+            font-size: 24px !important;
         }
     }
 </style>
@@ -380,8 +433,8 @@
             <span class="section-title">Repair Tickets Activity</span>
             <a href="/admin/repairs" style="margin-left:auto;font-size:12px;font-weight:600;color:#4f46e5;text-decoration:none;">View All →</a>
         </div>
-        <div class="card-wrap" style="padding:24px;">
-            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;">
+        <div class="card-wrap" style="padding:20px;">
+            <div class="pipeline-grid">
                 {{-- Received --}}
                 <a href="/admin/repairs?status=received" class="pipeline-card" style="flex:1;min-width:130px;background:#eff6ff;border-color:#bfdbfe;text-decoration:none;">
                     <div style="display:flex;align-items:center;gap:12px;">

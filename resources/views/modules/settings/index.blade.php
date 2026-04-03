@@ -2,6 +2,45 @@
 @section('page-title', 'Settings')
 
 @section('content')
+<style>
+    /* ── Settings Page Mobile Fixes ── */
+    .settings-primary-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        scroll-snap-type: x proximity;
+        padding-bottom: 2px;
+    }
+    .settings-primary-tabs::-webkit-scrollbar { display: none; }
+    .settings-primary-tabs .secondary-tab { flex-shrink: 0; scroll-snap-align: start; }
+
+    /* Print settings toolbar wrap on mobile */
+    .print-toolbar-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .print-subtabs { display: inline-flex; gap: 4px; background: #f1f5f9; padding: 4px; border-radius: 12px; flex-wrap: wrap; }
+
+    @media (max-width: 767px) {
+        /* Settings tabs: force text visible & allow scroll */
+        .settings-primary-tabs { margin-bottom: 0.85rem; }
+        .settings-primary-tabs .secondary-tab { min-height: 2.2rem; padding: 0.5rem 0.8rem; font-size: 0.7rem; }
+
+        /* Print toolbar stacks on mobile */
+        .print-toolbar-left { gap: 8px; }
+        .print-subtabs button { padding: 6px 10px !important; font-size: 0.65rem !important; }
+
+        /* Backups table responsive */
+        .backups-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .backups-table-wrap .data-table { min-width: 540px; }
+
+        /* General settings / appearance card inner */
+        .settings-appearance-inner .mt-3 { flex-direction: column !important; align-items: flex-start !important; }
+    }
+
+    @media (max-width: 480px) {
+        /* Override global secondary-tab 50% stretch for settings tabs */
+        .settings-primary-tabs .secondary-tab { flex: 0 0 auto !important; }
+    }
+</style>
 <div x-data="settingsPage()" x-init="init()">
     <div class="page-header-inline">
         <div class="page-header-inline-copy">
@@ -11,7 +50,7 @@
     </div>
 
     {{-- Tabs --}}
-    <div class="secondary-tabs">
+    <div class="secondary-tabs settings-primary-tabs">
         <button @click="tab='general'; updateUrl()" :class="tab==='general' ? 'secondary-tab is-active' : 'secondary-tab'">General</button>
         <button @click="tab='landing'; updateUrl()" :class="tab==='landing' ? 'secondary-tab is-active' : 'secondary-tab'">Landing Page</button>
         <button @click="tab='master-data'; updateUrl(); $dispatch('md-tab-activated')" :class="tab==='master-data' ? 'secondary-tab is-active' : 'secondary-tab'">Master Data</button>
@@ -87,9 +126,50 @@
                 .md-workspace .md-table-shell .data-table td { padding-left: 0.75rem; padding-right: 0.75rem; }
             }
             @media (max-width: 767px) {
-                .md-workspace { gap: 0.5rem; }
+                /* Grid: single column, no min-height */
+                .md-workspace { gap: 0.5rem; grid-template-columns: 1fr !important; min-height: auto !important; }
                 .md-workspace .md-panel { border-radius: 1.1rem; }
-                .md-workspace .md-search-input, .md-workspace .md-form-input { min-height: 2.5rem; border-radius: 0.82rem; }
+
+                /* ── LEFT sidebar → horizontal scrolling chip nav ── */
+                .md-workspace > .md-panel:first-child { position: static !important; height: auto !important; }
+                .md-workspace > .md-panel:first-child > .card-header { display: none; }
+                .md-workspace > .md-panel:first-child > .p-2 {
+                    display: flex; flex-direction: row; overflow-x: auto;
+                    gap: 4px; padding: 6px 8px; scrollbar-width: none;
+                }
+                .md-workspace > .md-panel:first-child > .p-2::-webkit-scrollbar { display: none; }
+                /* Hide section group labels on mobile */
+                .md-workspace > .md-panel:first-child .px-3 { display: none !important; }
+                /* Menu items: vertical chip (icon above label) */
+                .md-workspace .md-menu-item {
+                    flex-direction: column !important; width: auto !important;
+                    min-width: 62px; gap: 4px; padding: 8px 10px !important;
+                    border-radius: 12px; flex-shrink: 0; text-align: center;
+                    font-size: 0.68rem !important; line-height: 1.2;
+                }
+                .md-workspace .md-menu-icon { width: 28px; height: 28px; border-radius: 8px; margin: 0 auto; }
+
+                /* ── Tables fit full screen width ── */
+                .md-workspace .md-table-shell > div {
+                    overflow-x: auto !important; overflow-y: auto !important;
+                    -webkit-overflow-scrolling: touch;
+                    max-height: 55vh !important;
+                }
+                .md-workspace .md-table-shell .data-table {
+                    font-size: 0.72rem !important;
+                }
+                .md-workspace .md-table-shell .data-table th,
+                .md-workspace .md-table-shell .data-table td {
+                    white-space: nowrap;
+                    font-size: 0.72rem !important; padding: 6px 5px !important;
+                }
+                /* Secondary columns hidden on mobile */
+                .md-col-hide { display: none !important; }
+
+                /* Containment */
+                .md-workspace .md-search-input, .md-workspace .md-form-input { min-height: 2.4rem; border-radius: 0.82rem; }
+                .md-workspace .card.md-panel { max-width: 100%; }
+                .md-workspace { max-width: 100%; }
             }
         </style>
 
@@ -215,7 +295,7 @@
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Phone</th>
-                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Specialization</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase md-col-hide">Specialization</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Status</th>
                                         <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
                                     </tr>
@@ -233,7 +313,7 @@
                                                 </div>
                                             </td>
                                             <td class="px-3 py-2 text-sm" x-text="item.phone || '-'"></td>
-                                            <td class="px-3 py-2 text-sm" x-text="item.specialization || '-'"></td>
+                                            <td class="px-3 py-2 text-sm md-col-hide" x-text="item.specialization || '-'"></td>
                                             <td class="px-3 py-2">
                                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
                                                     :class="(item.status||'active')==='active' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'"
@@ -264,9 +344,9 @@
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Product</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Stock</th>
-                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Reserved</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase md-col-hide">Reserved</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Status</th>
-                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Last Updated</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase md-col-hide">Last Updated</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
@@ -275,13 +355,13 @@
                                             <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
                                             <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.product ? item.product.name : (item.name || '-')"></td>
                                             <td class="px-3 py-2 text-sm" x-text="item.current_stock ?? item.stock ?? 0"></td>
-                                            <td class="px-3 py-2 text-sm" x-text="item.reserved_stock ?? 0"></td>
+                                            <td class="px-3 py-2 text-sm md-col-hide" x-text="item.reserved_stock ?? 0"></td>
                                             <td class="px-3 py-2">
                                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
                                                     :class="(item.current_stock ?? item.stock ?? 0) > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'"
                                                     x-text="(item.current_stock ?? item.stock ?? 0) > 0 ? 'In Stock' : 'Out of Stock'"></span>
                                             </td>
-                                            <td class="px-3 py-2 text-sm text-gray-500" x-text="item.updated_at ? new Date(item.updated_at).toLocaleDateString() : '-'"></td>
+                                            <td class="px-3 py-2 text-sm text-gray-500 md-col-hide" x-text="item.updated_at ? new Date(item.updated_at).toLocaleDateString() : '-'"></td>
                                         </tr>
                                     </template>
                                     <tr x-show="mdItems.length === 0 && !mdLoading">
@@ -345,7 +425,7 @@
                                     <tr class="bg-gray-50">
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
-                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Description</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase md-col-hide">Description</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Subcategories</th>
                                         <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
                                     </tr>
@@ -355,7 +435,7 @@
                                         <tr class="hover:bg-gray-50/50 transition-colors cursor-pointer" @click="openMdEdit(item)">
                                             <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
                                             <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
-                                            <td class="px-3 py-2 text-sm text-gray-500" x-text="item.description || '-'"></td>
+                                            <td class="px-3 py-2 text-sm text-gray-500 md-col-hide" x-text="item.description || '-'"></td>
                                             <td class="px-3 py-2" @click.stop>
                                                 <button @click="openCatSubModal(item)"
                                                     class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition">
@@ -389,8 +469,8 @@
                                     <tr class="bg-gray-50">
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
-                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">SKU</th>
-                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Cost Price</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase md-col-hide">SKU</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase md-col-hide">Cost Price</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Selling Price</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Status</th>
                                         <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
@@ -408,8 +488,8 @@
                                                     <span x-text="item.name"></span>
                                                 </div>
                                             </td>
-                                            <td class="px-3 py-2 text-sm" x-text="item.sku || '-'"></td>
-                                            <td class="px-3 py-2 text-sm" x-text="item.cost_price ? RepairBox.formatCurrency(item.cost_price) : '-'"></td>
+                                            <td class="px-3 py-2 text-sm md-col-hide" x-text="item.sku || '-'"></td>
+                                            <td class="px-3 py-2 text-sm md-col-hide" x-text="item.cost_price ? RepairBox.formatCurrency(item.cost_price) : '-'"></td>
                                             <td class="px-3 py-2 text-sm" x-text="item.selling_price ? RepairBox.formatCurrency(item.selling_price) : '-'"></td>
                                             <td class="px-3 py-2">
                                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
@@ -443,10 +523,10 @@
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Img</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
-                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">SKU</th>
-                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Category</th>
-                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Subcategory</th>
-                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">MRP</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase md-col-hide">SKU</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase md-col-hide">Category</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase md-col-hide">Subcategory</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase md-col-hide">MRP</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Sale Price</th>
                                         <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
                                     </tr>
@@ -466,10 +546,10 @@
                                                 </template>
                                             </td>
                                             <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
-                                            <td class="px-3 py-2 text-sm" x-text="item.sku || '-'"></td>
-                                            <td class="px-3 py-2 text-sm" x-text="item.category ? item.category.name : '-'"></td>
-                                            <td class="px-3 py-2 text-sm" x-text="item.subcategory ? item.subcategory.name : '-'"></td>
-                                            <td class="px-3 py-2 text-sm" x-text="item.mrp ? RepairBox.formatCurrency(item.mrp) : '-'"></td>
+                                            <td class="px-3 py-2 text-sm md-col-hide" x-text="item.sku || '-'"></td>
+                                            <td class="px-3 py-2 text-sm md-col-hide" x-text="item.category ? item.category.name : '-'"></td>
+                                            <td class="px-3 py-2 text-sm md-col-hide" x-text="item.subcategory ? item.subcategory.name : '-'"></td>
+                                            <td class="px-3 py-2 text-sm md-col-hide" x-text="item.mrp ? RepairBox.formatCurrency(item.mrp) : '-'"></td>
                                             <td class="px-3 py-2 text-sm" x-text="item.selling_price ? RepairBox.formatCurrency(item.selling_price) : '-'"></td>
                                             <td class="px-3 py-2 text-center" @click.stop>
                                                 <button @click="openMdEdit(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition" title="Edit">
@@ -498,8 +578,8 @@
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Mobile</th>
-                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Email</th>
-                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Loyalty Pts</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase md-col-hide">Email</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase md-col-hide">Loyalty Pts</th>
                                         <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
                                     </tr>
                                 </thead>
@@ -509,8 +589,8 @@
                                             <td class="px-3 py-2 text-gray-400 text-sm" x-text="idx+1"></td>
                                             <td class="px-3 py-2 font-medium text-gray-800 text-sm" x-text="item.name"></td>
                                             <td class="px-3 py-2 text-sm" x-text="item.mobile_number || '-'"></td>
-                                            <td class="px-3 py-2 text-sm" x-text="item.email || '-'"></td>
-                                            <td class="px-3 py-2 text-sm" x-text="item.loyalty_points || 0"></td>
+                                            <td class="px-3 py-2 text-sm md-col-hide" x-text="item.email || '-'"></td>
+                                            <td class="px-3 py-2 text-sm md-col-hide" x-text="item.loyalty_points || 0"></td>
                                             <td class="px-3 py-2 text-center" @click.stop>
                                                 <button @click="openMdEdit(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition" title="Edit">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -581,7 +661,7 @@
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Default Price</th>
-                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Description</th>
+                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase md-col-hide">Description</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Status</th>
                                         <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
                                     </tr>
@@ -599,7 +679,7 @@
                                                 </div>
                                             </td>
                                             <td class="px-3 py-2 text-sm" x-text="item.default_price ? RepairBox.formatCurrency(item.default_price) : '-'"></td>
-                                            <td class="px-3 py-2 text-sm text-gray-500" x-text="item.description ? item.description.substring(0,50) + (item.description.length > 50 ? '...' : '') : '-'"></td>
+                                            <td class="px-3 py-2 text-sm text-gray-500 md-col-hide" x-text="item.description ? item.description.substring(0,50) + (item.description.length > 50 ? '...' : '') : '-'"></td>
                                             <td class="px-3 py-2">
                                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold"
                                                     :class="(item.status||'active')==='active' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'"
@@ -1525,9 +1605,9 @@
     <div x-show="tab==='print'" x-cloak>
         {{-- Toolbar --}}
         <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
-            <div class="flex items-center gap-3">
+            <div class="print-toolbar-left">
                 {{-- Sub-tabs --}}
-                <div style="display:inline-flex; gap:4px; background:#f1f5f9; padding:4px; border-radius:12px;">
+                <div class="print-subtabs">
                     <button @click="printTab='sales-invoice'; loadPrintIframe()" :class="printTab==='sales-invoice' ? 'px-4 py-1.5 text-xs font-bold rounded-lg bg-white text-gray-900 shadow-sm' : 'px-4 py-1.5 text-xs font-medium rounded-lg text-gray-500 hover:text-gray-700'">Sales Invoice</button>
                     <button @click="printTab='repair-receipt'; loadPrintIframe()" :class="printTab==='repair-receipt' ? 'px-4 py-1.5 text-xs font-bold rounded-lg bg-white text-gray-900 shadow-sm' : 'px-4 py-1.5 text-xs font-medium rounded-lg text-gray-500 hover:text-gray-700'">Repair Receipt</button>
                     <button @click="printTab='repair-invoice'; loadPrintIframe()" :class="printTab==='repair-invoice' ? 'px-4 py-1.5 text-xs font-bold rounded-lg bg-white text-gray-900 shadow-sm' : 'px-4 py-1.5 text-xs font-medium rounded-lg text-gray-500 hover:text-gray-700'">Repair Invoice</button>
@@ -1567,6 +1647,7 @@
             <button @click="createBackup()" class="btn-primary text-sm" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Create Backup</button>
         </div>
         <div class="card-body p-0">
+            <div class="backups-table-wrap">
             <table class="data-table">
                 <thead><tr><th>Type</th><th>File</th><th>Size</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
                 <tbody>
@@ -1588,6 +1669,7 @@
                     <tr x-show="backups.length===0"><td colspan="6" class="text-center text-gray-400 py-6">No backups</td></tr>
                 </tbody>
             </table>
+            </div>{{-- /.backups-table-wrap --}}
         </div>
     </div>
 
