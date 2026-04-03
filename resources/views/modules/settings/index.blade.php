@@ -59,6 +59,7 @@
         <button @click="tab='print'; updateUrl(); initPrintTab()" :class="tab==='print' ? 'secondary-tab is-active' : 'secondary-tab'">Print Settings</button>
         <button @click="tab='backups'; updateUrl()" :class="tab==='backups' ? 'secondary-tab is-active' : 'secondary-tab'">Backups</button>
         <button @click="tab='import'; updateUrl()" :class="tab==='import' ? 'secondary-tab is-active' : 'secondary-tab'">Import</button>
+        <button @click="tab='seo'; updateUrl()" :class="tab==='seo' ? 'secondary-tab is-active' : 'secondary-tab'">SEO</button>
     </div>
 
     {{-- Master Data --}}
@@ -1868,6 +1869,56 @@
                             </div>
                         </button>
                     </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- SEO Tab --}}
+    <div x-show="tab==='seo'" x-cloak>
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="text-lg font-semibold">SEO Management</h3>
+                <p class="text-sm text-gray-500 mt-1">Manage your website's search engine optimization, blog, FAQs, and landing pages.</p>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <a href="/admin/blog" class="flex flex-col items-center gap-3 p-5 rounded-xl border border-gray-200 hover:border-primary-300 hover:bg-primary-50/50 transition-colors text-center group">
+                        <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-gray-800">Blog Posts</div>
+                            <div class="text-xs text-gray-500 mt-1">Create & manage SEO-optimized blog articles</div>
+                        </div>
+                    </a>
+                    <a href="/admin/faqs" class="flex flex-col items-center gap-3 p-5 rounded-xl border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/50 transition-colors text-center group">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-200 transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-gray-800">FAQs</div>
+                            <div class="text-xs text-gray-500 mt-1">Manage FAQ categories & questions with schema markup</div>
+                        </div>
+                    </a>
+                    <a href="/admin/seo-pages" class="flex flex-col items-center gap-3 p-5 rounded-xl border border-gray-200 hover:border-purple-300 hover:bg-purple-50/50 transition-colors text-center group">
+                        <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-gray-800">SEO Pages</div>
+                            <div class="text-xs text-gray-500 mt-1">Dynamic landing pages for local SEO & services</div>
+                        </div>
+                    </a>
+                    <a href="/admin/seo-settings" class="flex flex-col items-center gap-3 p-5 rounded-xl border border-gray-200 hover:border-amber-300 hover:bg-amber-50/50 transition-colors text-center group">
+                        <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center group-hover:bg-amber-200 transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-gray-800">SEO Settings</div>
+                            <div class="text-xs text-gray-500 mt-1">Google Analytics, Schema.org, meta defaults & scripts</div>
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>

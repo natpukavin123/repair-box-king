@@ -8,9 +8,10 @@
      PRIMARY SEO
 ════════════════════════════════════════════ --}}
 @php
-    $pageTitle       = ($landing['seo_title'] ?? '') ?: ($shopName . ' — ' . $shopSlogan . ' | Mobile Repair Shop');
-    $pageDesc        = ($landing['seo_description'] ?? '') ?: ($shopName . ' is a professional mobile device repair shop offering screen replacement, battery repair, water damage fix, and more. ' . $shopSlogan . '. Fast turnaround with genuine parts and transparent pricing.');
-    $pageKeywords    = ($landing['seo_keywords'] ?? '') ?: ('mobile repair, phone repair, screen replacement, battery replacement, ' . $shopName . ', smartphone repair near me, tablet repair');
+    $cityName         = ($landing['city'] ?? '') ?: 'Tiruvannamalai';
+    $pageTitle       = ($landing['seo_title'] ?? '') ?: ('Mobile Repair Shop in ' . $cityName . ' | Screen & Battery Replacement | ' . $shopName);
+    $pageDesc        = ($landing['seo_description'] ?? '') ?: ('Best mobile repair shop in ' . $cityName . ', Tamil Nadu. Screen replacement, battery repair, water damage fix. 12+ years trusted service with genuine parts at ' . $shopName . '.');
+    $pageKeywords    = ($landing['seo_keywords'] ?? '') ?: ('mobile repair ' . $cityName . ', phone repair ' . $cityName . ', screen replacement ' . $cityName . ', battery replacement ' . $cityName . ', ' . $shopName . ', smartphone repair near me, tablet repair Tamil Nadu');
     $canonicalUrl    = rtrim(config('app.url', url('/')), '/') . '/';
     $shopLogoUrl     = $shopIcon ? image_url($shopIcon) : '';
     $shopFullPhone   = $shopPhone ? '+' . preg_replace('/\D+/', '', $shopPhone) : '';
@@ -111,7 +112,10 @@
       "email": "{{ $shopEmail }}",
       "address": {
         "@type": "PostalAddress",
-        "streetAddress": "{{ $shopAddress }}",
+        "streetAddress": "{{ $shopAddress ?: '37, Main Road, Avur Village' }}",
+        "addressLocality": "{{ $cityName }}",
+        "addressRegion": "Tamil Nadu",
+        "postalCode": "606755",
         "addressCountry": "IN"
       },
       "sameAs": [
@@ -132,7 +136,7 @@
       "knowsAbout": ["Screen Replacement","Battery Repair","Water Damage Repair","Charging Port Repair","Software Issues","Camera Repair"],
       "areaServed": {
         "@type": "City",
-        "name": "{{ $landing['city'] ?? '' }}"
+        "name": "{{ $cityName }}"
       }
     },
     {
@@ -240,10 +244,10 @@
         },
         {
           "@type": "Question",
-          "name": "Do you use genuine parts?",
+          "name": "What is the cost of mobile repair in {{ $cityName }}?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes, {{ $shopName }} uses genuine OEM-quality parts for all repairs to ensure best performance and longevity of your device."
+            "text": "Repair costs at {{ $shopName }} in {{ $cityName }} vary by device and issue. Screen replacements typically start from ₹500, battery replacements from ₹400. Contact us for an exact quote — no hidden charges."
           }
         }
       ]
@@ -519,8 +523,10 @@ img{display:block;max-width:100%;}a{text-decoration:none;color:inherit;}
 }
 
 </style>
+@include('components.seo-head')
 </head>
 <body>
+@include('components.seo-body')
 {{-- PAGE LOADER --}}
 <div class="page-loader" id="pageLoader">
   <div class="pl-ring">
@@ -589,8 +595,8 @@ img{display:block;max-width:100%;}a{text-decoration:none;color:inherit;}
           <span class="hero-badge-dot"></span>
           {{ $landing['hero_chip'] ?? 'Certified Repair Experts' }}
         </div>
-        <h1 class="hero-h1">{!! nl2br(e($landing['hero_title'] ?? "Fast & Reliable\nDevice Repairs")) !!}</h1>
-        <p class="hero-p">{{ $landing['hero_subtitle'] ?? ($shopSlogan ?: 'Professional screen, battery & water damage repairs with genuine parts and transparent pricing.') }}</p>
+        <h1 class="hero-h1">{!! nl2br(e($landing['hero_title'] ?? "Mobile Repair Shop\nin " . $cityName)) !!}</h1>
+        <p class="hero-p">{{ $landing['hero_subtitle'] ?? ($shopSlogan ?: 'Professional screen, battery & water damage repairs with genuine parts. 12+ years trusted service in Tiruvannamalai.') }}</p>
         <div class="hero-actions">
           @if($shopWhatsapp)
           <a href="https://wa.me/{{ $shopFullWa }}" target="_blank" rel="noopener" class="btn btn-wa">
@@ -606,9 +612,9 @@ img{display:block;max-width:100%;}a{text-decoration:none;color:inherit;}
           @endif
         </div>
         <div class="hero-stats">
-          <div class="hero-stat"><div class="hero-stat-n">{{ $landing['stat1_value'] ?? '30 Min' }}</div><div class="hero-stat-l">{{ $landing['stat1_label'] ?? 'Avg Fix Time' }}</div></div>
-          <div class="hero-stat"><div class="hero-stat-n">{{ $landing['stat2_value'] ?? 'All' }}</div><div class="hero-stat-l">{{ $landing['stat2_label'] ?? 'Brands' }}</div></div>
-          <div class="hero-stat"><div class="hero-stat-n">{{ $landing['stat3_value'] ?? 'Free' }}</div><div class="hero-stat-l">{{ $landing['stat3_label'] ?? 'Diagnosis' }}</div></div>
+          <div class="hero-stat"><div class="hero-stat-n">{{ $landing['stat1_value'] ?? '12+' }}</div><div class="hero-stat-l">{{ $landing['stat1_label'] ?? 'Years Trusted' }}</div></div>
+          <div class="hero-stat"><div class="hero-stat-n">{{ $landing['stat2_value'] ?? '30 Min' }}</div><div class="hero-stat-l">{{ $landing['stat2_label'] ?? 'Avg Fix Time' }}</div></div>
+          <div class="hero-stat"><div class="hero-stat-n">{{ $landing['stat3_value'] ?? 'All' }}</div><div class="hero-stat-l">{{ $landing['stat3_label'] ?? 'Brands' }}</div></div>
         </div>
       </div>
       {{-- HERO DEVICE VISUAL --}}
@@ -701,10 +707,10 @@ img{display:block;max-width:100%;}a{text-decoration:none;color:inherit;}
   <div class="container text-center">
     <div class="sec-eyebrow reveal">Why Choose Us</div>
     <h2 class="sec-h2 reveal">{{ $landing['why_title'] ?? 'The Difference' }}</h2>
-    <p class="sec-sub reveal d1">{{ $landing['why_subtitle'] ?? 'Trusted by thousands of customers for fast, reliable and transparent device repairs' }}</p>
+    <p class="sec-sub reveal d1">{{ $landing['why_subtitle'] ?? 'Trusted for 12+ years by thousands of customers in Tiruvannamalai for fast, reliable and transparent device repairs' }}</p>
     <div class="why-grid">
       @php $whyCards=[
-        ['background:rgba(37,99,235,.1)','M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z','Transparent Pricing','No hidden charges. You receive a clear quote before any work begins — pay only for what is agreed.'],
+        ['background:rgba(37,99,235,.1)','M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z','12+ Years of Trust','Serving Avur, Tiruvannamalai District since 2014. Thousands of happy customers trust us with their devices.'],
         ['background:rgba(245,158,11,.1)','M13 10V3L4 14h7v7l9-11h-7z','Same-Day Service','Most repairs completed within 30–60 minutes. Walk in, walk out with a working device.'],
         ['background:rgba(16,185,129,.1)','M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01','Live Tracking','Track your repair status in real-time. We notify you on WhatsApp and email.'],
         ['background:rgba(139,92,246,.1)','M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z','Genuine Parts','OEM-quality parts only. No compromises on quality or longevity of the repair.'],
@@ -842,7 +848,9 @@ img{display:block;max-width:100%;}a{text-decoration:none;color:inherit;}
           <a href="#services">Our Services</a>
           <a href="{{ route('track.landing') }}">Track Repair</a>
           <a href="#contact">Find Us</a>
-          <a href="/login">Admin Panel</a>
+          <a href="/screen-replacement">Screen Replacement {{ $cityName }}</a>
+          <a href="/battery-replacement">Battery Replacement {{ $cityName }}</a>
+          <a href="/iphone-repair">iPhone Repair {{ $cityName }}</a>
         </div>
       </div>
       <div>

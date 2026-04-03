@@ -99,6 +99,10 @@ class MenuSeeder extends Seeder
             ['name' => 'Menus', 'route' => '/menus', 'module' => 'settings'],
             ['name' => 'Activity Logs', 'route' => '/activity-logs', 'module' => 'settings'],
             ['name' => 'Service Types', 'route' => '/service-types', 'module' => 'settings'],
+            ['name' => 'Blog', 'route' => '/blog', 'module' => 'settings'],
+            ['name' => 'FAQs', 'route' => '/faqs', 'module' => 'settings'],
+            ['name' => 'SEO Pages', 'route' => '/seo-pages', 'module' => 'settings'],
+            ['name' => 'SEO Settings', 'route' => '/seo-settings', 'module' => 'settings'],
         ];
 
         foreach ($masterDataItems as $item) {

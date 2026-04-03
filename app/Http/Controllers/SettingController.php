@@ -895,5 +895,46 @@ class SettingController extends Controller
             return response()->json(['success' => false, 'message' => 'Import failed: ' . $e->getMessage()], 500);
         }
     }
+
+    // ─── SEO Settings ──────────────────────────────────────────────────────
+    public function seoSettings()
+    {
+        if (request()->ajax()) {
+            $keys = [
+                'seo_global_title_suffix', 'seo_global_description', 'seo_global_keywords',
+                'seo_google_analytics', 'seo_google_tag_manager', 'seo_google_verification',
+                'seo_bing_verification', 'seo_schema_business_type', 'seo_schema_price_range',
+                'seo_schema_opening_hours', 'seo_schema_geo_lat', 'seo_schema_geo_lng',
+                'seo_og_default_image', 'seo_twitter_handle',
+                'seo_robots_custom', 'seo_head_scripts', 'seo_body_scripts',
+            ];
+            $settings = [];
+            foreach ($keys as $key) {
+                $settings[$key] = Setting::getValue($key, '');
+            }
+            return response()->json($settings);
+        }
+        return view('modules.seo-settings.index');
+    }
+
+    public function updateSeoSettings(Request $request)
+    {
+        $keys = [
+            'seo_global_title_suffix', 'seo_global_description', 'seo_global_keywords',
+            'seo_google_analytics', 'seo_google_tag_manager', 'seo_google_verification',
+            'seo_bing_verification', 'seo_schema_business_type', 'seo_schema_price_range',
+            'seo_schema_opening_hours', 'seo_schema_geo_lat', 'seo_schema_geo_lng',
+            'seo_og_default_image', 'seo_twitter_handle',
+            'seo_robots_custom', 'seo_head_scripts', 'seo_body_scripts',
+        ];
+
+        foreach ($keys as $key) {
+            if ($request->has($key)) {
+                Setting::setValue($key, $request->input($key, ''));
+            }
+        }
+
+        return response()->json(['success' => true, 'message' => 'SEO settings updated']);
+    }
 }
 

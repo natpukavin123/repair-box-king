@@ -9,7 +9,7 @@ use App\Http\Controllers\{
     PoRequestController, UserController, SettingController, ReportController,
     PartController, RepairReturnController, RoleController, MenuController,
     CreditNoteController, SetupController, DevToolsController, HomeController,
-    ReturnController
+    ReturnController, BlogController, FaqController, SeoPageController
 };
 
 // ─── Setup Wizard (public — no auth needed) ────────────────────────────────
@@ -34,6 +34,21 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/sitemap.xml', [HomeController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [HomeController::class, 'robots'])->name('robots');
+
+// SEO landing pages
+Route::get('/screen-replacement', [HomeController::class, 'serviceLanding'])->defaults('slug', 'screen-replacement')->name('seo.screen');
+Route::get('/battery-replacement', [HomeController::class, 'serviceLanding'])->defaults('slug', 'battery-replacement')->name('seo.battery');
+Route::get('/iphone-repair', [HomeController::class, 'serviceLanding'])->defaults('slug', 'iphone-repair')->name('seo.iphone');
+
+// Public Blog
+Route::get('/blog', [HomeController::class, 'blogIndex'])->name('blog.public.index');
+Route::get('/blog/{slug}', [HomeController::class, 'blogShow'])->name('blog.public.show');
+
+// Public FAQ
+Route::get('/faq', [HomeController::class, 'faqPage'])->name('faq.public');
+
+// Dynamic SEO Pages (catch-all for dynamic slugs — must be LAST)
+Route::get('/page/{slug}', [HomeController::class, 'dynamicPage'])->name('page.public');
 
 // Repair tracking (public)
 Route::get('/track', [RepairController::class, 'trackingLanding'])->name('track.landing');
@@ -189,6 +204,26 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     // Import
     Route::post('import/validate', [SettingController::class, 'validateImport']);
     Route::post('import/confirm', [SettingController::class, 'confirmImport']);
+
+    // ─── SEO & Content Management ─────────────────────────────────────────
+    // Blog Posts
+    Route::resource('blog', BlogController::class)->except(['edit', 'create']);
+    Route::post('blog/{blog}/upload-image', [BlogController::class, 'uploadImage']);
+
+    // FAQs
+    Route::get('faqs/categories', [FaqController::class, 'categories'])->name('faqs.categories');
+    Route::post('faqs/categories', [FaqController::class, 'storeCategory'])->name('faqs.categories.store');
+    Route::put('faqs/categories/{faqCategory}', [FaqController::class, 'updateCategory'])->name('faqs.categories.update');
+    Route::delete('faqs/categories/{faqCategory}', [FaqController::class, 'destroyCategory'])->name('faqs.categories.destroy');
+    Route::resource('faqs', FaqController::class)->except(['edit', 'create', 'show']);
+
+    // SEO Pages (dynamic landing pages)
+    Route::resource('seo-pages', SeoPageController::class)->except(['edit', 'create']);
+    Route::post('seo-pages/{seoPage}/upload-image', [SeoPageController::class, 'uploadImage']);
+
+    // SEO Settings
+    Route::get('seo-settings', [SettingController::class, 'seoSettings'])->name('seo-settings.index');
+    Route::put('seo-settings', [SettingController::class, 'updateSeoSettings'])->name('seo-settings.update');
 
     // ─── Dev Tools (admin only) ────────────────────────────────────────────
     Route::prefix('dev-tools')->name('dev-tools.')->group(function () {
