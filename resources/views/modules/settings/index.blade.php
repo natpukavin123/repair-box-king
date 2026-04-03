@@ -1174,30 +1174,56 @@
                     </template>
                 </div>
 
-                {{-- Shop Logo --}}
+                {{-- Shop Logo & Favicon --}}
                 <div class="pt-5 border-t">
-                    <h4 class="text-md font-semibold mb-4">Shop Logo</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <h4 class="text-md font-semibold mb-4">Shop Logo &amp; Favicon</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                        {{-- Shop Logo --}}
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Upload Icon</label>
-                            <div class="flex items-center gap-4">
-                                <div class="flex-1">
-                                    <input type="file" @change="handleIconUpload" accept="image/*" class="form-input-custom">
-                                    <p class="text-xs text-gray-500 mt-1">Max 2MB. PNG, JPG, GIF, SVG</p>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Shop Logo</label>
+                            <p class="text-xs text-gray-500 mb-3">Shown in the top nav, invoices and receipts.</p>
+                            <input type="file" @change="handleIconUpload" accept="image/*" class="form-input-custom">
+                            <p class="text-xs text-gray-400 mt-1">Max 2MB &mdash; PNG, JPG, GIF, SVG</p>
+                            <div class="mt-3 flex items-center gap-3">
+                                <div x-show="previewIcon" class="w-20 h-20 border rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden">
+                                    <img :src="previewIcon" class="w-full h-full object-contain" alt="Logo preview">
+                                </div>
+                                <div x-show="!previewIcon && settings.shop_icon" class="w-20 h-20 border rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden">
+                                    <img :src="getIconUrl()" class="w-full h-full object-contain" alt="Shop Logo" x-on:error="$el.parentElement.style.display='none'">
+                                </div>
+                                <div x-show="!previewIcon && !settings.shop_icon" class="w-20 h-20 border-2 border-dashed rounded-lg bg-gray-50 flex items-center justify-center">
+                                    <svg class="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex items-center justify-center">
-                            <div x-show="previewIcon" class="w-24 h-24 border rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
-                                <img :src="previewIcon" class="w-full h-full object-contain" alt="Preview">
-                            </div>
-                            <div x-show="!previewIcon && settings.shop_icon" class="w-24 h-24 border rounded-lg overflow-hidden bg-gray-50 flex items-center justify-center">
-                                <img :src="getIconUrl()" class="w-full h-full object-contain" alt="Shop Icon" x-on:error="$el.parentElement.style.display='none'">
-                            </div>
-                            <div x-show="!previewIcon && !settings.shop_icon" class="w-24 h-24 border-2 border-dashed rounded-lg bg-gray-50 flex items-center justify-center">
-                                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+
+                        {{-- Favicon --}}
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Favicon</label>
+                            <p class="text-xs text-gray-500 mb-3">Shown in browser tabs and bookmarks. Best at 32×32 or 64×64 px.</p>
+                            <input type="file" @change="handleFaviconUpload" accept="image/png,image/x-icon,image/svg+xml,image/jpeg" class="form-input-custom">
+                            <p class="text-xs text-gray-400 mt-1">Max 512KB &mdash; PNG, ICO, SVG</p>
+                            <div class="mt-3 flex items-center gap-3">
+                                <div x-show="previewFavicon" class="w-12 h-12 border rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden">
+                                    <img :src="previewFavicon" class="w-full h-full object-contain" alt="Favicon preview">
+                                </div>
+                                <div x-show="!previewFavicon && settings.shop_favicon" class="w-12 h-12 border rounded-lg bg-gray-50 flex items-center justify-center overflow-hidden">
+                                    <img :src="getFaviconUrl()" class="w-full h-full object-contain" alt="Favicon" x-on:error="$el.parentElement.style.display='none'">
+                                </div>
+                                <div x-show="!previewFavicon && !settings.shop_favicon" class="w-12 h-12 border-2 border-dashed rounded-lg bg-gray-50 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9h6M9 12h6M9 15h4"/></svg>
+                                </div>
+                                <div x-show="settings.shop_favicon || previewFavicon" class="text-xs text-gray-500">
+                                    <p>Browser tab preview:</p>
+                                    <div class="mt-1 flex items-center gap-1.5 px-2 py-1 bg-gray-100 rounded-lg w-fit">
+                                        <img :src="previewFavicon || getFaviconUrl()" class="w-4 h-4 object-contain" alt="">
+                                        <span class="text-[11px] text-gray-600 truncate max-w-[80px]" x-text="settings.shop_name || 'RepairBox'"></span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
@@ -1907,7 +1933,7 @@
 <script>
 function settingsPage() {
     return {
-        tab: 'general', saving: false, iconFile: null, previewIcon: '',
+        tab: 'general', saving: false, iconFile: null, previewIcon: '', faviconFile: null, previewFavicon: '',
         settings: {}, settingKeys: ['shop_name','shop_address','shop_phone','shop_email','shop_slogan','shop_whatsapp','currency_symbol','invoice_prefix','repair_prefix','low_stock_threshold'],
         selectedNotifyTemplate: 'whatsapp_template_received',
         // Print settings state
@@ -2053,6 +2079,21 @@ function settingsPage() {
             // Construct the correct storage URL
             return RepairBox.imageUrl(icon);
         },
+        handleFaviconUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                this.faviconFile = file;
+                const reader = new FileReader();
+                reader.onload = (evt) => { this.previewFavicon = evt.target.result; };
+                reader.readAsDataURL(file);
+            }
+        },
+        getFaviconUrl() {
+            const fav = this.settings.shop_favicon;
+            if (!fav) return '';
+            if (fav.startsWith('http') || fav.startsWith('data:')) return fav;
+            return RepairBox.imageUrl(fav);
+        },
         handleIconUpload(e) {
             const file = e.target.files[0];
             if (file) {
@@ -2166,6 +2207,9 @@ function settingsPage() {
                 if (this.iconFile) {
                     formData.append('shop_icon', this.iconFile);
                 }
+                if (this.faviconFile) {
+                    formData.append('shop_favicon', this.faviconFile);
+                }
 
                 const response = await fetch('/admin/settings', {
                     method: 'POST',
@@ -2184,10 +2228,13 @@ function settingsPage() {
                 const r = await response.json();
                 this.saving = false;
                 this.iconFile = null;
+                this.faviconFile = null;
                 if (r.success !== false) {
                     RepairBox.toast('General settings saved', 'success');
                     this.previewIcon = '';
                     this.iconFile = null;
+                    this.previewFavicon = '';
+                    this.faviconFile = null;
                 } else {
                     RepairBox.toast(r.message || 'Error saving settings', 'error');
                 }
@@ -2200,6 +2247,8 @@ function settingsPage() {
         clearIconPreview() {
             this.previewIcon = '';
             this.iconFile = null;
+            this.previewFavicon = '';
+            this.faviconFile = null;
         },
         // ── Print Settings methods ──
         initPrintTab() {

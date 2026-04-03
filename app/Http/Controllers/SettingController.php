@@ -86,6 +86,7 @@ class SettingController extends Controller
                 'settings.ui_theme'           => 'nullable|string|in:atelier,graphite,solstice',
                 'settings.ui_motion'          => 'nullable|string|in:enhanced,reduced,none',
                 'shop_icon'                   => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'shop_favicon'                => 'nullable|image|mimes:png,jpg,jpeg,svg,ico|max:512',
             ]),
             'landing' => array_merge($base, [
                 'settings.*' => 'nullable|string|max:1000',
@@ -142,6 +143,16 @@ class SettingController extends Controller
 
             $path = $img->store($request->file('shop_icon'), 'shop');
             Setting::setValue('shop_icon', $path);
+        }
+
+        // Handle favicon upload (general section only)
+        if ($section === 'general' && $request->hasFile('shop_favicon')) {
+            $img = app(ImageService::class);
+            $oldFavicon = Setting::getValue('shop_favicon');
+            $img->delete($oldFavicon);
+
+            $path = $img->store($request->file('shop_favicon'), 'shop');
+            Setting::setValue('shop_favicon', $path);
         }
 
         return response()->json(['success' => true, 'message' => 'Settings updated']);

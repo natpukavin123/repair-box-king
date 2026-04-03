@@ -1,3 +1,0 @@
-# This file is served dynamically by Laravel.
-# See app/Http/Controllers/HomeController.php robots() method.
-# The Sitemap URL is automatically built from APP_URL in .env

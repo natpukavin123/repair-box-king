@@ -27,6 +27,12 @@
     <title>@yield('title', 'RepairBox') - Mobile Shop Management</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563eb">
+    @php $shopFavicon = \App\Models\Setting::getValue('shop_favicon', ''); @endphp
+    @if($shopFavicon)
+        <link rel="icon" href="{{ app(\App\Services\ImageService::class)->url($shopFavicon) }}" type="image/png">
+    @else
+        <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    @endif
     <script>window.__pwaPrompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__pwaPrompt=e;});</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
