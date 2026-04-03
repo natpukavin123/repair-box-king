@@ -1091,7 +1091,7 @@
                         </div>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <div x-data="brandDropdown(@json($brands), (v) => editForm.device_brand = v)" x-init="query = selected = editForm.device_brand" x-effect="filtered = query.trim() ? (brands || []).filter(b => b.toLowerCase().includes(query.toLowerCase())) : (brands || []).slice(); editForm.device_brand !== selected && (query = selected = editForm.device_brand)" @click.outside="open = false" class="relative">
+                            <div x-data="brandDropdown(brandList, (v) => editForm.device_brand = v)" x-effect="syncValue(editForm.device_brand)" @click.outside="open = false" class="relative">
                                 <label class="block text-sm font-semibold text-slate-700 mb-2">Device Brand <span class="text-red-500">*</span></label>
                                 <input type="text" x-model="query" @focus="open = true" @input="open = true; selected = query; updateValue(query)" @keydown.arrow-down.prevent="highlightNext()" @keydown.arrow-up.prevent="highlightPrev()" @keydown.enter.prevent="selectHighlighted()" @keydown.escape="open = false" class="form-input-custom w-full text-sm" placeholder="Type to search brands..." autocomplete="off">
                                 <div x-show="open && filtered.length > 0" x-cloak class="absolute z-50 mt-1 w-full max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg">
@@ -1149,6 +1149,9 @@
     </div>
 
     <script>
+    const brandList = @json($brands);
+    console.log(brandList,'brandList');
+
     function brandDropdown(brands, onChange) {
         return {
             open: false,
@@ -1156,7 +1159,20 @@
             selected: '',
             highlighted: -1,
             brands: brands,
-            filtered: brands ? brands.slice() : [],
+            filtered: [],
+            init() {
+                this.filtered = this.brands ? this.brands.slice() : [];
+                this.$watch('query', (val) => {
+                    const q = val.trim().toLowerCase();
+                    this.filtered = q ? this.brands.filter(b => b.toLowerCase().includes(q)) : this.brands.slice();
+                });
+            },
+            syncValue(val) {
+                if ((val || '') !== this.selected) {
+                    this.query = val || '';
+                    this.selected = val || '';
+                }
+            },
             pick(brand) {
                 this.query = brand;
                 this.selected = brand;
