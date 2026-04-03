@@ -117,12 +117,12 @@ class DatabaseSeeder extends Seeder
         ServiceType::create(['name' => 'Charging Port Repair', 'default_price' => 600, 'description' => 'Fix charging port issues']);
 
         // === RECHARGE PROVIDERS ===
-        RechargeProvider::create(['name' => 'Jio', 'provider_type' => 'mobile']);
-        RechargeProvider::create(['name' => 'Airtel', 'provider_type' => 'mobile']);
-        RechargeProvider::create(['name' => 'Vi (Vodafone Idea)', 'provider_type' => 'mobile']);
-        RechargeProvider::create(['name' => 'BSNL', 'provider_type' => 'mobile']);
-        RechargeProvider::create(['name' => 'Tata Play', 'provider_type' => 'dth']);
-        RechargeProvider::create(['name' => 'Airtel DTH', 'provider_type' => 'dth']);
+        RechargeProvider::create(['name' => 'Jio']);
+        RechargeProvider::create(['name' => 'Airtel']);
+        RechargeProvider::create(['name' => 'Vi (Vodafone Idea)']);
+        RechargeProvider::create(['name' => 'BSNL']);
+        RechargeProvider::create(['name' => 'Tata Play']);
+        RechargeProvider::create(['name' => 'Airtel DTH']);
 
         // === VENDORS ===
         $vendor1 = Vendor::create(['name' => 'QuickFix Repairs', 'phone' => '9876543210', 'address' => 'Shop 5, Tech Market, Delhi', 'specialization' => 'Motherboard repair']);

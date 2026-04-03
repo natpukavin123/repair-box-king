@@ -440,30 +440,50 @@
                         <svg class="w-4 h-4 inline mr-1 -mt-0.5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                         New Recharge
                     </h3>
-                    <button x-show="form.provider_id || form.recharge_amount || form.transaction_id" @click="resetForm()" class="text-xs text-red-400 hover:text-red-600">Clear</button>
+                    <button x-show="selProvider || form.recharge_amount || form.transaction_id" @click="resetForm()" class="text-xs text-red-400 hover:text-red-600">Clear</button>
                 </div>
 
                 <div class="rch-form-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain">
                     <div class="px-4 py-2 space-y-2">
                         <div>
-                            <label class="text-xs font-medium text-gray-600 mb-1 flex items-center justify-between">
-                                <span>Provider *</span>
-                                <button type="button" @click="showNewProvider = true" class="text-primary-600 hover:text-primary-800 text-xs font-semibold flex items-center gap-0.5">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                                    New
-                                </button>
-                            </label>
-                            <select x-model="form.provider_id" class="form-select-custom rch-form-input text-sm">
-                                <option value="">Select Provider</option>
-                                <template x-for="p in providers" :key="p.id">
-                                    <option :value="p.id" x-text="p.name"></option>
-                                </template>
-                            </select>
-                            <p x-show="providers.length === 0" class="text-[11px] text-gray-400 mt-1">No providers yet — click <strong>New</strong> to add one.</p>
+                            <label class="text-xs font-medium text-gray-600 mb-1 block">Provider *</label>
+                            <div class="relative" @click.away="provOpen = false">
+                                <input x-model="provSearch" @focus="if(!selProvider) filterProviders(); else { clearProvider(); filterProviders(); }" @input.debounce.200ms="if(selProvider) clearProvider(); filterProviders();" type="text"
+                                    class="form-input-custom rch-form-input text-sm" :class="selProvider ? 'text-primary-700 font-medium' : ''" placeholder="Search or type provider name...">
+                                <div x-show="provOpen && provFiltered.length > 0" x-cloak class="absolute left-0 right-0 mt-1 overflow-hidden rounded-lg border bg-white shadow-lg" style="z-index:160;">
+                                    <div class="max-h-40 overflow-y-auto">
+                                        <template x-for="p in provFiltered" :key="p.id">
+                                            <button @click="selectProvider(p)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b last:border-0">
+                                                <span class="font-medium text-gray-800" x-text="p.name"></span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div x-show="provOpen && provFiltered.length === 0 && provSearch.trim().length > 0" x-cloak
+                                    class="absolute left-0 right-0 mt-1 rounded-lg border bg-white shadow-lg p-2" style="z-index:160;">
+                                    <button @click="createAndSelectProvider()" class="w-full text-left px-3 py-2 hover:bg-primary-50 text-sm rounded-lg text-primary-600 font-medium flex items-center gap-1.5">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                        Create "<span x-text="provSearch.trim()"></span>"
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         <div>
                             <label class="text-xs font-medium text-gray-600 mb-1 block">Mobile Number *</label>
-                            <input x-model="form.mobile_number" type="text" class="form-input-custom rch-form-input text-sm" placeholder="Enter mobile number">
+                            <div class="relative" @click.away="mobileDropOpen = false">
+                                <input x-model="form.mobile_number" @focus="if(!mobileMatched) searchByMobile()" @input.debounce.300ms="if(mobileMatched){ mobileMatched=false; selCust=null; form.customer_id=null; } searchByMobile();" type="text"
+                                    class="form-input-custom rch-form-input text-sm" :class="mobileMatched ? 'text-emerald-700 font-medium' : ''" placeholder="Enter mobile number">
+                                <div x-show="mobileDropOpen && mobileResults.length > 0" x-cloak class="absolute left-0 right-0 mt-1 overflow-hidden rounded-lg border bg-white shadow-lg" style="z-index:160;">
+                                    <div class="max-h-40 overflow-y-auto">
+                                        <template x-for="c in mobileResults" :key="c.id">
+                                            <button @click="selectCustomerFromMobile(c)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b last:border-0">
+                                                <div class="font-medium text-gray-800" x-text="c.name"></div>
+                                                <div class="text-xs text-gray-400" x-text="c.mobile_number || 'No mobile'"></div>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div>
                             <label class="text-xs font-medium text-gray-600 mb-1 block">Amount *</label>
@@ -560,39 +580,6 @@
         </div>
     </div>
 
-    {{-- NEW PROVIDER MODAL --}}
-    <div x-show="showNewProvider" x-cloak class="modal-overlay" @click.self="showNewProvider = false" x-transition>
-        <div class="modal-container max-w-md" @click.stop>
-            <div class="modal-header">
-                <h3 class="text-lg font-semibold">New Recharge Provider</h3>
-                <button @click="showNewProvider = false" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
-            </div>
-            <div class="modal-body space-y-3">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-                    <input x-model="newProviderForm.name" type="text" class="form-input-custom" placeholder="e.g. Airtel, Jio, Vi">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Provider Type *</label>
-                    <select x-model="newProviderForm.provider_type" class="form-select-custom">
-                        <option value="mobile">Mobile</option>
-                        <option value="dth">DTH</option>
-                        <option value="broadband">Broadband</option>
-                        <option value="electricity">Electricity</option>
-                        <option value="other">Other</option>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button @click="showNewProvider = false" class="btn-secondary">Cancel</button>
-                <button @click="saveNewProvider()" class="btn-primary" :disabled="newProviderSaving">
-                    <span x-show="newProviderSaving" class="spinner mr-1"></span>
-                    <span x-text="newProviderSaving ? 'Saving...' : 'Create Provider'"></span>
-                </button>
-            </div>
-        </div>
-    </div>
-
     {{-- ADD CUSTOMER MODAL --}}
     <div x-show="showAddCust" x-cloak class="modal-overlay">
         <div class="modal-container max-w-md" @click.stop>
@@ -644,7 +631,9 @@ function rechargesPage() {
         showAddCust: false, newCust: {name: '', mobile_number: '', email: '', address: ''},
         customerFormTried: false, customerSaving: false, customerSubmitError: '',
         tableSearch: '', dateFrom: '', dateTo: '', filterStatus: '', filterProvider: '',
-        showNewProvider: false, newProviderForm: { name: '', provider_type: 'mobile' }, newProviderSaving: false,
+        provSearch: '', provFiltered: [], provOpen: false, selProvider: null,
+        mobileMatchMsg: null,
+        mobileDropOpen: false, mobileResults: [], mobileMatched: false,
         viewItem: null,
         form: { customer_id: null, provider_id: '', mobile_number: '', recharge_amount: '', transaction_id: '', payment_method: 'cash' },
         pagination: { currentPage: 1, lastPage: 1, from: 0, to: 0, total: 0 },
@@ -718,7 +707,22 @@ function rechargesPage() {
         },
 
         resetForm() {
-            this.form = { customer_id: this.selCust?.id || null, provider_id: '', mobile_number: this.selCust?.mobile_number || '', recharge_amount: '', transaction_id: '', payment_method: 'cash' };
+            this.selCust = null;
+            this.form.customer_id      = null;
+            this.form.provider_id      = '';
+            this.form.mobile_number    = '';
+            this.form.recharge_amount  = '';
+            this.form.transaction_id   = '';
+            this.form.payment_method   = 'cash';
+            this.selProvider = null;
+            this.provSearch = '';
+            this.provFiltered = [];
+            this.provOpen = false;
+            this.mobileMatchMsg = null;
+            this.mobileMatched = false;
+            this.mobileDropOpen = false;
+            this.mobileResults = [];
+            this.custSearch = '';
         },
 
         updateUrl() {
@@ -806,25 +810,72 @@ function rechargesPage() {
             this.saving = false;
             if (r.success !== false) {
                 RepairBox.toast('Recharge recorded successfully', 'success');
-                this.resetForm();
-                await this.loadHistory(1);
+                this.selCust = null;
+                this.form.customer_id      = null;
+                this.form.provider_id      = '';
+                this.form.mobile_number    = '';
+                this.form.recharge_amount  = '';
+                this.form.transaction_id   = '';
+                this.form.payment_method   = 'cash';
+                this.selProvider = null;
+                this.provSearch = '';
+                this.provOpen = false;
+                this.mobileMatchMsg = null;
+                this.mobileMatched = false;
+                this.mobileDropOpen = false;
+                this.mobileResults = [];
+                this.custSearch = '';
+                this.$nextTick(() => {
+                    this.loadHistory(1);
+                });
             }
         },
 
-        async saveNewProvider() {
-            if (!this.newProviderForm.name.trim()) { RepairBox.toast('Name is required', 'error'); return; }
-            this.newProviderSaving = true;
-            const r = await RepairBox.ajax('/admin/recharge-providers', 'POST', {
-                name: this.newProviderForm.name.trim(),
-                provider_type: this.newProviderForm.provider_type || 'mobile',
-            });
-            this.newProviderSaving = false;
+        async searchByMobile() {
+            const num = (this.form.mobile_number || '').replace(/\D/g, '');
+            if (num.length < 3) { this.mobileResults = []; this.mobileDropOpen = false; return; }
+            const r = await RepairBox.ajax('/admin/customers-search?q=' + encodeURIComponent(num));
+            this.mobileResults = Array.isArray(r.data) ? r.data : [];
+            this.mobileDropOpen = this.mobileResults.length > 0;
+        },
+
+        selectCustomerFromMobile(c) {
+            this.selectCustomer(c);
+            this.form.mobile_number = c.mobile_number || '';
+            this.mobileMatched = true;
+            this.mobileDropOpen = false;
+            this.mobileResults = [];
+        },
+
+        filterProviders() {
+            const q = this.provSearch.trim().toLowerCase();
+            if (!q) { this.provFiltered = this.providers.slice(0, 20); }
+            else { this.provFiltered = this.providers.filter(p => p.name.toLowerCase().includes(q)); }
+            this.provOpen = true;
+        },
+
+        selectProvider(p) {
+            this.selProvider = p;
+            this.form.provider_id = p.id;
+            this.provSearch = p.name;
+            this.provOpen = false;
+        },
+
+        clearProvider() {
+            this.selProvider = null;
+            this.form.provider_id = '';
+            this.provSearch = '';
+            this.provOpen = false;
+        },
+
+        async createAndSelectProvider() {
+            const name = this.provSearch.trim();
+            if (!name) return;
+            const r = await RepairBox.ajax('/admin/recharge-providers', 'POST', { name });
             if (r.success !== false && r.data) {
-                RepairBox.toast('Provider created', 'success');
                 this.providers.push(r.data);
-                this.form.provider_id = r.data.id;
-                this.showNewProvider = false;
-                this.newProviderForm = { name: '', provider_type: 'mobile' };
+                this.selectProvider(r.data);
+                RepairBox.toast('Provider created', 'success');
             }
         },
 

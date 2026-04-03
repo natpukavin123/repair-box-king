@@ -633,7 +633,6 @@
                                     <tr class="bg-gray-50">
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">#</th>
                                         <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Name</th>
-                                        <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Type</th>
                                         <th class="px-3 py-2 text-center text-[11px] font-semibold text-gray-600 uppercase">Actions</th>
                                     </tr>
                                 </thead>
@@ -649,7 +648,6 @@
                                                     <span x-text="item.name"></span>
                                                 </div>
                                             </td>
-                                            <td class="px-3 py-2 text-sm" x-text="item.provider_type"></td>
                                             <td class="px-3 py-2 text-center" @click.stop>
                                                 <button @click="openMdEdit(item)" class="p-1.5 rounded-lg text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition" title="Edit">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -1089,15 +1087,6 @@
                         <div class="space-y-4">
                             <div><label class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
                                 <input x-model="mdForm.name" type="text" class="form-input-custom" placeholder="Provider name"></div>
-                            <div><label class="block text-sm font-medium text-gray-700 mb-1">Type *</label>
-                                <select x-model="mdForm.provider_type" class="form-select-custom">
-                                    <option value="">Select</option>
-                                    <option value="mobile">Mobile</option>
-                                    <option value="dth">DTH</option>
-                                    <option value="data_card">Data Card</option>
-                                    <option value="electricity">Electricity</option>
-                                </select>
-                            </div>
                             {{-- Image Upload --}}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Provider Image <span class="text-gray-400 font-normal">(optional)</span></label>
@@ -2164,7 +2153,7 @@ function settingsPage() {
             { type: 'products', label: 'Products', columns: ['name', 'sku', 'barcode', 'category', 'subcategory', 'brand', 'purchase_price', 'mrp', 'selling_price', 'description', 'opening_stock', 'image_url'] },
             { type: 'parts', label: 'Parts', columns: ['name', 'sku', 'cost_price', 'selling_price'] },
             { type: 'vendors', label: 'Vendors', columns: ['name', 'phone', 'address', 'specialization'] },
-            { type: 'recharge_providers', label: 'Recharge Providers', columns: ['name', 'provider_type'] },
+            { type: 'recharge_providers', label: 'Recharge Providers', columns: ['name'] },
             { type: 'service_types', label: 'Services', columns: ['name', 'default_price', 'description'] },
         ],
         appearanceThemes: [
@@ -2726,7 +2715,7 @@ function masterDataPanel() {
                 case 'products': return { name: '', sku: '', category_id: '', subcategory_id: '', brand_id: '', purchase_price: '', mrp: '', selling_price: '', description: '', opening_stock: '' };
                 case 'customers': return { name: '', mobile_number: '', email: '', address: '' };
                 case 'inventory': return { product_id: '', adjustment_type: 'addition', quantity: '', reason: '' };
-                case 'recharge-providers': return { name: '', provider_type: '' };
+                case 'recharge-providers': return { name: '' };
                 case 'services': return { name: '', default_price: '', description: '', quick_fills: [] };
                 case 'users': return { name: '', email: '', password: '', password_confirmation: '', role_id: '', status: 'active' };
                 case 'roles': return { name: '', description: '' };

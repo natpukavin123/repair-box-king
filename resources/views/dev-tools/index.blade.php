@@ -42,6 +42,19 @@
             </button>
         </div>
 
+        {{-- Reset Module Transactions --}}
+        <div style="background: rgba(168,85,247,0.07); border:1px solid rgba(168,85,247,0.25); border-radius:14px; padding:1.5rem;">
+            <div style="font-size:1.5rem; margin-bottom:0.5rem;">🧹</div>
+            <h3 style="font-size:1rem; font-weight:600; color:#d8b4fe; margin-bottom:0.4rem;">Reset Module Transactions</h3>
+            <p style="font-size:0.825rem; color:#6b7280; line-height:1.5; margin-bottom:1.25rem;">
+                Clears only <strong style="color:#d8b4fe;">transactional records</strong> — Sales, Repairs, Recharges, Expenses, PO/Purchases, Returns & Credit Notes.<br>
+                <strong style="color:#9ca3af;">Master data (customers, products, brands, categories, etc.) is kept intact.</strong>
+            </p>
+            <button class="dev-btn dev-btn-purple" onclick="runAction('reset-modules', this)">
+                🧹 Reset Module Data
+            </button>
+        </div>
+
         {{-- Seed Demo Data --}}
         <div style="background: rgba(16,185,129,0.07); border:1px solid rgba(16,185,129,0.25); border-radius:14px; padding:1.5rem;">
             <div style="font-size:1.5rem; margin-bottom:0.5rem;">🌱</div>
@@ -54,7 +67,8 @@
                 🌱 Seed Demo Data
             </button>
         </div>
-    </div>
+
+    </div>{{-- /Action Cards grid --}}
 
     {{-- Reset + Seed Combined --}}
     <div style="background: rgba(245,158,11,0.07); border:1px solid rgba(245,158,11,0.25); border-radius:14px; padding:1.5rem; margin-bottom:1.5rem;">
@@ -108,15 +122,18 @@
 .dev-btn-success:hover:not(:disabled) { background: rgba(16,185,129,0.35); }
 .dev-btn-warning { background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.4); }
 .dev-btn-warning:hover:not(:disabled) { background: rgba(245,158,11,0.35); }
+.dev-btn-purple  { background: rgba(168,85,247,0.2); color: #d8b4fe; border: 1px solid rgba(168,85,247,0.4); }
+.dev-btn-purple:hover:not(:disabled)  { background: rgba(168,85,247,0.35); }
 </style>
 @endsection
 
 @push('scripts')
 <script>
 const actionLabels = {
-    reset:       ['⚠️ Reset All Data',  '⏳ Resetting...'],
-    seed:        ['🌱 Seed Demo Data',   '⏳ Seeding...'],
-    'reset-seed':['⚡ Reset + Seed Demo','⏳ Running...'],
+    reset:           ['⚠️ Reset All Data',       '⏳ Resetting...'],
+    'reset-modules': ['🧹 Reset Module Data',    '⏳ Clearing...'],
+    seed:            ['🌱 Seed Demo Data',        '⏳ Seeding...'],
+    'reset-seed':    ['⚡ Reset + Seed Demo',     '⏳ Running...'],
 };
 
 async function runAction(action, btn) {

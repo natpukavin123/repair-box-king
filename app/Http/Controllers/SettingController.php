@@ -354,14 +354,14 @@ class SettingController extends Controller
 
     public function storeRechargeProvider(Request $request)
     {
-        $data = $request->validate(['name' => 'required|string|max:150', 'provider_type' => 'required|string|max:50']);
+        $data = $request->validate(['name' => 'required|string|max:150']);
         $rp = RechargeProvider::create($data);
         return response()->json(['success' => true, 'data' => $rp]);
     }
 
     public function updateRechargeProvider(Request $request, RechargeProvider $rechargeProvider)
     {
-        $data = $request->validate(['name' => 'required|string|max:150', 'provider_type' => 'required|string|max:50']);
+        $data = $request->validate(['name' => 'required|string|max:150']);
         $rechargeProvider->update($data);
         return response()->json(['success' => true, 'data' => $rechargeProvider]);
     }
@@ -629,9 +629,9 @@ class SettingController extends Controller
             'recharge_providers' => [
                 'model' => RechargeProvider::class,
                 'label' => 'Recharge Providers',
-                'columns' => ['name', 'provider_type'],
+                'columns' => ['name'],
                 'unique_key' => 'name',
-                'rules' => ['name' => 'required|string|max:150', 'provider_type' => 'required|string|max:50'],
+                'rules' => ['name' => 'required|string|max:150'],
             ],
             'service_types' => [
                 'model' => ServiceType::class,

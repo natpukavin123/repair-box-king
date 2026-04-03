@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class RechargeProvider extends Model
 {
-    protected $fillable = ['name', 'provider_type', 'status', 'image', 'thumbnail'];
+    protected $fillable = ['name', 'status', 'image', 'thumbnail'];
 
     public function recharges()
     {

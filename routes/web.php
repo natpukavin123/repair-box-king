@@ -279,8 +279,9 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     // ─── Dev Tools (admin only) ────────────────────────────────────────────
     Route::prefix('dev-tools')->name('dev-tools.')->group(function () {
         Route::get('/',           [DevToolsController::class, 'index'])->name('index');
-        Route::post('/reset',     [DevToolsController::class, 'resetData'])->name('reset');
-        Route::post('/seed',      [DevToolsController::class, 'seedDemo'])->name('seed');
-        Route::post('/reset-seed',[DevToolsController::class, 'resetAndSeed'])->name('reset-seed');
+        Route::post('/reset',         [DevToolsController::class, 'resetData'])->name('reset');
+        Route::post('/reset-modules', [DevToolsController::class, 'resetModules'])->name('reset-modules');
+        Route::post('/seed',          [DevToolsController::class, 'seedDemo'])->name('seed');
+        Route::post('/reset-seed',    [DevToolsController::class, 'resetAndSeed'])->name('reset-seed');
     });
 });

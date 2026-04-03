@@ -16,6 +16,82 @@ class DevToolsController extends Controller
     }
 
     /**
+     * Truncate ONLY transactional module data.
+     * Preserves: master data (customers, vendors, products, parts, brands,
+     *            categories, service_types, etc.), users & settings.
+     */
+    public function resetModules(Request $request)
+    {
+        $log = [];
+
+        $modules = [
+            'Sales' => [
+                'ledger_transactions',
+                'invoice_payments',
+                'invoice_items',
+                'invoices',
+            ],
+            'Repair' => [
+                'repair_payments',
+                'repair_parts',
+                'repair_services',
+                'repair_status_histories',
+                'repair_returns',
+                'repairs',
+            ],
+            'Recharge' => [
+                'recharges',
+            ],
+            'Expenses' => [
+                'expenses',
+            ],
+            'PO / Purchases' => [
+                'purchase_items',
+                'purchases',
+                'po_requests',
+            ],
+            'Returns & Credit Notes' => [
+                'credit_note_refunds',
+                'credit_note_items',
+                'credit_notes',
+                'customer_returns',
+            ],
+            'Notifications & Activity' => [
+                'notifications',
+                'activity_logs',
+                'reminders',
+            ],
+        ];
+
+        try {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+            foreach ($modules as $moduleName => $tables) {
+                $log[] = ['status' => 'info', 'msg' => "── {$moduleName} ──"];
+                foreach ($tables as $table) {
+                    if (Schema::hasTable($table)) {
+                        DB::table($table)->truncate();
+                        $log[] = ['status' => 'success', 'msg' => "Cleared: {$table}"];
+                    } else {
+                        $log[] = ['status' => 'warning', 'msg' => "Skipped (not found): {$table}"];
+                    }
+                }
+            }
+
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+            $log[] = ['status' => 'success', 'msg' => '✅ All module transactions cleared. Master data (customers, products, brands, etc.) preserved.'];
+
+            return response()->json(['success' => true, 'log' => $log]);
+
+        } catch (\Throwable $e) {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            $log[] = ['status' => 'error', 'msg' => 'Error: ' . $e->getMessage()];
+            return response()->json(['success' => false, 'log' => $log], 500);
+        }
+    }
+
+    /**
      * Truncate ALL transactional and master data tables.
      * Preserves: users, roles, permissions, settings, email_templates.
      */
