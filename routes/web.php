@@ -35,12 +35,35 @@ Route::get('/deploy/{secret}', function (string $secret) {
     if (!hash_equals(config('app.deploy_secret'), $secret)) {
         abort(403);
     }
-    $output = [];
-    $code = 0;
-    exec('cd ' . base_path() . ' && git pull 2>&1', $output, $code);
+
+    $basePath = base_path();
+    $log = [];
+
+    $commands = [
+        "cd {$basePath} && git pull 2>&1",
+        "cd {$basePath} && php artisan migrate --force 2>&1",
+        "cd {$basePath} && php artisan config:cache 2>&1",
+        "cd {$basePath} && php artisan route:cache 2>&1",
+        "cd {$basePath} && php artisan view:cache 2>&1",
+    ];
+
+    foreach ($commands as $cmd) {
+        $output = [];
+        $code = 0;
+        exec($cmd, $output, $code);
+        $log[] = [
+            'cmd'     => explode(' && ', $cmd)[1] ?? $cmd,
+            'output'  => implode("\n", $output),
+            'success' => $code === 0,
+        ];
+        if ($code !== 0) break;
+    }
+
+    $allOk = collect($log)->every('success');
+
     return response()->json([
-        'success' => $code === 0,
-        'output'  => implode("\n", $output),
+        'success' => $allOk,
+        'log'     => $log,
     ]);
 })->name('deploy');
 
