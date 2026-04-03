@@ -30,6 +30,20 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// ─── Deploy webhook ─────────────────────────────────────────────────────────
+Route::get('/deploy/{secret}', function (string $secret) {
+    if (!hash_equals(config('app.deploy_secret'), $secret)) {
+        abort(403);
+    }
+    $output = [];
+    $code = 0;
+    exec('cd ' . base_path() . ' && git pull 2>&1', $output, $code);
+    return response()->json([
+        'success' => $code === 0,
+        'output'  => implode("\n", $output),
+    ]);
+})->name('deploy');
+
 // ─── Public pages ───────────────────────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/sitemap.xml', [HomeController::class, 'sitemap'])->name('sitemap');
