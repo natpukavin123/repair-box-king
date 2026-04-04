@@ -1598,8 +1598,14 @@
                 <div class="card-body space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Map Embed URL</label>
-                        <input x-model="landing.map_embed" type="url" class="form-input-custom" placeholder="e.g. https://www.google.com/maps/embed?pb=...">
-                        <p class="text-xs text-gray-400 mt-1">Paste a Google Maps embed URL. If empty, the map will auto-generate from your shop address.</p>
+                        <input x-model="landing.map_embed" type="text" class="form-input-custom" placeholder="e.g. https://www.google.com/maps/embed?pb=..."
+                            @paste.prevent="
+                                let txt = $event.clipboardData.getData('text').trim();
+                                let idx = txt.indexOf('src=');
+                                if (idx !== -1) { let q = txt.charAt(idx+4); let end = txt.indexOf(q, idx+5); if (end !== -1) txt = txt.substring(idx+5, end); }
+                                landing.map_embed = txt;
+                            ">
+                        <p class="text-xs text-gray-400 mt-1">Paste a Google Maps embed URL or full iframe code. If empty, the map will auto-generate from your shop address.</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Map Zoom Level</label>

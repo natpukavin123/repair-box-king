@@ -799,7 +799,11 @@ img{display:block;max-width:100%;}a{text-decoration:none;color:inherit;}
       </div>
       <div class="map-wrap reveal-r">
         @if(!empty($landing['map_embed']))
-        <iframe src="{{ $landing['map_embed'] }}" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="{{ $shopName }} Location"></iframe>
+        @php
+          $mapUrl = $landing['map_embed'];
+          if (preg_match('/src=["\']([^"\']+)["\']/', $mapUrl, $m)) { $mapUrl = $m[1]; }
+        @endphp
+        <iframe src="{{ $mapUrl }}" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="{{ $shopName }} Location"></iframe>
         @elseif($shopAddress)
         @php $mapZoom=!empty($landing['map_zoom'])?(int)$landing['map_zoom']:15; @endphp
         <iframe src="https://maps.google.com/maps?q={{ urlencode($shopAddress) }}&output=embed&z={{ $mapZoom }}" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="{{ $shopName }} Location"></iframe>

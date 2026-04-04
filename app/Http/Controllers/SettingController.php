@@ -39,6 +39,7 @@ class SettingController extends Controller
                 'why_title', 'why_subtitle',
                 'contact_title', 'contact_subtitle',
                 'cta_title', 'cta_subtitle',
+                'map_embed', 'map_zoom',
             ],
             'notifications' => [
                 'notify_email_received', 'notify_email_completed',
