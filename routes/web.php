@@ -140,6 +140,8 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::resource('invoices', InvoiceController::class)->except(['create', 'edit', 'update', 'destroy']);
     Route::post('invoices/{invoice}/pay', [InvoiceController::class, 'pay'])->name('invoices.pay');
     Route::get('invoices/{invoice}/print', [InvoiceController::class, 'print'])->name('invoices.print');
+    Route::get('customer-recharges', [InvoiceController::class, 'customerRecharges']);
+    Route::get('customer-repairs', [InvoiceController::class, 'customerRepairs']);
 
     // Repairs
     Route::resource('repairs', RepairController::class)->except(['edit', 'destroy']);
@@ -192,6 +194,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('po', [PoRequestController::class, 'index'])->name('po.index');
     Route::post('po', [PoRequestController::class, 'store']);
     Route::put('po/{poRequest}/status', [PoRequestController::class, 'updateStatus']);
+    Route::put('po/{poRequest}/toggle-item', [PoRequestController::class, 'toggleItem']);
 
     // Users
     Route::resource('users', UserController::class)->except(['edit']);

@@ -59,11 +59,15 @@
         'mrp'=>(float)($i->mrp ?? $i->price),
         'rate'=>(float)$i->price,
         'total'=>(float)$i->price*(int)$i->quantity,
+        'is_linked'=>(bool)$i->is_linked,
+        'item_type'=>$i->item_type,
     ]);
+    $regularItems = $lineItems->filter(fn($i) => !$i['is_linked']);
+    $linkedItems  = $lineItems->filter(fn($i) => $i['is_linked']);
     $subTotal   = $lineItems->sum('total');
     $discount   = (float)($invoice->discount ?? 0);
     $grandTotal = $subTotal - $discount;
-    $totalQty   = $lineItems->sum('qty');
+    $totalQty   = $regularItems->sum('qty');
     $paidAmount = $invoice->payments->sum('amount');
     $balanceDue = max(0, $grandTotal - $paidAmount);
     $payStatus  = $invoice->payment_status ?? 'unpaid';
@@ -302,9 +306,10 @@ table.sum-tbl .row-full td{color:#000;font-weight:900;text-align:center;border-b
                         @foreach($lineItems as $idx => $item)
                         <tr>
                             <td class="tc">{{ $idx+1 }}</td>
-                            <td>{{ $item['name'] }}@if($item['serial'])<div class="serial-sub"><span data-en="S/N" data-ta="வ.எண்">{{ $defaultLang === 'ta' ? 'வ.எண்' : 'S/N' }}</span>: {{ $item['serial'] }}</div>@endif</td>
+                            <td>{{ $item['name'] }}@if($item['serial'])<div class="serial-sub"><span data-en="S/N" data-ta="வ.எண்">{{ $defaultLang === 'ta' ? 'வ.எண்' : 'S/N' }}</span>: {{ $item['serial'] }}</div>@endif
+                            </td>
                             <td class="tc">{{ $item['qty'] }}</td>
-                            <td class="tr" style="color:#000;font-weight:500;">@if($item['mrp'] > $item['rate']){{ number_format($item['mrp'],2) }}@else&mdash;@endif</td>
+                            <td class="tr" style="color:#000;font-weight:500;">@if(!$item['is_linked'] && $item['mrp'] > $item['rate']){{ number_format($item['mrp'],2) }}@else&mdash;@endif</td>
                             <td class="tr" style="font-weight:600;">{{ number_format($item['rate'],2) }}</td>
                             <td class="tr" style="font-weight:600;">{{ number_format($item['total'],2) }}</td>
                         </tr>

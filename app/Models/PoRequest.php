@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class PoRequest extends Model
 {
     protected $fillable = [
+        'order_type',
         'customer_id',
         'customer_name',
         'customer_phone',
@@ -19,6 +20,7 @@ class PoRequest extends Model
 
     protected $casts = [
         'required_by' => 'date',
+        'requested_items' => 'array',
     ];
 
     public function customer()

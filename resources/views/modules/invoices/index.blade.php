@@ -22,6 +22,12 @@
 <div x-data="invoicesPage()" x-init="load()" class="workspace-screen invoices-workspace">
 
     <x-ui.action-bar title="Invoice Ledger" description="Billing, payment collection, and invoice review stay in the same contained workspace.">
+        <a href="/admin/dashboard" class="btn-secondary inline-flex w-full items-center justify-center gap-1.5 sm:w-auto">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Back
+        </a>
         <a href="/admin/pos" class="btn-primary inline-flex w-full items-center justify-center gap-1.5 sm:w-auto">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Invoice;
+use App\Models\Recharge;
+use App\Models\Repair;
 use App\Http\Requests\InvoiceRequest;
 use App\Services\InvoiceService;
 use Illuminate\Http\Request;
@@ -77,5 +79,65 @@ class InvoiceController extends Controller
     {
         $invoice->load('items', 'payments', 'customer', 'creator');
         return view('modules.invoices.print', compact('invoice'));
+    }
+
+    public function customerRecharges(Request $request)
+    {
+        $customerId = $request->input('customer_id');
+        $mobile     = $request->input('mobile');
+
+        if (!$customerId && !$mobile) return response()->json(['success' => true, 'data' => []]);
+
+        $recharges = Recharge::with('provider')
+            ->where('status', 'success')
+            ->when($customerId, fn($q) => $q->where('customer_id', $customerId))
+            ->when($mobile, fn($q, $m) => $q->where('mobile_number', 'like', "%{$m}%"))
+            ->latest()
+            ->limit(50)
+            ->get()
+            ->map(fn($r) => [
+                'id'          => $r->id,
+                'mobile'      => $r->mobile_number,
+                'label'       => ($r->provider?->name ?? 'Recharge') . ' — ' . $r->mobile_number,
+                'description' => ($r->plan_name ?: 'Recharge') . ' · ₹' . number_format($r->recharge_amount, 2),
+                'amount'      => (float) $r->recharge_amount,
+                'date'        => $r->created_at->format('d M Y'),
+            ]);
+
+        return response()->json(['success' => true, 'data' => $recharges]);
+    }
+
+    public function customerRepairs(Request $request)
+    {
+        $customerId = $request->input('customer_id');
+        $search     = $request->input('search');
+
+        if (!$customerId && !$search) return response()->json(['success' => true, 'data' => []]);
+
+        $repairs = Repair::where(function ($q) use ($customerId, $search) {
+                if ($customerId) $q->where('customer_id', $customerId);
+                if ($search) {
+                    $q->where(function ($sq) use ($search) {
+                        $sq->where('ticket_number', 'like', "%{$search}%")
+                           ->orWhere('device_brand', 'like', "%{$search}%")
+                           ->orWhere('device_model', 'like', "%{$search}%")
+                           ->orWhere('imei', 'like', "%{$search}%");
+                    });
+                }
+            })
+            ->whereNotIn('status', ['cancelled'])
+            ->latest()
+            ->limit(50)
+            ->get()
+            ->map(fn($r) => [
+                'id'          => $r->id,
+                'label'       => $r->ticket_number . ' — ' . $r->device_brand . ' ' . $r->device_model,
+                'description' => $r->problem_description,
+                'amount'      => (float) ($r->service_charge ?? $r->estimated_cost ?? 0),
+                'status'      => $r->status,
+                'date'        => $r->created_at->format('d M Y'),
+            ]);
+
+        return response()->json(['success' => true, 'data' => $repairs]);
     }
 }

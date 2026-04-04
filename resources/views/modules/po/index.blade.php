@@ -232,8 +232,35 @@
                 <input x-model="filters.date_to" @change="page=1; load()" type="date"
                     class="po-filter-control text-sm pl-3 pr-2 rounded-lg border border-gray-300 bg-white shadow-sm hover:shadow transition-all cursor-pointer" title="To date">
 
+                {{-- Order Type filter --}}
+                <div class="relative" x-data="{ typeOpen: false }" @click.away="typeOpen = false">
+                    <button type="button" @click="typeOpen = !typeOpen"
+                        :class="filters.order_type ? 'border-primary-400 bg-primary-50 text-primary-700' : 'border-gray-300 bg-white text-gray-700'"
+                        class="po-filter-control flex items-center gap-1.5 text-sm pl-3 pr-2 rounded-lg border shadow-sm hover:shadow transition-all cursor-pointer">
+                        <svg class="w-4 h-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                        <span x-text="filters.order_type === 'customer' ? 'Customer' : (filters.order_type === 'store' ? 'Store' : 'All Types')"></span>
+                        <svg class="w-3 h-3 ml-0.5 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div x-show="typeOpen" x-cloak x-transition.origin.top.left
+                        class="absolute top-full left-0 mt-1 w-44 z-50 border border-gray-200 bg-white shadow-xl rounded-xl overflow-hidden">
+                        <button type="button" @click="filters.order_type = ''; page=1; load(); typeOpen = false"
+                            class="flex w-full items-center px-3.5 py-2.5 text-left text-sm transition-colors"
+                            :class="!filters.order_type ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-50'">All Types</button>
+                        <button type="button" @click="filters.order_type = 'customer'; page=1; load(); typeOpen = false"
+                            class="flex w-full items-center gap-2 px-3.5 py-2.5 text-left text-sm transition-colors"
+                            :class="filters.order_type === 'customer' ? 'bg-blue-50 text-blue-700' : 'text-slate-700 hover:bg-slate-50'">
+                            <span class="inline-block h-2 w-2 rounded-full bg-blue-500"></span> Customer
+                        </button>
+                        <button type="button" @click="filters.order_type = 'store'; page=1; load(); typeOpen = false"
+                            class="flex w-full items-center gap-2 px-3.5 py-2.5 text-left text-sm transition-colors"
+                            :class="filters.order_type === 'store' ? 'bg-amber-50 text-amber-700' : 'text-slate-700 hover:bg-slate-50'">
+                            <span class="inline-block h-2 w-2 rounded-full bg-amber-500"></span> Store Stock
+                        </button>
+                    </div>
+                </div>
+
                 {{-- Clear all filters --}}
-                <button x-show="filters.search || filters.status || filters.date_from || filters.date_to"
+                <button x-show="filters.search || filters.status || filters.date_from || filters.date_to || filters.order_type"
                     @click="clearFilters()"
                     class="po-filter-control flex items-center gap-1 text-xs text-red-600 hover:text-red-700 font-semibold px-3 rounded-lg border border-red-200 hover:bg-red-50 transition-colors cursor-pointer">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -265,6 +292,7 @@
                         <thead class="sticky top-0 z-10">
                             <tr class="bg-gray-50">
                                 <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">ID</th>
+                                <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Type</th>
                                 <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Customer</th>
                                 <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Requested Items</th>
                                 <th class="px-3 py-2 text-left text-[11px] font-semibold text-gray-600 uppercase">Status</th>
@@ -279,11 +307,31 @@
                                         <span class="font-semibold text-primary-600 text-sm" x-text="'#' + item.id"></span>
                                     </td>
                                     <td class="px-3 py-2">
-                                        <div class="font-medium text-gray-800 text-sm leading-tight" x-text="item.customer_name || item.customer?.name || 'Walk-in'"></div>
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                                            :class="item.order_type === 'store' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'"
+                                            x-text="item.order_type === 'store' ? 'Store' : 'Customer'"></span>
+                                    </td>
+                                    <td class="px-3 py-2">
+                                        <div class="font-medium text-gray-800 text-sm leading-tight" x-text="item.order_type === 'store' ? 'Self / Store' : (item.customer_name || item.customer?.name || 'Walk-in')"></div>
                                         <div class="text-[11px] leading-tight text-gray-400" x-text="item.customer_phone || item.customer?.mobile_number || ''"></div>
                                     </td>
                                     <td class="px-3 py-2">
-                                        <p class="text-sm text-gray-700 truncate max-w-[220px]" x-text="item.requested_items"></p>
+                                        <div class="space-y-0.5">
+                                            <template x-for="(ri, riIdx) in (Array.isArray(item.requested_items) ? item.requested_items : [])" :key="riIdx">
+                                                <div class="flex items-center gap-1.5 text-sm leading-tight">
+                                                    <span class="shrink-0 w-3.5 h-3.5 rounded flex items-center justify-center"
+                                                        :style="ri.done ? 'background:#d1fae5;color:#059669;' : 'background:#f1f5f9;color:#cbd5e1;'">
+                                                        <svg x-show="ri.done" class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                                        <span x-show="!ri.done" class="w-1.5 h-1.5 rounded-full" style="background:#cbd5e1;"></span>
+                                                    </span>
+                                                    <span class="truncate max-w-[180px]" :style="ri.done ? 'color:#9ca3af;text-decoration:line-through;' : 'color:#374151;'"
+                                                        x-text="ri.name + (ri.qty > 1 ? ' × ' + ri.qty : '')"></span>
+                                                </div>
+                                            </template>
+                                            <template x-if="!Array.isArray(item.requested_items)">
+                                                <p class="text-sm text-gray-700 truncate max-w-[220px]" x-text="item.requested_items"></p>
+                                            </template>
+                                        </div>
                                     </td>
                                     <td class="px-3 py-2">
                                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold" :class="statusBadge(item.status)" x-text="statusLabel(item.status)"></span>
@@ -306,7 +354,7 @@
                                 </tr>
                             </template>
                             <tr x-show="items.length === 0 && !loading">
-                                <td colspan="6" class="text-center py-12">
+                                <td colspan="7" class="text-center py-12">
                                     <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                                     <p class="text-gray-400 font-medium">No PO requests found</p>
                                     <p class="text-gray-300 text-sm mt-1">Create one using the form on the right</p>
@@ -316,6 +364,7 @@
                                 <template x-for="i in 8" :key="'sk'+i">
                                     <tr>
                                         <td class="px-3 py-2"><div class="skeleton h-3 w-12"></div></td>
+                                        <td class="px-3 py-2"><div class="skeleton h-3 w-16 rounded-full"></div></td>
                                         <td class="px-3 py-2"><div class="skeleton h-3 w-28"></div></td>
                                         <td class="px-3 py-2"><div class="skeleton h-3 w-36"></div></td>
                                         <td class="px-3 py-2"><div class="skeleton h-3 w-20 rounded-full"></div></td>
@@ -347,8 +396,29 @@
         {{-- ===== RIGHT: New PO Request Form ===== --}}
         <div class="relative order-first flex lg:min-h-0 flex-col gap-1.5 lg:order-none" :style="custOpen ? 'z-index:95;' : 'z-index:10;'">
 
+            {{-- Order Type Toggle --}}
+            <div class="card po-panel shrink-0">
+                <div class="card-body py-2.5">
+                    <label class="text-xs font-medium text-gray-600 mb-1.5 block">Order Type</label>
+                    <div class="flex rounded-lg border border-gray-200 overflow-hidden">
+                        <button type="button" @click="form.order_type = 'customer'; if(!selectedCustomer) $nextTick(() => {})"
+                            class="flex-1 text-center py-2 text-sm font-semibold transition-all"
+                            :style="form.order_type === 'customer' ? 'background:#2563eb;color:#fff;' : 'background:#fff;color:#4b5563;'">
+                            <svg class="w-4 h-4 inline -mt-0.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            Customer Order
+                        </button>
+                        <button type="button" @click="form.order_type = 'store'; clearCustomer()"
+                            class="flex-1 text-center py-2 text-sm font-semibold transition-all"
+                            :style="form.order_type === 'store' ? 'background:#d97706;color:#fff;' : 'background:#fff;color:#4b5563;'">
+                            <svg class="w-4 h-4 inline -mt-0.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                            Store Stock
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             {{-- Customer selector --}}
-            <div class="card po-panel relative shrink-0" :style="custOpen ? 'overflow:visible; z-index:110;' : 'overflow:visible; z-index:10;'">
+            <div x-show="form.order_type === 'customer'" class="card po-panel relative shrink-0" :style="custOpen ? 'overflow:visible; z-index:110;' : 'overflow:visible; z-index:10;'">
                 <div class="card-body py-2.5" style="overflow:visible">
                     <div class="flex items-start justify-between gap-3">
                         <div>
@@ -403,15 +473,77 @@
                         <svg class="w-4 h-4 inline mr-1 -mt-0.5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                         New PO Request
                     </h3>
-                    <button x-show="form.requested_items || form.notes || form.required_by" @click="resetForm()" class="text-xs text-red-400 hover:text-red-600">Clear</button>
+                    <button x-show="poItems.length || form.notes || form.required_by" @click="resetForm()" class="text-xs text-red-400 hover:text-red-600">Clear</button>
                 </div>
 
                 <div class="po-form-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain">
                     <div class="px-4 py-2 space-y-2">
                         <div>
                             <label class="text-xs font-medium text-gray-600 mb-1 block">Requested Products / Parts *</label>
-                            <textarea x-model="form.requested_items" rows="5" class="form-input-custom po-form-input text-sm"
-                                placeholder="e.g. iPhone 14 display&#10;Samsung A14 battery × 2&#10;Type-C fast charger"></textarea>
+
+                            {{-- Search input with autocomplete --}}
+                            <div class="relative" @click.away="itemSuggestOpen = false">
+                                <div class="flex gap-1.5">
+                                    <div class="relative flex-1">
+                                        <svg class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                        <input x-model="itemQuery" @input.debounce.300ms="searchItems()" @focus="if(itemQuery.trim()) searchItems()"
+                                            @keydown.enter.prevent="addCustomItem()"
+                                            type="text" class="form-input-custom po-form-input text-sm pl-8 pr-3 w-full"
+                                            placeholder="Search product / part or type custom...">
+                                    </div>
+                                    <button type="button" @click="addCustomItem()" x-show="itemQuery.trim()"
+                                        class="shrink-0 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                                        style="background:#2563eb;color:#fff;">+ Add</button>
+                                </div>
+
+                                {{-- Suggestions dropdown --}}
+                                <div x-show="itemSuggestOpen && itemSuggestions.length > 0" x-cloak
+                                    class="absolute left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border bg-white shadow-lg" style="z-index:120;">
+                                    <template x-for="s in itemSuggestions" :key="s._key">
+                                        <button type="button" @click="addSuggestedItem(s)"
+                                            class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b last:border-0 flex items-center gap-2.5">
+                                            <span class="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold"
+                                                :style="s._type === 'product' ? 'background:#eff6ff;color:#2563eb;' : 'background:#fef3c7;color:#d97706;'"
+                                                x-text="s._type === 'product' ? 'P' : 'PT'"></span>
+                                            <span class="flex-1 min-w-0">
+                                                <span class="block font-medium text-gray-800 truncate" x-text="s.name"></span>
+                                                <span class="block text-[11px] text-gray-400" x-text="(s.sku ? 'SKU: ' + s.sku : '') + (s._type === 'product' && s.inventory ? ' · Stock: ' + s.inventory.current_stock : '')"></span>
+                                            </span>
+                                            <span class="shrink-0 text-xs font-semibold text-gray-500" x-text="'₹' + Number(s.selling_price || 0).toFixed(0)"></span>
+                                        </button>
+                                    </template>
+                                    <div x-show="itemSearching" class="px-3 py-2 text-xs text-gray-400 text-center">Searching…</div>
+                                </div>
+                                <div x-show="itemSuggestOpen && !itemSearching && itemSuggestions.length === 0 && itemQuery.trim().length >= 2" x-cloak
+                                    class="absolute left-0 right-0 mt-1 rounded-lg border bg-white shadow-lg px-3 py-2.5 text-xs text-gray-400" style="z-index:120;">
+                                    No matches — press <strong>Enter</strong> or click <strong>+ Add</strong> to add as custom item
+                                </div>
+                            </div>
+
+                            {{-- Added items list --}}
+                            <div x-show="poItems.length > 0" class="mt-2 space-y-1">
+                                <template x-for="(pi, piIdx) in poItems" :key="piIdx">
+                                    <div class="flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-sm"
+                                        :style="pi.source === 'custom' ? 'background:#f8fafc;border-color:#e2e8f0;' : 'background:#eff6ff;border-color:#bfdbfe;'">
+                                        <span class="shrink-0 w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold"
+                                            :style="pi.source === 'product' ? 'background:#dbeafe;color:#2563eb;' : (pi.source === 'part' ? 'background:#fef3c7;color:#d97706;' : 'background:#e2e8f0;color:#64748b;')"
+                                            x-text="pi.source === 'product' ? 'P' : (pi.source === 'part' ? 'PT' : '✎')"></span>
+                                        <span class="flex-1 min-w-0 truncate font-medium text-gray-800" x-text="pi.name"></span>
+                                        <div class="flex items-center gap-1 shrink-0">
+                                            <button type="button" @click="pi.qty = Math.max(1, pi.qty - 1); syncItemsText()"
+                                                class="w-6 h-6 rounded flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-200 text-sm font-bold">−</button>
+                                            <span class="w-6 text-center text-xs font-bold text-gray-700" x-text="pi.qty"></span>
+                                            <button type="button" @click="pi.qty++; syncItemsText()"
+                                                class="w-6 h-6 rounded flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-200 text-sm font-bold">+</button>
+                                        </div>
+                                        <button type="button" @click="poItems.splice(piIdx, 1); syncItemsText()"
+                                            class="shrink-0 w-6 h-6 rounded flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 transition">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                            <p x-show="poItems.length === 0" class="mt-1.5 text-[11px] text-gray-400">Search above to add products/parts, or type a custom item and press Enter.</p>
                         </div>
                         <div>
                             <label class="text-xs font-medium text-gray-600 mb-1 block">Required By</label>
@@ -447,22 +579,60 @@
                 <button @click="viewing = null" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
             </div>
             <div class="modal-body">
-                {{-- Customer info --}}
-                <div class="flex items-center gap-3 mb-5 p-3 bg-gray-50 rounded-lg">
+                {{-- Order type + status badges --}}
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold"
+                        :class="viewing?.order_type === 'store' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'"
+                        x-text="viewing?.order_type === 'store' ? 'Store Stock Order' : 'Customer Order'"></span>
+                    <span class="badge text-xs" :class="statusBadge(viewing?.status)" x-text="statusLabel(viewing?.status)"></span>
+                </div>
+
+                {{-- Customer info (only for customer orders) --}}
+                <div x-show="viewing?.order_type !== 'store'" class="flex items-center gap-3 mb-5 p-3 bg-gray-50 rounded-lg">
                     <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-primary-100 text-primary-700"
                         x-text="(viewing?.customer_name || viewing?.customer?.name || '?').charAt(0).toUpperCase()"></div>
                     <div class="flex-1 min-w-0">
                         <p class="font-semibold text-gray-900" x-text="viewing?.customer_name || viewing?.customer?.name || '-'"></p>
                         <p class="text-sm text-gray-500" x-text="viewing?.customer_phone || viewing?.customer?.mobile_number || '-'"></p>
                     </div>
-                    <span class="badge text-xs" :class="statusBadge(viewing?.status)" x-text="statusLabel(viewing?.status)"></span>
+                </div>
+                <div x-show="viewing?.order_type === 'store'" class="flex items-center gap-3 mb-5 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold bg-amber-100 text-amber-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-amber-900">Store Stock Order</p>
+                        <p class="text-sm text-amber-700">Ordering for shop inventory</p>
+                    </div>
                 </div>
 
                 {{-- Details --}}
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 mb-1">Requested Items</label>
-                        <div class="text-sm text-gray-800 whitespace-pre-wrap bg-white border rounded-lg px-4 py-3" x-text="viewing?.requested_items"></div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="block text-xs font-medium text-gray-500">Requested Items</label>
+                            <span class="text-[11px] font-semibold" :style="'color:' + (viewingDoneCount() === viewingItemsList().length ? '#059669' : '#6b7280')" x-text="viewingDoneCount() + '/' + viewingItemsList().length + ' done'"></span>
+                        </div>
+                        {{-- Progress bar --}}
+                        <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden mb-2">
+                            <div class="h-full rounded-full transition-all" style="background:#059669;" :style="'width:' + (viewingItemsList().length ? (viewingDoneCount() / viewingItemsList().length * 100) : 0) + '%'"></div>
+                        </div>
+                        <div class="bg-white border rounded-lg divide-y divide-gray-100">
+                            <template x-for="(vi, viIdx) in viewingItemsList()" :key="viIdx">
+                                <div class="flex items-center gap-2.5 px-3 py-2 cursor-pointer hover:bg-gray-50 transition" @click="toggleViewItem(viIdx)">
+                                    <button type="button" class="shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-all"
+                                        :style="vi.done ? 'background:#059669;border-color:#059669;color:#fff;' : 'background:#fff;border-color:#d1d5db;'">
+                                        <svg x-show="vi.done" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                    </button>
+                                    <span class="flex-1 text-sm font-medium transition-all"
+                                        :style="vi.done ? 'color:#9ca3af;text-decoration:line-through;' : 'color:#1f2937;'"
+                                        x-text="vi.name + (vi.qty > 1 ? ' × ' + vi.qty : '')"></span>
+                                    <span class="shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                                        :style="vi.done ? 'background:#d1fae5;color:#059669;' : 'background:#f1f5f9;color:#94a3b8;'"
+                                        x-text="vi.done ? 'Done' : 'Pending'"></span>
+                                </div>
+                            </template>
+                        </div>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -554,8 +724,8 @@ function poPage() {
         lastPage: 1,
         total: 0,
         allCounts: { all: 0, open: 0, ordered: 0, received: 0, completed: 0, cancelled: 0 },
-        filters: { search: '', status: '', date_from: '', date_to: '' },
-        form: { customer_id: '', customer_name: '', customer_phone: '', requested_items: '', required_by: '', notes: '' },
+        filters: { search: '', status: '', date_from: '', date_to: '', order_type: '' },
+        form: { order_type: 'customer', customer_id: '', customer_name: '', customer_phone: '', requested_items: [], required_by: '', notes: '' },
 
         // Customer search
         custSearch: '',
@@ -570,6 +740,13 @@ function poPage() {
         customerFormTried: false,
         customerSaving: false,
         customerSubmitError: '',
+
+        // Item autocomplete
+        poItems: [],
+        itemQuery: '',
+        itemSuggestions: [],
+        itemSuggestOpen: false,
+        itemSearching: false,
 
         statusList: [
             { key: 'open',      label: 'Open',      activeCls: 'bg-blue-50 text-blue-700',    dotCls: 'bg-blue-500' },
@@ -591,6 +768,7 @@ function poPage() {
             this.filters.search = p.get('search') || '';
             this.filters.date_from = p.get('date_from') || '';
             this.filters.date_to = p.get('date_to') || '';
+            this.filters.order_type = p.get('order_type') || '';
             this.page = parseInt(p.get('page')) || 1;
         },
 
@@ -600,6 +778,7 @@ function poPage() {
             if (this.filters.search) p.set('search', this.filters.search);
             if (this.filters.date_from) p.set('date_from', this.filters.date_from);
             if (this.filters.date_to) p.set('date_to', this.filters.date_to);
+            if (this.filters.order_type) p.set('order_type', this.filters.order_type);
             if (this.page > 1) p.set('page', this.page);
             const qs = p.toString();
             const url = window.location.pathname + (qs ? '?' + qs : '');
@@ -617,14 +796,19 @@ function poPage() {
             this.filters.status = '';
             this.filters.date_from = '';
             this.filters.date_to = '';
+            this.filters.order_type = '';
             this.page = 1;
             this.load();
         },
 
         resetForm() {
-            this.form = { customer_id: '', customer_name: '', customer_phone: '', requested_items: '', required_by: '', notes: '' };
+            this.form = { order_type: 'customer', customer_id: '', customer_name: '', customer_phone: '', requested_items: [], required_by: '', notes: '' };
             this.selectedCustomer = null;
             this.custSearch = '';
+            this.poItems = [];
+            this.itemQuery = '';
+            this.itemSuggestions = [];
+            this.itemSuggestOpen = false;
         },
 
         // === Customer Search (paginated, show on focus) ===
@@ -756,6 +940,7 @@ function poPage() {
             if (this.filters.status) params.status = this.filters.status;
             if (this.filters.date_from) params.date_from = this.filters.date_from;
             if (this.filters.date_to) params.date_to = this.filters.date_to;
+            if (this.filters.order_type) params.order_type = this.filters.order_type;
 
             const r = await RepairBox.ajax('/admin/po', 'GET', params);
             if (r.data) this.items = r.data;
@@ -768,12 +953,13 @@ function poPage() {
         },
 
         async save() {
-            if (!this.form.requested_items.trim()) {
-                return RepairBox.toast('Please enter the requested items', 'error');
+            if (this.poItems.length === 0) {
+                return RepairBox.toast('Please add at least one item', 'error');
             }
-            if (!this.form.customer_name.trim() && !this.form.customer_id) {
+            if (this.form.order_type === 'customer' && !this.form.customer_name.trim() && !this.form.customer_id) {
                 return RepairBox.toast('Please select or enter a customer', 'error');
             }
+            this.syncItemsText();
             this.saving = true;
             const r = await RepairBox.ajax('/admin/po', 'POST', { ...this.form });
             this.saving = false;
@@ -794,9 +980,88 @@ function poPage() {
             if (!status || status === item.status) return;
             const r = await RepairBox.ajax(`/admin/po/${item.id}/status`, 'PUT', { status });
             if (r.success === false) return;
-            item.status = status;
+            if (r.data) {
+                Object.assign(item, r.data);
+                if (this.viewing && this.viewing.id === item.id) this.viewing = r.data;
+            }
             RepairBox.toast(r.message || 'Status updated', 'success');
             await this.load();
+        },
+
+        // === Item autocomplete ===
+        async searchItems() {
+            const q = this.itemQuery.trim();
+            if (q.length < 2) { this.itemSuggestions = []; this.itemSuggestOpen = false; return; }
+            this.itemSearching = true;
+            this.itemSuggestOpen = true;
+            const [products, parts] = await Promise.all([
+                RepairBox.ajax('/admin/products-search?q=' + encodeURIComponent(q)),
+                RepairBox.ajax('/admin/parts-search?q=' + encodeURIComponent(q)),
+            ]);
+            this.itemSearching = false;
+            const pList = (Array.isArray(products) ? products : (products.data || [])).map(p => ({ ...p, _type: 'product', _key: 'p' + p.id }));
+            const ptList = (Array.isArray(parts) ? parts : (parts.data || [])).map(p => ({ ...p, _type: 'part', _key: 'pt' + p.id }));
+            this.itemSuggestions = [...pList.slice(0, 15), ...ptList.slice(0, 10)];
+            if (this.itemSuggestions.length > 0 || q.length >= 2) this.itemSuggestOpen = true;
+        },
+
+        addSuggestedItem(s) {
+            const exists = this.poItems.find(i => i.source === s._type && i.sourceId === s.id);
+            if (exists) { exists.qty++; this.syncItemsText(); }
+            else {
+                this.poItems.push({ name: s.name, qty: 1, source: s._type, sourceId: s.id, sku: s.sku || '' });
+                this.syncItemsText();
+            }
+            this.itemQuery = '';
+            this.itemSuggestions = [];
+            this.itemSuggestOpen = false;
+        },
+
+        addCustomItem() {
+            const txt = this.itemQuery.trim();
+            if (!txt) return;
+            const exists = this.poItems.find(i => i.source === 'custom' && i.name.toLowerCase() === txt.toLowerCase());
+            if (exists) { exists.qty++; this.syncItemsText(); }
+            else {
+                this.poItems.push({ name: txt, qty: 1, source: 'custom', sourceId: null, sku: '' });
+                this.syncItemsText();
+            }
+            this.itemQuery = '';
+            this.itemSuggestions = [];
+            this.itemSuggestOpen = false;
+        },
+
+        syncItemsText() {
+            this.form.requested_items = this.poItems.map(i => ({
+                name: i.name,
+                qty: i.qty,
+                source: i.source || 'custom',
+                done: false,
+            }));
+        },
+
+        viewingItemsList() {
+            if (!this.viewing) return [];
+            const items = this.viewing.requested_items;
+            if (Array.isArray(items)) return items;
+            // Legacy: plain text fallback
+            if (typeof items === 'string') return items.split('\n').filter(l => l.trim()).map(l => ({ name: l.trim(), qty: 1, done: false }));
+            return [];
+        },
+
+        viewingDoneCount() {
+            return this.viewingItemsList().filter(i => i.done).length;
+        },
+
+        async toggleViewItem(idx) {
+            if (!this.viewing) return;
+            const r = await RepairBox.ajax('/admin/po/' + this.viewing.id + '/toggle-item', 'PUT', { index: idx });
+            if (r.success !== false && r.data) {
+                this.viewing = r.data;
+                // Also update in the list
+                const listItem = this.items.find(i => i.id === r.data.id);
+                if (listItem) Object.assign(listItem, r.data);
+            }
         }
     };
 }

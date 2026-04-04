@@ -43,6 +43,8 @@ class InvoiceService
                     'price' => $item['price'],
                     'mrp' => $item['mrp'] ?? $item['price'],
                     'total' => $item['total'],
+                    'is_linked' => $item['is_linked'] ?? false,
+                    'linked_id' => $item['linked_id'] ?? null,
                 ]);
 
                 // Deduct stock for product items using FIFO
