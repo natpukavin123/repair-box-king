@@ -59,7 +59,6 @@
                     <div class="inf-sub">
                         <span data-en="Date" data-ta="தேதி">{{ $defaultLang === 'ta' ? 'தேதி' : 'Date' }}</span>: {{ $invoice->created_at->format('d M Y, g:i A') }}<br>
                         @if($invoice->due_date)<span data-en="Due" data-ta="நிலுவை தேதி">{{ $defaultLang === 'ta' ? 'நிலுவை தேதி' : 'Due' }}</span>: {{ $invoice->due_date->format('d M Y') }}<br>@endif
-                        <span data-en="Staff" data-ta="ஊழியர்">{{ $defaultLang === 'ta' ? 'ஊழியர்' : 'Staff' }}</span>: {{ $invoice->creator?->name ?? '—' }}
                     </div>
                 </div>
             </div>
