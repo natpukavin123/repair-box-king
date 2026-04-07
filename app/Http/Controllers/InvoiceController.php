@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Brand;
 use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\Recharge;
 use App\Models\Repair;
 use App\Http\Requests\InvoiceRequest;
@@ -35,7 +37,12 @@ class InvoiceController extends Controller
         $canViewCostPrice = auth()->user()->isAdmin()
             || auth()->user()->isSuperAdmin()
             || auth()->user()->hasPermission('pos.view_cost_price');
-        return view('modules.pos.billing', compact('canViewCostPrice'));
+
+        $brandModelMap = Brand::where('status', 'active')->orderBy('name')->get(['name', 'models'])
+            ->map(fn($b) => ['name' => $b->name, 'models' => $b->models ?? []])->values();
+        $brands = $brandModelMap->pluck('name');
+
+        return view('modules.pos.billing', compact('canViewCostPrice', 'brands', 'brandModelMap'));
     }
 
     public function store(InvoiceRequest $request, InvoiceService $service)
@@ -88,8 +95,14 @@ class InvoiceController extends Controller
 
         if (!$customerId && !$mobile) return response()->json(['success' => true, 'data' => []]);
 
+        // Exclude recharges already linked to an invoice
+        $alreadyBilled = InvoiceItem::where('item_type', 'recharge')
+            ->where('is_linked', true)->whereNotNull('linked_id')
+            ->pluck('linked_id');
+
         $recharges = Recharge::with('provider')
             ->where('status', 'success')
+            ->whereNotIn('id', $alreadyBilled)
             ->when($customerId, fn($q) => $q->where('customer_id', $customerId))
             ->when($mobile, fn($q, $m) => $q->where('mobile_number', 'like', "%{$m}%"))
             ->latest()
@@ -114,6 +127,11 @@ class InvoiceController extends Controller
 
         if (!$customerId && !$search) return response()->json(['success' => true, 'data' => []]);
 
+        // Exclude repairs already linked to an invoice
+        $alreadyBilled = InvoiceItem::where('item_type', 'repair')
+            ->where('is_linked', true)->whereNotNull('linked_id')
+            ->pluck('linked_id');
+
         $repairs = Repair::where(function ($q) use ($customerId, $search) {
                 if ($customerId) $q->where('customer_id', $customerId);
                 if ($search) {
@@ -126,6 +144,7 @@ class InvoiceController extends Controller
                 }
             })
             ->whereNotIn('status', ['cancelled'])
+            ->whereNotIn('id', $alreadyBilled)
             ->latest()
             ->limit(50)
             ->get()

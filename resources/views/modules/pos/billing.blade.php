@@ -401,99 +401,310 @@
                 </div>
             </div>
 
-            {{-- Recharge list (linked items) --}}
+            {{-- Recharge tab --}}
             <div x-show="itemType === 'recharge'" class="flex flex-col flex-1 min-h-0">
-                {{-- Mobile number search --}}
-                <div class="mb-2 relative">
-                    <span class="pointer-events-none text-gray-400" style="position:absolute; left:0.75rem; top:50%; transform:translateY(-50%); z-index:2;">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                    </span>
-                    <input x-model="rechargeSearch" @input.debounce.300ms="loadCustomerRecharges()" type="text"
-                        class="form-input-custom sales-field text-sm w-full" style="padding-left:2.25rem;"
-                        placeholder="Filter by mobile number..." inputmode="numeric">
+                {{-- Toggle: New / Add to Bill --}}
+                <div class="flex rounded-lg bg-gray-100 p-0.5 mb-3 shrink-0">
+                    <button type="button" @click="rechargeMode = 'new'"
+                        :class="rechargeMode === 'new' ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+                        class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md transition-all">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        New Recharge
+                    </button>
+                    <button type="button" @click="rechargeMode = 'existing'; loadCustomerRecharges()"
+                        :class="rechargeMode === 'existing' ? 'bg-white text-teal-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+                        class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md transition-all">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        Add to Bill
+                    </button>
                 </div>
-                <div x-show="!selectedCustomer && !rechargeSearch" class="card sales-panel p-6 flex flex-col items-center justify-center text-gray-400 py-12 gap-3">
-                    <svg class="w-12 h-12 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                    <p class="text-sm font-medium">Select a customer or search by mobile</p>
-                    <p class="text-xs text-gray-300">Type a phone number above to find recharges</p>
-                </div>
-                <div x-show="selectedCustomer || rechargeSearch" class="overflow-y-auto flex-1 min-h-0 space-y-2 pb-1 pr-1">
-                    <template x-for="r in linkedRecharges" :key="r.id">
-                        <button @click="addLinkedRecharge(r)"
-                            :class="cart.find(c => c.item_type === 'recharge' && c.linked_id === r.id) ? 'border-teal-400 bg-teal-50 opacity-60 pointer-events-none' : 'hover:border-teal-300 hover:shadow-md'"
-                            class="w-full text-left rounded-lg border border-gray-200 p-3 transition-all cursor-pointer">
-                            <div class="flex items-center justify-between gap-2">
-                                <div class="min-w-0 flex-1">
-                                    <p class="text-sm font-semibold text-gray-800 truncate" x-text="r.label"></p>
-                                    <p class="text-xs text-gray-500 truncate mt-0.5" x-text="r.description"></p>
-                                    <p class="text-[10px] text-gray-400 mt-0.5" x-text="r.date"></p>
-                                </div>
-                                <div class="text-right shrink-0">
-                                    <span class="text-teal-600 font-bold text-sm" x-text="'₹' + Number(r.amount).toLocaleString('en-IN', {minimumFractionDigits:2})"></span>
-                                    <span x-show="cart.find(c => c.item_type === 'recharge' && c.linked_id === r.id)" class="block text-[10px] text-teal-500 font-medium mt-0.5">Added</span>
-                                </div>
+
+                {{-- New recharge form --}}
+                <div x-show="rechargeMode === 'new'" class="overflow-y-auto flex-1 min-h-0">
+                    <div class="space-y-3 pb-2">
+                        {{-- Provider --}}
+                        <div class="relative" @click.away="rechargeProviderOpen = false">
+                            <label class="text-xs font-medium text-gray-600 mb-1 block">Provider <span class="text-red-500">*</span></label>
+                            <input type="text" x-model="rechargeProviderSearch" @focus="rechargeProviderOpen = true" @input="rechargeProviderOpen = true"
+                                class="form-input-custom sales-field text-sm w-full" placeholder="Search provider...">
+                            <div x-show="rechargeProviderOpen" x-cloak class="absolute left-0 right-0 mt-1 rounded-lg border bg-white shadow-lg z-50 max-h-40 overflow-y-auto">
+                                <template x-for="p in rechargeProviders.filter(p => p.name.toLowerCase().includes(rechargeProviderSearch.toLowerCase()))" :key="p.id">
+                                    <button type="button" @click="rechargeForm.provider_id = p.id; rechargeProviderSearch = p.name; rechargeProviderOpen = false"
+                                        class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b last:border-0" x-text="p.name"></button>
+                                </template>
+                                <div x-show="rechargeProviders.filter(p => p.name.toLowerCase().includes(rechargeProviderSearch.toLowerCase())).length === 0"
+                                    class="px-3 py-2 text-xs text-gray-400 text-center">No providers found</div>
                             </div>
+                        </div>
+                        {{-- Mobile number --}}
+                        <div>
+                            <label class="text-xs font-medium text-gray-600 mb-1 block">Mobile Number <span class="text-red-500">*</span></label>
+                            <input type="text" x-model="rechargeForm.mobile_number" class="form-input-custom sales-field text-sm w-full"
+                                placeholder="Enter mobile number" inputmode="numeric" maxlength="20">
+                        </div>
+                        {{-- Amount --}}
+                        <div>
+                            <label class="text-xs font-medium text-gray-600 mb-1 block">Amount <span class="text-red-500">*</span></label>
+                            <input type="number" x-model="rechargeForm.recharge_amount" class="form-input-custom sales-field text-sm w-full"
+                                placeholder="0.00" step="0.01" min="1">
+                        </div>
+                        {{-- Payment method --}}
+                        <div>
+                            <label class="text-xs font-medium text-gray-600 mb-1 block">Payment Method</label>
+                            <div class="flex gap-2">
+                                <template x-for="m in ['cash','upi','card']" :key="m">
+                                    <button type="button" @click="rechargeForm.payment_method = m"
+                                        :class="rechargeForm.payment_method === m ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-gray-700 border-gray-300 hover:border-teal-400'"
+                                        class="px-3 py-1.5 text-xs font-medium rounded-md border transition-all capitalize" x-text="m"></button>
+                                </template>
+                            </div>
+                        </div>
+                        {{-- Transaction reference --}}
+                        <div x-show="rechargeForm.payment_method !== 'cash'">
+                            <label class="text-xs font-medium text-gray-600 mb-1 block">Reference No.</label>
+                            <input type="text" x-model="rechargeForm.transaction_id" class="form-input-custom sales-field text-sm w-full"
+                                placeholder="Transaction reference" maxlength="100">
+                        </div>
+                        {{-- Add to Bill toggle --}}
+                        <label class="flex items-center gap-2 cursor-pointer select-none">
+                            <input type="checkbox" x-model="rechargeAddToBill" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500">
+                            <span class="text-xs font-medium text-gray-600">Add to Bill</span>
+                            <span x-show="!rechargeAddToBill" class="text-[10px] text-gray-400 italic">(recharge only, no invoice)</span>
+                        </label>
+                        {{-- Error --}}
+                        <p x-show="rechargeError" x-text="rechargeError" class="text-xs text-red-500 font-medium"></p>
+                        {{-- Success --}}
+                        <div x-show="rechargeSuccess" class="flex items-center gap-2 p-3 rounded-lg bg-teal-50 border border-teal-200">
+                            <svg class="w-5 h-5 text-teal-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span class="text-sm text-teal-700" x-text="rechargeSuccess"></span>
+                        </div>
+                        {{-- Submit --}}
+                        <button type="button" @click="createRecharge()" :disabled="rechargeSaving"
+                            class="btn-primary w-full text-sm flex items-center justify-center gap-2">
+                            <svg x-show="rechargeSaving" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                            <span x-text="rechargeSaving ? (rechargeAddToBill ? 'Creating & Adding...' : 'Creating...') : (rechargeAddToBill ? 'Create & Add to Bill' : 'Create Recharge')"></span>
                         </button>
-                    </template>
-                    <div x-show="linkedRecharges.length === 0 && !linkedLoading" class="flex flex-col items-center justify-center text-gray-400 py-16 gap-3">
-                        <svg class="w-12 h-12 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        <p class="text-sm font-medium">No recharges found</p>
-                        <p class="text-xs text-gray-300">This customer has no completed recharges</p>
                     </div>
-                    <div x-show="linkedLoading" class="flex items-center justify-center py-16 text-gray-400">
-                        <svg class="animate-spin w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
-                        Loading…
+                </div>
+
+                {{-- Existing recharges (Add to Bill) --}}
+                <div x-show="rechargeMode === 'existing'" class="flex flex-col flex-1 min-h-0">
+                    <div class="mb-2 relative">
+                        <span class="pointer-events-none text-gray-400" style="position:absolute; left:0.75rem; top:50%; transform:translateY(-50%); z-index:2;">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                        </span>
+                        <input x-model="rechargeSearch" @input.debounce.300ms="loadCustomerRecharges()" type="text"
+                            class="form-input-custom sales-field text-sm w-full" style="padding-left:2.25rem;"
+                            placeholder="Filter by mobile number..." inputmode="numeric">
+                    </div>
+                    <div x-show="!selectedCustomer && !rechargeSearch" class="card sales-panel p-6 flex flex-col items-center justify-center text-gray-400 py-12 gap-3">
+                        <svg class="w-12 h-12 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                        <p class="text-sm font-medium">Select a customer or search by mobile</p>
+                        <p class="text-xs text-gray-300">Pick a past recharge to include in this bill</p>
+                    </div>
+                    <div x-show="selectedCustomer || rechargeSearch" class="overflow-y-auto flex-1 min-h-0 space-y-2 pb-1 pr-1">
+                        <template x-for="r in linkedRecharges" :key="r.id">
+                            <button @click="addLinkedRecharge(r)"
+                                :class="cart.find(c => c.item_type === 'recharge' && c.linked_id === r.id) ? 'border-teal-400 bg-teal-50 opacity-60 pointer-events-none' : 'hover:border-teal-300 hover:shadow-md'"
+                                class="w-full text-left rounded-lg border border-gray-200 p-3 transition-all cursor-pointer">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-sm font-semibold text-gray-800 truncate" x-text="r.label"></p>
+                                        <p class="text-xs text-gray-500 truncate mt-0.5" x-text="r.description"></p>
+                                        <p class="text-[10px] text-gray-400 mt-0.5" x-text="r.date"></p>
+                                    </div>
+                                    <div class="text-right shrink-0">
+                                        <span class="text-teal-600 font-bold text-sm" x-text="'₹' + Number(r.amount).toLocaleString('en-IN', {minimumFractionDigits:2})"></span>
+                                        <span x-show="cart.find(c => c.item_type === 'recharge' && c.linked_id === r.id)" class="block text-[10px] text-teal-500 font-medium mt-0.5">Added</span>
+                                    </div>
+                                </div>
+                            </button>
+                        </template>
+                        <div x-show="linkedRecharges.length === 0 && !linkedLoading" class="flex flex-col items-center justify-center text-gray-400 py-16 gap-3">
+                            <svg class="w-12 h-12 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <p class="text-sm font-medium">No recharges found</p>
+                            <p class="text-xs text-gray-300">This customer has no completed recharges</p>
+                        </div>
+                        <div x-show="linkedLoading" class="flex items-center justify-center py-16 text-gray-400">
+                            <svg class="animate-spin w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                            Loading…
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {{-- Repair list (linked items) --}}
+            {{-- Repair tab --}}
             <div x-show="itemType === 'repair'" class="flex flex-col flex-1 min-h-0">
-                {{-- Repair search --}}
-                <div class="mb-2 relative">
-                    <span class="pointer-events-none text-gray-400" style="position:absolute; left:0.75rem; top:50%; transform:translateY(-50%); z-index:2;">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                    </span>
-                    <input x-model="repairSearch" @input.debounce.300ms="loadCustomerRepairs()" type="text"
-                        class="form-input-custom sales-field text-sm w-full" style="padding-left:2.25rem;"
-                        placeholder="Search by ticket, device, IMEI...">
+                {{-- Toggle: New / Add to Bill --}}
+                <div class="flex rounded-lg bg-gray-100 p-0.5 mb-3 shrink-0">
+                    <button type="button" @click="repairMode = 'new'"
+                        :class="repairMode === 'new' ? 'bg-white text-orange-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+                        class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md transition-all">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        New Repair
+                    </button>
+                    <button type="button" @click="repairMode = 'existing'; loadCustomerRepairs()"
+                        :class="repairMode === 'existing' ? 'bg-white text-orange-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'"
+                        class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-md transition-all">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                        Add to Bill
+                    </button>
                 </div>
-                <div x-show="!selectedCustomer && !repairSearch" class="card sales-panel p-6 flex flex-col items-center justify-center text-gray-400 py-12 gap-3">
-                    <svg class="w-12 h-12 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                    <p class="text-sm font-medium">Select a customer or search</p>
-                    <p class="text-xs text-gray-300">Search by ticket number, device or IMEI</p>
-                </div>
-                <div x-show="selectedCustomer || repairSearch" class="overflow-y-auto flex-1 min-h-0 space-y-2 pb-1 pr-1">
-                    <template x-for="r in linkedRepairs" :key="r.id">
-                        <button @click="addLinkedRepair(r)"
-                            :class="cart.find(c => c.item_type === 'repair' && c.linked_id === r.id) ? 'border-orange-400 bg-orange-50 opacity-60 pointer-events-none' : 'hover:border-orange-300 hover:shadow-md'"
-                            class="w-full text-left rounded-lg border border-gray-200 p-3 transition-all cursor-pointer">
-                            <div class="flex items-center justify-between gap-2">
-                                <div class="min-w-0 flex-1">
-                                    <p class="text-sm font-semibold text-gray-800 truncate" x-text="r.label"></p>
-                                    <p class="text-xs text-gray-500 truncate mt-0.5" x-text="r.description"></p>
-                                    <div class="flex items-center gap-2 mt-0.5">
-                                        <span class="text-[10px] text-gray-400" x-text="r.date"></span>
-                                        <span class="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
-                                            :class="r.status === 'closed' ? 'bg-green-100 text-green-700' : (r.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-purple-100 text-purple-700')"
-                                            x-text="r.status"></span>
+
+                {{-- New repair form --}}
+                <div x-show="repairMode === 'new'" class="overflow-y-auto flex-1 min-h-0">
+                    <div class="space-y-3 pb-2">
+                        {{-- Device Brand --}}
+                        <div class="relative" @click.away="repairBrandOpen = false">
+                            <label class="text-xs font-medium text-gray-600 mb-1 block">Device Brand <span class="text-red-500">*</span></label>
+                            <input type="text" x-model="repairBrandSearch" @focus="repairBrandOpen = true" @input="repairBrandOpen = true; repairForm.device_brand = ''; repairForm.device_model = ''; repairModelSearch = '';"
+                                class="form-input-custom sales-field text-sm w-full" placeholder="Search brand...">
+                            <div x-show="repairBrandOpen" x-cloak class="absolute left-0 right-0 mt-1 rounded-lg border bg-white shadow-lg z-50 max-h-40 overflow-y-auto">
+                                <template x-for="b in brandList.filter(b => b.toLowerCase().includes(repairBrandSearch.toLowerCase()))" :key="b">
+                                    <button type="button" @click="repairForm.device_brand = b; repairBrandSearch = b; repairBrandOpen = false; repairForm.device_model = ''; repairModelSearch = '';"
+                                        class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b last:border-0" x-text="b"></button>
+                                </template>
+                                <div x-show="brandList.filter(b => b.toLowerCase().includes(repairBrandSearch.toLowerCase())).length === 0"
+                                    class="px-3 py-2 text-xs text-gray-400 text-center">No brands found</div>
+                            </div>
+                        </div>
+                        {{-- Device Model --}}
+                        <div class="relative" @click.away="repairModelOpen = false">
+                            <label class="text-xs font-medium text-gray-600 mb-1 block">Device Model <span class="text-red-500">*</span></label>
+                            <input type="text" x-model="repairModelSearch" @focus="repairModelOpen = true" @input="repairModelOpen = true"
+                                class="form-input-custom sales-field text-sm w-full" placeholder="Search model...">
+                            <div x-show="repairModelOpen" x-cloak class="absolute left-0 right-0 mt-1 rounded-lg border bg-white shadow-lg z-50 max-h-40 overflow-y-auto">
+                                <template x-for="m in filteredRepairModels()" :key="m">
+                                    <button type="button" @click="repairForm.device_model = m; repairModelSearch = m; repairModelOpen = false;"
+                                        class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b last:border-0" x-text="m"></button>
+                                </template>
+                                <div x-show="filteredRepairModels().length === 0"
+                                    class="px-3 py-2 text-xs text-gray-400 text-center" x-text="repairForm.device_brand ? 'No models found' : 'Select a brand first'"></div>
+                            </div>
+                        </div>
+                        {{-- IMEI --}}
+                        <div>
+                            <label class="text-xs font-medium text-gray-600 mb-1 block">IMEI / Serial No.</label>
+                            <input type="text" x-model="repairForm.imei" class="form-input-custom sales-field text-sm w-full"
+                                placeholder="Optional" maxlength="50">
+                        </div>
+                        {{-- Problem description --}}
+                        <div>
+                            <label class="text-xs font-medium text-gray-600 mb-1 block">Problem Description <span class="text-red-500">*</span></label>
+                            <textarea x-model="repairForm.problem_description" class="form-input-custom sales-field text-sm w-full" rows="2"
+                                placeholder="Describe the issue..."></textarea>
+                        </div>
+                        {{-- Estimated cost --}}
+                        <div>
+                            <label class="text-xs font-medium text-gray-600 mb-1 block">Estimated Cost</label>
+                            <input type="number" x-model="repairForm.estimated_cost" class="form-input-custom sales-field text-sm w-full"
+                                placeholder="0.00" step="0.01" min="0">
+                        </div>
+                        {{-- Expected delivery date --}}
+                        <div>
+                            <label class="text-xs font-medium text-gray-600 mb-1 block">Expected Delivery Date</label>
+                            <input type="date" x-model="repairForm.expected_delivery_date" class="form-input-custom sales-field text-sm w-full">
+                        </div>
+                        {{-- Advance payment --}}
+                        <div class="border-t pt-3 mt-1">
+                            <p class="text-xs font-semibold text-gray-500 uppercase mb-2">Advance Payment (Optional)</p>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="text-xs font-medium text-gray-600 mb-1 block">Advance Amount</label>
+                                    <input type="number" x-model="repairForm.advance_amount" class="form-input-custom sales-field text-sm w-full"
+                                        placeholder="0.00" step="0.01" min="0">
+                                </div>
+                                <div x-show="repairForm.advance_amount > 0">
+                                    <label class="text-xs font-medium text-gray-600 mb-1 block">Payment Method</label>
+                                    <div class="flex gap-2 flex-wrap">
+                                        <template x-for="m in ['cash','card','upi','bank_transfer']" :key="m">
+                                            <button type="button" @click="repairForm.advance_method = m"
+                                                :class="repairForm.advance_method === m ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-gray-700 border-gray-300 hover:border-orange-400'"
+                                                class="px-3 py-1.5 text-xs font-medium rounded-md border transition-all capitalize" x-text="m.replace('_', ' ')"></button>
+                                        </template>
                                     </div>
                                 </div>
-                                <div class="text-right shrink-0">
-                                    <span class="text-orange-600 font-bold text-sm" x-text="'₹' + Number(r.amount).toLocaleString('en-IN', {minimumFractionDigits:2})"></span>
-                                    <span x-show="cart.find(c => c.item_type === 'repair' && c.linked_id === r.id)" class="block text-[10px] text-orange-500 font-medium mt-0.5">Added</span>
+                                <div x-show="repairForm.advance_amount > 0 && repairForm.advance_method !== 'cash'">
+                                    <label class="text-xs font-medium text-gray-600 mb-1 block">Reference / Transaction ID</label>
+                                    <input type="text" x-model="repairForm.advance_reference" class="form-input-custom sales-field text-sm w-full"
+                                        placeholder="Reference number" maxlength="100">
                                 </div>
                             </div>
+                        </div>
+                        {{-- Add to Bill toggle --}}
+                        <label class="flex items-center gap-2 cursor-pointer select-none">
+                            <input type="checkbox" x-model="repairAddToBill" class="rounded border-gray-300 text-orange-600 focus:ring-orange-500">
+                            <span class="text-xs font-medium text-gray-600">Add to Bill</span>
+                            <span x-show="!repairAddToBill" class="text-[10px] text-gray-400 italic">(repair only, no invoice)</span>
+                        </label>
+                        {{-- Error --}}
+                        <p x-show="repairError" x-text="repairError" class="text-xs text-red-500 font-medium"></p>
+                        {{-- Success --}}
+                        <div x-show="repairSuccess" class="flex items-center gap-2 p-3 rounded-lg bg-orange-50 border border-orange-200">
+                            <svg class="w-5 h-5 text-orange-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span class="text-sm text-orange-700" x-text="repairSuccess"></span>
+                        </div>
+                        {{-- Submit --}}
+                        <button type="button" @click="createRepair()" :disabled="repairSaving"
+                            class="btn-primary w-full text-sm flex items-center justify-center gap-2">
+                            <svg x-show="repairSaving" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                            <span x-text="repairSaving ? (repairAddToBill ? 'Creating & Adding...' : 'Creating...') : (repairAddToBill ? 'Create & Add to Bill' : 'Create Repair')"></span>
                         </button>
-                    </template>
-                    <div x-show="linkedRepairs.length === 0 && !linkedLoading" class="flex flex-col items-center justify-center text-gray-400 py-16 gap-3">
-                        <svg class="w-12 h-12 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        <p class="text-sm font-medium">No repairs found</p>
-                        <p class="text-xs text-gray-300">This customer has no completed repairs</p>
                     </div>
-                    <div x-show="linkedLoading" class="flex items-center justify-center py-16 text-gray-400">
-                        <svg class="animate-spin w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
-                        Loading…
+                </div>
+
+                {{-- Existing repairs (Add to Bill) --}}
+                <div x-show="repairMode === 'existing'" class="flex flex-col flex-1 min-h-0">
+                    <div class="mb-2 relative">
+                        <span class="pointer-events-none text-gray-400" style="position:absolute; left:0.75rem; top:50%; transform:translateY(-50%); z-index:2;">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </span>
+                        <input x-model="repairSearch" @input.debounce.300ms="loadCustomerRepairs()" type="text"
+                            class="form-input-custom sales-field text-sm w-full" style="padding-left:2.25rem;"
+                            placeholder="Search by ticket, device, IMEI...">
+                    </div>
+                    <div x-show="!selectedCustomer && !repairSearch" class="card sales-panel p-6 flex flex-col items-center justify-center text-gray-400 py-12 gap-3">
+                        <svg class="w-12 h-12 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        <p class="text-sm font-medium">Select a customer or search</p>
+                        <p class="text-xs text-gray-300">Pick a past repair to include in this bill</p>
+                    </div>
+                    <div x-show="selectedCustomer || repairSearch" class="overflow-y-auto flex-1 min-h-0 space-y-2 pb-1 pr-1">
+                        <template x-for="r in linkedRepairs" :key="r.id">
+                            <div :class="cart.find(c => c.item_type === 'repair' && c.linked_id === r.id) ? 'border-orange-400 bg-orange-50 opacity-60' : 'hover:border-orange-300 hover:shadow-md'"
+                                class="w-full rounded-lg border border-gray-200 p-3 transition-all">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="min-w-0 flex-1 cursor-pointer" @click="addLinkedRepair(r)">
+                                        <p class="text-sm font-semibold text-gray-800 truncate" x-text="r.label"></p>
+                                        <p class="text-xs text-gray-500 truncate mt-0.5" x-text="r.description"></p>
+                                        <div class="flex items-center gap-2 mt-0.5">
+                                            <span class="text-[10px] text-gray-400" x-text="r.date"></span>
+                                            <span class="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+                                                :class="r.status === 'closed' ? 'bg-green-100 text-green-700' : (r.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-purple-100 text-purple-700')"
+                                                x-text="r.status"></span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <a :href="'/admin/repairs/' + r.id + '/print'" target="_blank" @click.stop
+                                            class="p-1.5 rounded-md text-gray-400 hover:text-orange-600 hover:bg-orange-50 transition-colors" title="Print Repair">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                                        </a>
+                                        <div class="text-right">
+                                            <span class="text-orange-600 font-bold text-sm" x-text="'₹' + Number(r.amount).toLocaleString('en-IN', {minimumFractionDigits:2})"></span>
+                                            <span x-show="cart.find(c => c.item_type === 'repair' && c.linked_id === r.id)" class="block text-[10px] text-orange-500 font-medium mt-0.5">Added</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="linkedRepairs.length === 0 && !linkedLoading" class="flex flex-col items-center justify-center text-gray-400 py-16 gap-3">
+                            <svg class="w-12 h-12 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            <p class="text-sm font-medium">No repairs found</p>
+                            <p class="text-xs text-gray-300">This customer has no completed repairs</p>
+                        </div>
+                        <div x-show="linkedLoading" class="flex items-center justify-center py-16 text-gray-400">
+                            <svg class="animate-spin w-6 h-6 mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                            Loading…
+                        </div>
                     </div>
                 </div>
             </div>
@@ -974,6 +1185,31 @@ function posBilling() {
         linkedLoading: false,
         rechargeSearch: '',
         repairSearch: '',
+        rechargeMode: 'new',  // 'new' or 'existing'
+        repairMode: 'new',    // 'new' or 'existing'
+
+        // Recharge create form
+        rechargeProviders: [],
+        rechargeProviderSearch: '',
+        rechargeProviderOpen: false,
+        rechargeForm: { provider_id: null, mobile_number: '', recharge_amount: '', payment_method: 'cash', transaction_id: '' },
+        rechargeSaving: false,
+        rechargeError: '',
+        rechargeSuccess: '',
+        rechargeAddToBill: true,
+
+        // Repair create form
+        brandModelMap: @json($brandModelMap),
+        brandList: @json($brands),
+        repairBrandSearch: '',
+        repairBrandOpen: false,
+        repairModelSearch: '',
+        repairModelOpen: false,
+        repairForm: { device_brand: '', device_model: '', imei: '', problem_description: '', estimated_cost: '', expected_delivery_date: '', advance_amount: '', advance_method: 'cash', advance_reference: '' },
+        repairSaving: false,
+        repairError: '',
+        repairSuccess: '',
+        repairAddToBill: true,
 
         form: { customer_id: null, discount: 0 },
 
@@ -991,7 +1227,7 @@ function posBilling() {
                 const type = new URLSearchParams(window.location.search).get('type') || 'product';
                 this.itemType = validTypes.includes(type) ? type : 'product';
             });
-            await Promise.all([this.searchProducts(), this.loadServices(), this.loadFilterData()]);
+            await Promise.all([this.searchProducts(), this.loadServices(), this.loadFilterData(), this.loadRechargeProviders()]);
         },
 
         switchTab(type) {
@@ -1221,6 +1457,117 @@ function posBilling() {
             });
         },
 
+        // ── Recharge & Repair creation ──
+        async loadRechargeProviders() {
+            const r = await RepairBox.ajax('/admin/recharge-providers');
+            if (r.data) this.rechargeProviders = r.data;
+        },
+
+        async createRecharge() {
+            this.rechargeError = '';
+            this.rechargeSuccess = '';
+            if (!this.rechargeForm.provider_id) { this.rechargeError = 'Please select a provider'; return; }
+            if (!this.rechargeForm.mobile_number) { this.rechargeError = 'Mobile number is required'; return; }
+            if (!this.rechargeForm.recharge_amount || this.rechargeForm.recharge_amount < 1) { this.rechargeError = 'Amount must be at least 1'; return; }
+            this.rechargeSaving = true;
+            try {
+                const payload = {
+                    provider_id: this.rechargeForm.provider_id,
+                    mobile_number: this.rechargeForm.mobile_number,
+                    recharge_amount: this.rechargeForm.recharge_amount,
+                    payment_method: this.rechargeForm.payment_method,
+                    transaction_id: this.rechargeForm.transaction_id || null,
+                };
+                if (this.selectedCustomer) payload.customer_id = this.selectedCustomer.id;
+                const r = await RepairBox.ajax('/admin/recharges', 'POST', payload);
+                if (r.success) {
+                    if (this.rechargeAddToBill && r.data) {
+                        const rc = r.data;
+                        const label = (rc.provider?.name || 'Recharge') + ' — ' + rc.mobile_number;
+                        this.cart.push({
+                            item_type: 'recharge', product_id: null, service_id: null,
+                            item_name: label, quantity: 1,
+                            price: parseFloat(rc.recharge_amount), mrp: parseFloat(rc.recharge_amount),
+                            cost_price: 0, max_selling_price: 0,
+                            is_linked: true, linked_id: rc.id, _showDisc: false,
+                        });
+                        this.rechargeSuccess = 'Recharge created & added to bill!';
+                    } else {
+                        this.rechargeSuccess = 'Recharge created successfully!';
+                    }
+                    this.rechargeForm = { provider_id: null, mobile_number: '', recharge_amount: '', payment_method: 'cash', transaction_id: '' };
+                    this.rechargeProviderSearch = '';
+                    this.loadCustomerRecharges();
+                    setTimeout(() => this.rechargeSuccess = '', 4000);
+                } else {
+                    this.rechargeError = r.message || 'Failed to create recharge';
+                }
+            } catch (e) {
+                this.rechargeError = e.message || 'Failed to create recharge';
+            }
+            this.rechargeSaving = false;
+        },
+
+        filteredRepairModels() {
+            if (!this.repairForm.device_brand) return [];
+            const brand = this.brandModelMap.find(b => b.name === this.repairForm.device_brand);
+            if (!brand || !brand.models) return [];
+            if (!this.repairModelSearch) return brand.models;
+            return brand.models.filter(m => m.toLowerCase().includes(this.repairModelSearch.toLowerCase()));
+        },
+
+        async createRepair() {
+            this.repairError = '';
+            this.repairSuccess = '';
+            if (!this.selectedCustomer) { this.repairError = 'Please select a customer first'; return; }
+            if (!this.repairForm.device_brand) { this.repairError = 'Device brand is required'; return; }
+            if (!this.repairForm.device_model) { this.repairError = 'Device model is required'; return; }
+            if (!this.repairForm.problem_description) { this.repairError = 'Problem description is required'; return; }
+            this.repairSaving = true;
+            try {
+                const payload = {
+                    customer_id: this.selectedCustomer.id,
+                    device_brand: this.repairForm.device_brand,
+                    device_model: this.repairForm.device_model,
+                    imei: this.repairForm.imei || null,
+                    problem_description: this.repairForm.problem_description,
+                    estimated_cost: this.repairForm.estimated_cost || null,
+                    expected_delivery_date: this.repairForm.expected_delivery_date || null,
+                    advance_amount: this.repairForm.advance_amount || null,
+                    advance_method: this.repairForm.advance_method || 'cash',
+                    advance_reference: this.repairForm.advance_reference || null,
+                };
+                const r = await RepairBox.ajax('/admin/repairs', 'POST', payload);
+                if (r.success) {
+                    const ticket = r.data?.ticket_number || '';
+                    if (this.repairAddToBill && r.data) {
+                        const rp = r.data;
+                        const label = (rp.ticket_number || '') + ' — ' + (rp.device_brand || '') + ' ' + (rp.device_model || '');
+                        this.cart.push({
+                            item_type: 'repair', product_id: null, service_id: null,
+                            item_name: label, quantity: 1,
+                            price: parseFloat(rp.estimated_cost || 0), mrp: parseFloat(rp.estimated_cost || 0),
+                            cost_price: 0, max_selling_price: 0,
+                            is_linked: true, linked_id: rp.id, _showDisc: false,
+                        });
+                        this.repairSuccess = 'Repair created & added to bill' + (ticket ? ' — Ticket: ' + ticket : '') + '!';
+                    } else {
+                        this.repairSuccess = 'Repair created' + (ticket ? ' — Ticket: ' + ticket : '') + '!';
+                    }
+                    this.repairForm = { device_brand: '', device_model: '', imei: '', problem_description: '', estimated_cost: '', expected_delivery_date: '', advance_amount: '', advance_method: 'cash', advance_reference: '' };
+                    this.repairBrandSearch = '';
+                    this.repairModelSearch = '';
+                    this.loadCustomerRepairs();
+                    setTimeout(() => this.repairSuccess = '', 4000);
+                } else {
+                    this.repairError = r.message || 'Failed to create repair';
+                }
+            } catch (e) {
+                this.repairError = e.message || 'Failed to create repair';
+            }
+            this.repairSaving = false;
+        },
+
         async findCustomers(page) {
             page = page || 1;
             if (page === 1) this.custPage = 1;
@@ -1399,10 +1746,23 @@ function posBilling() {
             this.form = { customer_id: null, discount: 0 };
             this.selectedCustomer = null;
             this.customerSearch = '';
+            this.rechargeForm = { provider_id: null, mobile_number: '', recharge_amount: '', payment_method: 'cash', transaction_id: '' };
+            this.rechargeProviderSearch = '';
+            this.rechargeError = '';
+            this.rechargeSuccess = '';
+            this.repairForm = { device_brand: '', device_model: '', imei: '', problem_description: '', estimated_cost: '', expected_delivery_date: '', advance_amount: '', advance_method: 'cash', advance_reference: '' };
+            this.repairBrandSearch = '';
+            this.repairModelSearch = '';
+            this.repairError = '';
+            this.repairSuccess = '';
             this.linkedRecharges = [];
             this.linkedRepairs = [];
             this.rechargeSearch = '';
             this.repairSearch = '';
+            this.rechargeMode = 'new';
+            this.repairMode = 'new';
+            this.rechargeAddToBill = true;
+            this.repairAddToBill = true;
             this.createdInvoice = null;
             this.showSuccessModal = false;
             this.showPaymentModal = false;
