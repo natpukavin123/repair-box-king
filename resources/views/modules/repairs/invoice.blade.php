@@ -46,6 +46,7 @@
     $shopName    = \App\Models\Setting::getValue('shop_name',    'RepairBox');
     $shopAddress = \App\Models\Setting::getValue('shop_address', 'Your shop address');
     $shopPhone   = \App\Models\Setting::getValue('shop_phone',   '');
+    $shopPhone2  = \App\Models\Setting::getValue('shop_phone2',  '');
     $shopEmail   = \App\Models\Setting::getValue('shop_email',   '');
     $shopSlogan  = \App\Models\Setting::getValue('shop_slogan',  'Your Trusted Mobile Partner');
     $shopIcon    = \App\Models\Setting::getValue('shop_icon',    '');
@@ -168,8 +169,8 @@ body.lang-ta .inv-shop-name{font-size:18px;}
 .inv-logo img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;}
 .inv-logo-txt{font-size:7px;font-weight:700;color:#000;text-align:center;line-height:1.4;}
 .inv-shop{flex:1;min-width:0;}
-.inv-shop-name{font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:900;color:#000;line-height:1;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.inv-shop-name{font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:900;color:#000;line-height:1.15;
+    overflow-wrap:break-word;word-break:break-word;}
 .inv-shop-slogan{font-size:8px;color:#000;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
 .inv-shop-contact{font-size:9px;color:#000;margin-top:4px;line-height:1.7;}
 .inv-badge{text-align:right;flex-shrink:0;}
@@ -315,7 +316,7 @@ table.sum-tbl .row-full td{color:#000;font-weight:900;text-align:center;border-b
                     <div class="inv-shop-slogan" data-en="{{ e($shopSlogan) }}" data-ta="{{ e($shopSloganTa) }}" data-setting-ta="receipt_shop_slogan_ta">{{ $defaultLang === 'ta' ? $shopSloganTa : $shopSlogan }}</div>
                     <div class="inv-shop-contact" data-en-addr="{{ e($shopAddress) }}" data-ta-addr="{{ e($shopAddressTa) }}">
                         &#128205; {{ $defaultLang === 'ta' ? $shopAddressTa : $shopAddress }}<br>
-                        &#128222; {{ $shopPhone }}@if($shopEmail) &middot; &#9993; {{ $shopEmail }}@endif
+                        &#128222; {{ $shopPhone }}@if($shopPhone2) &nbsp;/&nbsp; {{ $shopPhone2 }}@endif @if($shopEmail) &middot; &#9993; {{ $shopEmail }}@endif
                     </div>
                 </div>
                 <div class="inv-badge">
@@ -452,7 +453,7 @@ table.sum-tbl .row-full td{color:#000;font-weight:900;text-align:center;border-b
             <div class="inv-foot">
                 <div class="inv-tc" data-en="{{ e($footerTextEn) }}" data-ta="{{ e($footerTextTa) }}" data-setting-en="repair_invoice_footer_text" data-setting-ta="repair_invoice_footer_text_ta">{{ $defaultLang === 'ta' ? $footerTextTa : $footerTextEn }}</div>
                 <div class="inv-gen">
-                    {{ $shopName }} &nbsp;|&nbsp; &#128222; {{ $shopPhone }}
+                    {{ $shopName }} &nbsp;|&nbsp; &#128222; {{ $shopPhone }}@if($shopPhone2) &nbsp;/&nbsp; {{ $shopPhone2 }}@endif
                     @if($shopEmail) &nbsp;|&nbsp; &#9993; {{ $shopEmail }} @endif
                     &nbsp;|&nbsp; E &amp; O.E.
                 </div>
@@ -464,6 +465,7 @@ table.sum-tbl .row-full td{color:#000;font-weight:900;text-align:center;border-b
 
 <script>
 var shopPhone = @json($shopPhone);
+var shopPhone2 = @json($shopPhone2);
 var shopEmail = @json($shopEmail);
 
 function switchLang(lang) {
@@ -483,12 +485,8 @@ function switchLang(lang) {
     document.querySelectorAll('[data-' + lang + '-addr]').forEach(function(el) {
         var addr = el.getAttribute('data-' + lang + '-addr');
         var html = '\uD83D\uDCCD ' + addr + '<br>\uD83D\uDCDE ' + shopPhone;
+        if (shopPhone2) html += ' / ' + shopPhone2;
         if (shopEmail) html += ' \u00B7 \u2709 ' + shopEmail;
-        el.innerHTML = html;
-    });
-
-    document.getElementById('previewTitle').textContent =
-        lang === 'ta' ? @json($headerTitleTa) : @json($headerTitleEn);
 }
 
 // ── Edit Mode (iframe embedding in settings page) ──

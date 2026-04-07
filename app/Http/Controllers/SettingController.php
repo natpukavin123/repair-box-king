@@ -26,7 +26,7 @@ class SettingController extends Controller
     {
         return [
             'general' => [
-                'shop_name', 'shop_address', 'shop_phone', 'shop_email', 'shop_slogan',
+                'shop_name', 'shop_address', 'shop_phone', 'shop_phone2', 'shop_email', 'shop_slogan',
                 'shop_whatsapp',
                 'shop_open_days', 'shop_open_time', 'shop_close_time', 'shop_holiday',
                 'currency_symbol', 'invoice_prefix', 'repair_prefix', 'low_stock_threshold',
@@ -73,6 +73,7 @@ class SettingController extends Controller
                 'settings.shop_name'          => 'nullable|string|max:200',
                 'settings.shop_address'       => 'nullable|string|max:500',
                 'settings.shop_phone'         => 'nullable|string|max:20',
+                'settings.shop_phone2'        => 'nullable|string|max:20',
                 'settings.shop_email'         => 'nullable|email|max:150',
                 'settings.shop_slogan'        => 'nullable|string|max:200',
                 'settings.shop_whatsapp'      => 'nullable|string|max:20',

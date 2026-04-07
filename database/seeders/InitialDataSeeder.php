@@ -71,6 +71,7 @@ class InitialDataSeeder extends Seeder
         $defaults = [
             'shop_name'       => 'My Repair Shop',
             'shop_phone'      => '',
+            'shop_phone2'     => '',
             'shop_email'      => '',
             'shop_address'    => '',
             'currency'        => 'INR',

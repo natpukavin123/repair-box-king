@@ -7,6 +7,7 @@
     $shopSlogan  = $settings['shop_slogan'] ?? 'Your Trusted Mobile Partner';
     $shopAddress = $settings['shop_address'] ?? 'Your shop address';
     $shopPhone   = $settings['shop_phone'] ?? '';
+    $shopPhone2  = $settings['shop_phone2'] ?? '';
     $shopEmail   = $settings['shop_email'] ?? '';
     $shopIcon    = $settings['shop_icon'] ?? '';
 @endphp
@@ -230,7 +231,7 @@
                         <div class="ps-shop">
                             <div class="ps-shop-name" x-text="previewLang==='ta' ? (s.invoice_shop_name_ta || '{{ e($shopName) }}') : '{{ e($shopName) }}'"></div>
                             <div class="ps-shop-slogan" x-text="previewLang==='ta' ? (s.invoice_shop_slogan_ta || '{{ e($shopSlogan) }}') : '{{ e($shopSlogan) }}'"></div>
-                            <div class="ps-shop-contact"><span x-text="previewLang==='ta' ? (s.invoice_shop_address_ta || '{{ e($shopAddress) }}') : '{{ e($shopAddress) }}'"></span>@if($shopPhone)<br>{{ $shopPhone }}@endif</div>
+                            <div class="ps-shop-contact"><span x-text="previewLang==='ta' ? (s.invoice_shop_address_ta || '{{ e($shopAddress) }}') : '{{ e($shopAddress) }}'"></span>@if($shopPhone)<br>{{ $shopPhone }}@if($shopPhone2) / {{ $shopPhone2 }}@endif @endif</div>
                         </div>
                         <div class="ps-badge">
                             <div class="ps-type ps-hl" x-text="previewLang==='ta' ? (s.invoice_header_title_ta || 'விற்பனை இரசீது') : (s.invoice_header_title_en || 'Sales Invoice')"></div>
@@ -261,7 +262,7 @@
                         </div>
                     </div>
                     <div class="ps-sign"><div class="ps-sign-line"></div><div class="ps-sign-shop">{{ $shopName }}</div><div class="ps-sign-lbl ps-hl" x-text="previewLang==='ta' ? (s.invoice_sign_label_ta || 'அங்கீகரிக்கப்பட்ட கையொப்பம்') : (s.invoice_sign_label_en || 'Authorised Signatory')"></div></div>
-                    <div class="ps-foot"><div class="ps-foot-txt ps-hl" x-text="previewLang==='ta' ? (s.invoice_footer_text_ta || 'நீதிமன்ற அதிகார வரம்புக்கு உட்பட்டது.') : (s.invoice_footer_text || 'Subject to jurisdiction. Goods once sold will not be taken back.')"></div><div class="ps-foot-gen">RepairBox</div></div>
+                    <div class="ps-foot"><div class="ps-foot-txt ps-hl" x-text="previewLang==='ta' ? (s.invoice_footer_text_ta || 'நீதிமன்ற அதிகார வரம்புக்கு உட்பட்டது.') : (s.invoice_footer_text || 'Subject to jurisdiction. Goods once sold will not be taken back.')"></div><div class="ps-foot-gen">{{ $shopName }} @if($shopPhone) | &#128222; {{ $shopPhone }}@if($shopPhone2) / {{ $shopPhone2 }}@endif @endif</div></div>
                 </div>
 
                 {{-- REPAIR RECEIPT --}}
@@ -271,7 +272,7 @@
                         <div class="ps-shop">
                             <div class="ps-shop-name" x-text="previewLang==='ta' ? (s.receipt_shop_name_ta || '{{ e($shopName) }}') : '{{ e($shopName) }}'"></div>
                             <div class="ps-shop-slogan" x-text="previewLang==='ta' ? (s.receipt_shop_slogan_ta || '{{ e($shopSlogan) }}') : '{{ e($shopSlogan) }}'"></div>
-                            <div class="ps-shop-contact"><span x-text="previewLang==='ta' ? (s.receipt_shop_address_ta || '{{ e($shopAddress) }}') : '{{ e($shopAddress) }}'"></span>@if($shopPhone)<br>{{ $shopPhone }}@endif</div>
+                            <div class="ps-shop-contact"><span x-text="previewLang==='ta' ? (s.receipt_shop_address_ta || '{{ e($shopAddress) }}') : '{{ e($shopAddress) }}'"></span>@if($shopPhone)<br>{{ $shopPhone }}@if($shopPhone2) / {{ $shopPhone2 }}@endif @endif</div>
                         </div>
                         <div class="ps-badge">
                             <div class="ps-type ps-hl" x-text="previewLang==='ta' ? (s.receipt_header_title_ta || 'பழுதுபார்ப்பு ரசீது') : (s.receipt_header_title_en || 'Repair Receipt')"></div>
@@ -305,7 +306,7 @@
                         </div>
                     </div>
                     <div class="ps-sign"><div class="ps-sign-line"></div><div class="ps-sign-shop">{{ $shopName }}</div><div class="ps-sign-lbl ps-hl" x-text="previewLang==='ta' ? (s.receipt_sign_label_ta || 'அங்கீகரிக்கப்பட்ட கையொப்பம்') : (s.receipt_sign_label_en || 'Authorised Signatory')"></div></div>
-                    <div class="ps-foot"><div class="ps-foot-txt ps-hl" x-text="previewLang==='ta' ? (s.receipt_footer_text_ta || 'உங்கள் சாதனத்தை பெற இந்த ரசீதை வைத்திருங்கள்.') : (s.receipt_footer_text || 'Keep this receipt to claim your device.')"></div><div class="ps-foot-gen">RepairBox</div></div>
+                    <div class="ps-foot"><div class="ps-foot-txt ps-hl" x-text="previewLang==='ta' ? (s.receipt_footer_text_ta || 'உங்கள் சாதனத்தை பெற இந்த ரசீதை வைத்திருங்கள்.') : (s.receipt_footer_text || 'Keep this receipt to claim your device.')"></div><div class="ps-foot-gen">{{ $shopName }} @if($shopPhone) | &#128222; {{ $shopPhone }}@if($shopPhone2) / {{ $shopPhone2 }}@endif @endif</div></div>
                 </div>
 
                 {{-- REPAIR INVOICE --}}
@@ -315,7 +316,7 @@
                         <div class="ps-shop">
                             <div class="ps-shop-name" x-text="previewLang==='ta' ? (s.receipt_shop_name_ta || '{{ e($shopName) }}') : '{{ e($shopName) }}'"></div>
                             <div class="ps-shop-slogan" x-text="previewLang==='ta' ? (s.receipt_shop_slogan_ta || '{{ e($shopSlogan) }}') : '{{ e($shopSlogan) }}'"></div>
-                            <div class="ps-shop-contact"><span x-text="previewLang==='ta' ? (s.receipt_shop_address_ta || '{{ e($shopAddress) }}') : '{{ e($shopAddress) }}'"></span>@if($shopPhone)<br>{{ $shopPhone }}@endif</div>
+                            <div class="ps-shop-contact"><span x-text="previewLang==='ta' ? (s.receipt_shop_address_ta || '{{ e($shopAddress) }}') : '{{ e($shopAddress) }}'"></span>@if($shopPhone)<br>{{ $shopPhone }}@if($shopPhone2) / {{ $shopPhone2 }}@endif @endif</div>
                         </div>
                         <div class="ps-badge">
                             <div class="ps-type ps-hl" x-text="previewLang==='ta' ? (s.repair_invoice_header_title_ta || 'பழுதுபார்ப்பு இரசீது') : (s.repair_invoice_header_title_en || 'Repair Invoice')"></div>
@@ -346,7 +347,7 @@
                         </div>
                     </div>
                     <div class="ps-sign"><div class="ps-sign-line"></div><div class="ps-sign-shop">{{ $shopName }}</div><div class="ps-sign-lbl" x-text="previewLang==='ta' ? 'அங்கீகரிக்கப்பட்ட கையொப்பம்' : 'Authorised Signatory'"></div></div>
-                    <div class="ps-foot"><div class="ps-foot-txt ps-hl" x-text="previewLang==='ta' ? (s.repair_invoice_footer_text_ta || 'நீதிமன்ற அதிகார வரம்புக்கு உட்பட்டது.') : (s.repair_invoice_footer_text || 'Subject to jurisdiction.')"></div><div class="ps-foot-gen">RepairBox</div></div>
+                    <div class="ps-foot"><div class="ps-foot-txt ps-hl" x-text="previewLang==='ta' ? (s.repair_invoice_footer_text_ta || 'நீதிமன்ற அதிகார வரம்புக்கு உட்பட்டது.') : (s.repair_invoice_footer_text || 'Subject to jurisdiction.')"></div><div class="ps-foot-gen">{{ $shopName }} @if($shopPhone) | &#128222; {{ $shopPhone }}@if($shopPhone2) / {{ $shopPhone2 }}@endif @endif</div></div>
                 </div>
 
             </div>

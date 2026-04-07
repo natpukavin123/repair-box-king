@@ -3,6 +3,7 @@
     $shopName    = \App\Models\Setting::getValue('shop_name',    'RepairBox');
     $shopAddress = \App\Models\Setting::getValue('shop_address', 'Your shop address');
     $shopPhone   = \App\Models\Setting::getValue('shop_phone',   '');
+    $shopPhone2  = \App\Models\Setting::getValue('shop_phone2',  '');
     $shopEmail   = \App\Models\Setting::getValue('shop_email',   '');
     $shopSlogan  = \App\Models\Setting::getValue('shop_slogan',  'Your Trusted Mobile Partner');
     $shopIcon    = \App\Models\Setting::getValue('shop_icon',    '');
@@ -92,13 +93,13 @@ body.lang-ta .inv-shop-name{font-size:18px;}
 .inv-logo img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;}
 .inv-logo-txt{font-size:7px;font-weight:700;color:#000;text-align:center;line-height:1.4;}
 .inv-shop{flex:1;min-width:0;}
-.inv-shop-name{font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:900;color:#000;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.inv-shop-name{font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:900;color:#000;line-height:1.15;overflow-wrap:break-word;word-break:break-word;}
 .inv-shop-slogan{font-size:8px;color:#000;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
 .inv-shop-contact{font-size:9px;color:#000;margin-top:4px;line-height:1.7;}
 .inv-badge{text-align:right;flex-shrink:0;}
 .inv-type{display:inline-block;border:1.5px solid #000;color:#000;font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:3px 8px;margin-bottom:3px;}
-.inv-num{font-family:'DM Sans',Arial,sans-serif;font-size:13px;font-weight:900;color:#fff;background:#000;padding:2px 8px;display:inline-block;letter-spacing:.4px;line-height:1.6;}
-.inv-date{font-size:9px;color:#000;margin-top:3px;}
+.inv-num{font-family:'Playfair Display',Georgia,serif;font-size:16px;font-weight:900;color:#000;line-height:1;}
+.inv-date{font-size:9px;color:#000;margin-top:2px;}
 .inv-rule{height:0;flex-shrink:0;}
 
 .inv-info{display:flex;border-bottom:2px solid #000;flex-shrink:0;}
@@ -142,8 +143,8 @@ body.lang-ta .inv-shop-name{font-size:18px;}
 .sign-for{font-family:'Playfair Display',Georgia,serif;font-size:10px;font-weight:700;color:#000;}
 .sign-auth{font-size:8px;color:#000;letter-spacing:1px;text-transform:uppercase;margin-top:1px;}
 
-.inv-foot{background:#fff;border-top:2px solid #000;padding:4px 10px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
-.inv-tc{font-size:8px;color:#000;flex:1;margin-right:8px;line-height:1.5;}
+.inv-foot{background:#fff;border-top:2px solid #000;padding:5px 10px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.inv-tc{font-size:8px;color:#000;flex:1;margin-right:8px;line-height:1.6;}
 .inv-gen{font-size:8px;color:#000;white-space:nowrap;}
 
 @page{size:A4 landscape;margin:0;}
@@ -217,7 +218,7 @@ body.lang-ta .inv-shop-name{font-size:18px;}
                     <div class="inv-shop-slogan" data-en="{{ e($shopSlogan) }}" data-ta="{{ e($shopSloganTa) }}" data-setting-ta="receipt_shop_slogan_ta">{{ $defaultLang === 'ta' ? $shopSloganTa : $shopSlogan }}</div>
                     <div class="inv-shop-contact" data-en-addr="{{ e($shopAddress) }}" data-ta-addr="{{ e($shopAddressTa) }}">
                         &#128205; {{ $defaultLang === 'ta' ? $shopAddressTa : $shopAddress }}<br>
-                        &#128222; {{ $shopPhone }}@if($shopEmail) &middot; &#9993; {{ $shopEmail }}@endif
+                        &#128222; {{ $shopPhone }}@if($shopPhone2) &nbsp;/&nbsp; {{ $shopPhone2 }}@endif @if($shopEmail) &middot; &#9993; {{ $shopEmail }}@endif
                     </div>
                 </div>
                 <div class="inv-badge">
@@ -325,7 +326,7 @@ body.lang-ta .inv-shop-name{font-size:18px;}
             <div class="inv-foot">
                 <div class="inv-tc" data-en="{{ e($footerTextEn) }}" data-ta="{{ e($footerTextTa) }}" data-setting-en="receipt_footer_text" data-setting-ta="receipt_footer_text_ta">{{ $defaultLang === 'ta' ? $footerTextTa : $footerTextEn }}</div>
                 <div class="inv-gen">
-                    {{ $shopName }} &nbsp;|&nbsp; &#128222; {{ $shopPhone }}
+                    {{ $shopName }} &nbsp;|&nbsp; &#128222; {{ $shopPhone }}@if($shopPhone2) &nbsp;/&nbsp; {{ $shopPhone2 }}@endif
                     @if($shopEmail) &nbsp;|&nbsp; &#9993; {{ $shopEmail }} @endif
                     &nbsp;|&nbsp; #{{ $repair->ticket_number }}
                 </div>
@@ -337,6 +338,7 @@ body.lang-ta .inv-shop-name{font-size:18px;}
 
 <script>
 var shopPhone = @json($shopPhone);
+var shopPhone2 = @json($shopPhone2);
 var shopEmail = @json($shopEmail);
 var notesEn = @json($notesEnArr);
 var notesTa = @json($notesTaArr);
@@ -354,11 +356,8 @@ function switchLang(lang) {
     document.querySelectorAll('[data-' + lang + '-addr]').forEach(function(el) {
         var addr = el.getAttribute('data-' + lang + '-addr');
         var html = '\uD83D\uDCCD ' + addr + '<br>\uD83D\uDCDE ' + shopPhone;
+        if (shopPhone2) html += ' / ' + shopPhone2;
         if (shopEmail) html += ' \u00B7 \u2709 ' + shopEmail;
-        el.innerHTML = html;
-    });
-
-    // Notes list
     var notes = lang === 'ta' ? notesTa : notesEn;
     var container = document.getElementById('notesList');
     container.innerHTML = '';

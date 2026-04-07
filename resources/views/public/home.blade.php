@@ -269,19 +269,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#030712;color:#e2e8f0;o
 img{display:block;max-width:100%;}a{text-decoration:none;color:inherit;}
 :root{--bg:#030712;--bg2:#080e1c;--bg3:#0f172a;--bl:#3b82f6;--border:rgba(255,255,255,.06);--glass:rgba(255,255,255,.025);}
 .container{max-width:1160px;margin:0 auto;padding:0 24px;}.section{padding:96px 0;}.text-center{text-align:center;}
-/* LOADER */
-.page-loader{position:fixed;inset:0;z-index:10000;background:#030712;display:flex;align-items:center;justify-content:center;flex-direction:column;transition:opacity .6s,visibility .6s;}
-.page-loader.hidden{opacity:0;visibility:hidden;pointer-events:none;}
-.pl-ring{width:68px;height:68px;position:relative;flex-shrink:0;}
-.pl-ring::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,#3b82f6,#8b5cf6,#06b6d4,#3b82f6);animation:plSpin 1.2s linear infinite;}
-.pl-ring::after{content:'';position:absolute;inset:4px;border-radius:50%;background:#030712;}
-.pl-icon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1;}
-.pl-icon img,.pl-icon svg{width:30px;height:30px;object-fit:contain;color:#60a5fa;}
-.pl-name{margin-top:18px;font-size:15px;font-weight:800;color:#fff;letter-spacing:2px;}
-.pl-sub{font-size:10px;color:#475569;letter-spacing:4px;text-transform:uppercase;margin-top:4px;}
-.pl-bar{width:100px;height:2px;background:rgba(255,255,255,.06);border-radius:10px;margin-top:16px;overflow:hidden;}
-.pl-bar-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#8b5cf6);border-radius:10px;animation:plFill 2s ease-out forwards;}
-@keyframes plSpin{to{transform:rotate(360deg);}}@keyframes plFill{0%{width:0}100%{width:100%}}
+
 /* SCROLL PROGRESS */
 .scroll-progress{position:fixed;top:0;left:0;height:2px;z-index:9999;background:linear-gradient(90deg,#3b82f6,#8b5cf6,#06b6d4);width:0;transition:width .1s linear;}
 /* NAV */
@@ -528,17 +516,7 @@ img{display:block;max-width:100%;}a{text-decoration:none;color:inherit;}
 </head>
 <body>
 @include('components.seo-body')
-{{-- PAGE LOADER --}}
-<div class="page-loader" id="pageLoader">
-  <div class="pl-ring">
-    <div class="pl-icon">
-      @if($shopIcon)<img src="{{ image_url($shopIcon) }}" alt="{{ $shopName }}">@else<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>@endif
-    </div>
-  </div>
-  <div class="pl-name">{{ Str::upper($shopName) }}</div>
-  <div class="pl-sub">Loading</div>
-  <div class="pl-bar"><div class="pl-bar-fill"></div></div>
-</div>
+
 
 <div class="scroll-progress" id="scrollProgress"></div>
 
@@ -887,10 +865,7 @@ img{display:block;max-width:100%;}a{text-decoration:none;color:inherit;}
 
 <script>
 (function(){
-  /* Page Loader */
-  window.addEventListener('load',function(){
-    setTimeout(function(){var l=document.getElementById('pageLoader');if(l)l.classList.add('hidden');},1600);
-  });
+
   /* Scroll Progress + Navbar hide-on-scroll-down */
   var sp=document.getElementById('scrollProgress'),nb=document.getElementById('navbar'),t=false,lastY=0;
   function us(){

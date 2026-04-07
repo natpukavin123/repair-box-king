@@ -32,8 +32,7 @@
         .backups-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .backups-table-wrap .data-table { min-width: 540px; }
 
-        /* General settings / appearance card inner */
-        .settings-appearance-inner .mt-3 { flex-direction: column !important; align-items: flex-start !important; }
+
     }
 
     @media (max-width: 480px) {
@@ -1417,57 +1416,13 @@
                         <span>Preview: </span>
                         <strong x-text="settings.shop_open_days + ' · ' + settings.shop_open_time + ' – ' + settings.shop_close_time"></strong>
                     </div>
+                    <div class="mt-4">
+                        <button @click="saveSettings()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save Shop Settings</button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        {{-- ─── Appearance ─── --}}
-        <div class="card">
-            <div class="card-header"><h3 class="text-lg font-semibold">Appearance</h3></div>
-            <div class="card-body">
-                <div class="rounded-[28px] border border-white/60 bg-white/80 p-5 shadow-[0_20px_60px_-28px_rgba(15,23,42,0.35)] backdrop-blur">
-                    <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-                        <div>
-                            <h4 class="text-xl font-semibold text-slate-900">Appearance</h4>
-                            <p class="mt-1 max-w-2xl text-sm text-slate-500">Control the motion style for page transitions and hover effects.</p>
-                        </div>
-                        <div class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-                            <span class="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-                            Atelier Glass Theme
-                        </div>
-                    </div>
-
-                    <div class="mt-5 grid gap-4 md:grid-cols-2">
-                        <div>
-                            <label class="form-label">Motion Style</label>
-                            <select x-model="settings.ui_motion" @change="applyAppearancePreview()" class="form-select-custom">
-                                <option value="enhanced">Enhanced</option>
-                                <option value="reduced">Reduced</option>
-                                <option value="none">Off</option>
-                            </select>
-                            <p class="mt-2 text-xs text-slate-500">Enhanced adds page transitions and hover movement. Reduced keeps the app calmer. Off removes decorative motion.</p>
-                        </div>
-                        <div class="rounded-[22px] border border-slate-200 bg-slate-50/80 p-4">
-                            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Current Settings</p>
-                            <div class="mt-3 flex items-center justify-between rounded-2xl bg-white px-4 py-3 shadow-sm">
-                                <div>
-                                    <div class="text-sm font-semibold text-slate-900">Atelier Glass</div>
-                                    <div class="text-xs text-slate-500">Bright editorial workspace with refined glass panels.</div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-400">Motion</div>
-                                    <div class="mt-1 text-sm font-semibold text-slate-700" x-text="formatMotionLabel(settings.ui_motion)"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-5">
-                    <button @click="saveSettings()" class="btn-primary" :disabled="saving"><span x-show="saving" class="spinner mr-1"></span> Save Appearance</button>
-                </div>
-            </div>
-        </div>
     </div>
 
     {{-- ══════════════════════════════════════════════════════════
@@ -2143,7 +2098,7 @@
 function settingsPage() {
     return {
         tab: 'general', saving: false, iconFile: null, previewIcon: '', faviconFile: null, previewFavicon: '',
-        settings: {}, settingKeys: ['shop_name','shop_address','shop_phone','shop_email','shop_slogan','shop_whatsapp','currency_symbol','invoice_prefix','repair_prefix','low_stock_threshold'],
+        settings: {}, settingKeys: ['shop_name','shop_address','shop_phone','shop_phone2','shop_email','shop_slogan','shop_whatsapp','currency_symbol','invoice_prefix','repair_prefix','low_stock_threshold'],
         selectedNotifyTemplate: 'whatsapp_template_received',
         // Print settings state
         printTab: 'sales-invoice', printLang: 'en', printSettings: {},
@@ -2161,14 +2116,6 @@ function settingsPage() {
             { type: 'vendors', label: 'Vendors', columns: ['name', 'phone', 'address', 'specialization'] },
             { type: 'recharge_providers', label: 'Recharge Providers', columns: ['name'] },
             { type: 'service_types', label: 'Services', columns: ['name', 'default_price', 'description'] },
-        ],
-        appearanceThemes: [
-            {
-                id: 'atelier',
-                name: 'Atelier Glass',
-                description: 'Bright editorial workspace with refined glass panels.',
-                preview: 'background:linear-gradient(145deg,#0f172a 0%,#2563eb 42%,#8b5cf6 100%)'
-            }
         ],
         notificationSettingKeys: ['notify_email_received','notify_email_completed','notify_whatsapp_received','notify_whatsapp_completed','whatsapp_api_url','whatsapp_api_token','whatsapp_from_number','whatsapp_template_received','whatsapp_template_completed'],
         emailTemplates: [], showEtModal: false, etEditing: null, etForm: {},
@@ -2216,9 +2163,8 @@ function settingsPage() {
                 RepairBox.ajax('/admin/email-templates'),
                 RepairBox.ajax('/admin/backups')
             ]);
-            if (s.data) this.settings = { ui_theme: 'atelier', ui_motion: 'enhanced', ...s.data };
-            else this.settings = { ui_theme: 'atelier', ui_motion: 'enhanced' };
-            this.applyAppearancePreview();
+            if (s.data) this.settings = s.data;
+            else this.settings = {};
             if(et.data) this.emailTemplates = et.data;
             if(b.data) this.backups = b.data;
         },
@@ -2261,26 +2207,6 @@ function settingsPage() {
             this.testResult = { success: r.success !== false, message: r.message || (r.success !== false ? 'Sent successfully!' : 'Failed to send.') };
         },
         formatLabel(key) { return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); },
-        formatMotionLabel(value) {
-            return ({ enhanced: 'Enhanced', reduced: 'Reduced', none: 'Off' })[value] || 'Enhanced';
-        },
-        get selectedTheme() {
-            return this.appearanceThemes.find(theme => theme.id === this.settings.ui_theme) || this.appearanceThemes[0];
-        },
-        applyAppearancePreview() {
-            const root = document.documentElement;
-            const body = document.body;
-            const theme = this.settings.ui_theme || 'atelier';
-            const motion = this.settings.ui_motion || 'enhanced';
-
-            root.dataset.theme = theme;
-            root.dataset.motion = motion;
-
-            if (body) {
-                body.dataset.theme = theme;
-                body.dataset.motion = motion;
-            }
-        },
         getIconUrl() {
             const icon = this.settings.shop_icon;
             if (!icon) return '';
@@ -2403,7 +2329,7 @@ function settingsPage() {
         },
         async saveSettings() {
             this.saving = true;
-            const generalKeys = ['shop_name','shop_address','shop_phone','shop_email','shop_slogan','shop_whatsapp','shop_open_days','shop_open_time','shop_close_time','shop_holiday','currency_symbol','invoice_prefix','repair_prefix','low_stock_threshold','ui_theme','ui_motion'];
+            const generalKeys = ['shop_name','shop_address','shop_phone','shop_phone2','shop_email','shop_slogan','shop_whatsapp','shop_open_days','shop_open_time','shop_close_time','shop_holiday','currency_symbol','invoice_prefix','repair_prefix','low_stock_threshold','ui_theme','ui_motion'];
             try {
                 const formData = new FormData();
                 formData.append('_method', 'PUT');

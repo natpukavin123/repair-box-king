@@ -5,6 +5,7 @@
     $shopName = \App\Models\Setting::getValue('shop_name', 'RepairBox');
     $shopAddress = \App\Models\Setting::getValue('shop_address', 'Your shop address');
     $shopPhone = \App\Models\Setting::getValue('shop_phone', 'your-phone');
+    $shopPhone2 = \App\Models\Setting::getValue('shop_phone2', '');
     $shopEmail = \App\Models\Setting::getValue('shop_email', 'your-email');
     $invoiceHeaderTitle = \App\Models\Setting::getValue('invoice_header_title', $shopName);
     $invoiceHeaderSubtitle = \App\Models\Setting::getValue('invoice_header_subtitle', $shopAddress);
@@ -111,7 +112,7 @@
             @endif
             <h1>{{ $invoiceHeaderTitle }}</h1>
             <p>{{ $shopAddress }}</p>
-            <p>{{ $shopPhone }} | {{ $shopEmail }}</p>
+            <p>{{ $shopPhone }}@if($shopPhone2) / {{ $shopPhone2 }}@endif | {{ $shopEmail }}</p>
             @hasSection('doc-type')
                 <div class="doc-type">@yield('doc-type')</div>
             @endif

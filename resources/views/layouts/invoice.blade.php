@@ -2,6 +2,7 @@
     $shopName        = \App\Models\Setting::getValue('shop_name',        'Shree Mobile Shop');
     $shopAddress     = \App\Models\Setting::getValue('shop_address',     'Your shop address');
     $shopPhone       = \App\Models\Setting::getValue('shop_phone',       'your-phone');
+    $shopPhone2      = \App\Models\Setting::getValue('shop_phone2',      '');
     $shopEmail       = \App\Models\Setting::getValue('shop_email',       'your-email');
     $shopIcon        = \App\Models\Setting::getValue('shop_icon',        '');
     $shopSlogan      = \App\Models\Setting::getValue('shop_slogan',      'Your Trusted Mobile Partner');
@@ -312,7 +313,7 @@
             <div class="shop-tag">{{ $shopSlogan }}</div>
             <div class="shop-contact">
                 📍 {{ $shopAddress }}<br>
-                📞 {{ $shopPhone }}@if($shopEmail) &nbsp;·&nbsp; ✉ {{ $shopEmail }}@endif
+                📞 {{ $shopPhone }}@if($shopPhone2) &nbsp;/&nbsp; {{ $shopPhone2 }}@endif @if($shopEmail) &nbsp;·&nbsp; ✉ {{ $shopEmail }}@endif
             </div>
         </div>
 
