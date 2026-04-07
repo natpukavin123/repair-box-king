@@ -371,17 +371,6 @@
                         <span class="pos-tab-label" :class="itemType === 'service' ? 'text-violet-700' : 'text-gray-500'">Service</span>
                     </button>
 
-                    {{-- Manual Entry --}}
-                    <button type="button"
-                        @click="switchTab('manual')"
-                        :class="itemType === 'manual' ? 'pos-tab-active-manual' : ''"
-                        class="pos-tab-btn">
-                        <svg class="pos-tab-icon" :class="itemType === 'manual' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                        </svg>
-                        <span class="pos-tab-label" :class="itemType === 'manual' ? 'text-blue-700' : 'text-gray-500'">Manual</span>
-                    </button>
-
                     {{-- Recharge --}}
                     <button type="button"
                         @click="switchTab('recharge'); loadCustomerRecharges()"
@@ -402,6 +391,17 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>
                         </svg>
                         <span class="pos-tab-label" :class="itemType === 'repair' ? 'text-orange-700' : 'text-gray-500'">Repair</span>
+                    </button>
+
+                    {{-- Manual Entry --}}
+                    <button type="button"
+                        @click="switchTab('manual')"
+                        :class="itemType === 'manual' ? 'pos-tab-active-manual' : ''"
+                        class="pos-tab-btn">
+                        <svg class="pos-tab-icon" :class="itemType === 'manual' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                        <span class="pos-tab-label" :class="itemType === 'manual' ? 'text-blue-700' : 'text-gray-500'">Manual</span>
                     </button>
                 </div>
             </div>
