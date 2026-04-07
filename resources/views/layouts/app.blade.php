@@ -95,11 +95,12 @@
     $shopName = \App\Models\Setting::getValue('shop_name', 'RepairBox');
 
     $navItems = [
-        ['name' => 'Sales', 'route' => '/admin/pos', 'match' => 'admin/pos*', 'icon' => 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z'],
-        ['name' => 'Repairs', 'route' => '/admin/repairs', 'match' => 'admin/repairs*', 'icon' => 'M11.42 15.17l-4.655-5.55a.776.776 0 010-1.06v0a.776.776 0 011.13 0l3.72 3.72 7.08-7.08a.776.776 0 011.06 0v0a.776.776 0 010 1.06L11.42 15.17z'],
-        ['name' => 'Recharge', 'route' => '/admin/recharges', 'match' => 'admin/recharges*', 'icon' => 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z'],
-        ['name' => 'Expenses', 'route' => '/admin/expenses', 'match' => 'admin/expenses*', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'],
-        ['name' => 'PO', 'route' => '/admin/po', 'match' => ['admin/po', 'admin/po/*'], 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
+        ['name' => 'Home',     'route' => '/admin/dashboard', 'match' => 'admin/dashboard*', 'color' => '#6366f1', 'color2' => '#818cf8', 'icon' => 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6'],
+        ['name' => 'Sales',    'route' => '/admin/pos',       'match' => 'admin/pos*',        'color' => '#22c55e', 'color2' => '#4ade80', 'icon' => 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z'],
+        ['name' => 'Repairs',  'route' => '/admin/repairs',   'match' => 'admin/repairs*',    'color' => '#f97316', 'color2' => '#fb923c', 'icon' => 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z'],
+        ['name' => 'Recharge', 'route' => '/admin/recharges', 'match' => 'admin/recharges*',  'color' => '#8b5cf6', 'color2' => '#a78bfa', 'icon' => 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z'],
+        ['name' => 'Expenses', 'route' => '/admin/expenses',  'match' => 'admin/expenses*',   'color' => '#ef4444', 'color2' => '#f87171', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'],
+        ['name' => 'PO',       'route' => '/admin/po',        'match' => ['admin/po', 'admin/po/*'], 'color' => '#f59e0b', 'color2' => '#fbbf24', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
     ];
 @endphp
 
@@ -128,12 +129,18 @@
         <!-- Center: Module Links (desktop) -->
         <div class="topnav-links-shell hidden md:flex">
             @foreach($navItems as $item)
-                <a href="{{ $item['route'] }}" class="topnav-link {{ request()->is($item['match']) ? 'active' : '' }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/></svg>
+                @php $isActive = request()->is($item['match']); @endphp
+                <a href="{{ $item['route'] }}" class="topnav-link {{ $isActive ? 'active' : '' }}" style="--nav-color:{{ $item['color'] }};--nav-color2:{{ $item['color2'] }};">
+                    <span class="topnav-link-icon">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="{{ $item['icon'] }}"/></svg>
+                    </span>
                     <span>{{ $item['name'] }}</span>
                 </a>
             @endforeach
         </div>
+
+        <!-- Mobile Page Title (center, mobile only) -->
+        <div class="topnav-page-title flex-1 min-w-0 md:hidden">@yield('page-title', 'Dashboard')</div>
 
         <!-- Right: Settings + User + Logout -->
         <div class="flex items-center gap-2 sm:gap-3">
@@ -142,7 +149,7 @@
                 <span class="hidden lg:inline">Settings</span>
             </a>
 
-            <div class="user-chip hidden sm:flex">
+            <div class="user-chip flex">
                 <div class="user-chip-avatar">
                     {{ substr(auth()->user()->name ?? 'U', 0, 1) }}
                 </div>
@@ -151,12 +158,6 @@
                     <div class="user-chip-name">{{ auth()->user()->name ?? 'User' }}</div>
                 </div>
             </div>
-
-            <!-- PWA Install Button -->
-            <button id="pwa-install-btn" title="Install App" class="icon-action" style="color: #60a5fa;">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                <span class="hidden lg:inline text-xs font-medium">Install</span>
-            </button>
 
             <form method="POST" action="/logout">
                 @csrf
@@ -179,13 +180,17 @@
 <!-- Bottom Navigation Bar (mobile only) -->
 <nav class="bottom-nav md:hidden no-print" aria-label="Mobile navigation">
     @foreach($navItems as $item)
-        <a href="{{ $item['route'] }}" class="bottom-nav-item {{ request()->is($item['match']) ? 'active' : '' }}">
-            <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/></svg>
+        <a href="{{ $item['route'] }}" class="bottom-nav-item {{ request()->is($item['match']) ? 'active' : '' }}" style="--nav-color:{{ $item['color'] }};">
+            <span class="bottom-nav-icon-wrap">
+                <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}"/></svg>
+            </span>
             <span class="bottom-nav-label">{{ $item['name'] }}</span>
         </a>
     @endforeach
-    <a href="/admin/settings" class="bottom-nav-item {{ request()->is('admin/settings*') ? 'active' : '' }}">
-        <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    <a href="/admin/settings" class="bottom-nav-item {{ request()->is('admin/settings*') ? 'active' : '' }}" style="--nav-color:#64748b;">
+        <span class="bottom-nav-icon-wrap">
+            <svg class="bottom-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </span>
         <span class="bottom-nav-label">Settings</span>
     </a>
 </nav>
@@ -339,48 +344,9 @@ if (pageLoader) {
 document.addEventListener('dragover', function(e) { e.preventDefault(); });
 document.addEventListener('drop', function(e) { e.preventDefault(); });
 
-// PWA Install
-(function() {
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(function() {});
-    }
-
-    var installBtn = document.getElementById('pwa-install-btn');
-    if (!installBtn) return;
-
-    // Hide button only when already running as an installed PWA
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-        installBtn.classList.add('hidden');
-        return;
-    }
-
-    // Capture native install prompt whenever it fires
-    window.addEventListener('beforeinstallprompt', function(e) {
-        e.preventDefault();
-        window.__pwaPrompt = e;
-    });
-
-    installBtn.addEventListener('click', async function() {
-        if (window.__pwaPrompt) {
-            // Native browser install dialog
-            window.__pwaPrompt.prompt();
-            var result = await window.__pwaPrompt.userChoice;
-            if (result.outcome === 'accepted') {
-                window.__pwaPrompt = null;
-                installBtn.classList.add('hidden');
-            }
-        } else {
-            // Fallback instructions when native prompt isn't available
-            RepairBox.toast('To install: open browser menu → "Install app" or "Add to Home Screen"', 'info');
-        }
-    });
-
-    window.addEventListener('appinstalled', function() {
-        window.__pwaPrompt = null;
-        installBtn.classList.add('hidden');
-        RepairBox.toast('App installed successfully!', 'success');
-    });
-})();
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(function() {});
+}
 </script>
 @stack('scripts')
 </body>

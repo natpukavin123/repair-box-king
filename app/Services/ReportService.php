@@ -45,6 +45,12 @@ class ReportService
             ->where('direction', 'IN')->sum('amount');
         $totalSalesToday = $posSalesToday + $repairSalesToday;
 
+        // ---------- Today's Activity Counts ----------
+        $todaySalesCount    = Invoice::whereDate('created_at', $today)->count();
+        $todayRepairsCount  = Repair::where('record_type', 'original')->whereDate('created_at', $today)->count();
+        $todayRechargesCount = Recharge::whereDate('created_at', $today)->count();
+        $todayExpensesCount = Expense::whereDate('expense_date', $today)->count();
+
         // ---------- Low Stock ----------
         $lowStockCount = Inventory::where('current_stock', '<=', 5)->count();
 
@@ -74,6 +80,12 @@ class ReportService
                 'repair_sales' => $repairSalesToday,
                 'total_sales'  => $totalSalesToday,
             ],
+
+            // Today's activity counts
+            'today_sales_count'     => $todaySalesCount,
+            'today_repairs_count'   => $todayRepairsCount,
+            'today_recharges_count' => $todayRechargesCount,
+            'today_expenses_count'  => $todayExpensesCount,
 
             // Low stock
             'low_stock_count' => $lowStockCount,

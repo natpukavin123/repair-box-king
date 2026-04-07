@@ -131,6 +131,30 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.7); border-radius: 9999px; }
 
+    .count-metric-card {
+        display: flex; flex-direction: column; align-items: flex-start;
+        padding: 24px; border-radius: 24px; text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+        border: 1px solid rgba(255,255,255,0.22);
+        position: relative; overflow: hidden;
+        box-shadow: 0 20px 50px -28px rgba(15, 23, 42, 0.52);
+    }
+    .count-metric-card::before {
+        content: ''; position: absolute; inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent 60%);
+        pointer-events: none;
+    }
+    .count-metric-card::after {
+        content: '';
+        position: absolute;
+        inset: auto -12% -52% auto;
+        width: 10rem; height: 10rem;
+        border-radius: 9999px;
+        background: rgba(255,255,255,0.1);
+        filter: blur(10px);
+    }
+    .count-metric-card:hover { transform: translateY(-6px) scale(1.01); box-shadow: 0 26px 60px -24px rgba(0,0,0,0.32); }
+
     @media (max-width: 768px) {
         .nav-card {
             padding: 22px 14px;
@@ -252,108 +276,73 @@
 
 <div class="dashboard-wrap" x-data="dashboardPage()">
 
-    {{-- ============ ROW 1: Main Nav Cards + Reminders ============ --}}
-    {{-- Navigation Cards --}}
+    {{-- ============ COUNT CARDS: Today's Activity ============ --}}
     <div style="margin-bottom:28px;">
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {{-- Sales / POS --}}
-            <a href="/admin/pos" class="nav-card" style="background:linear-gradient(135deg,#22c55e,#15803d);">
-                <div class="nav-card-icon">
-                    <svg style="width:28px;height:28px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+            <span class="section-title">Today's Activity</span>
+            <span class="section-badge" style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border-color:transparent;">Live</span>
+        </div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {{-- Sales --}}
+            <a href="/admin/invoices" class="count-metric-card" style="background:linear-gradient(135deg,#22c55e,#15803d);">
+                <div style="position:relative;z-index:1;width:100%;">
+                    <div style="margin-bottom:18px;">
+                        <div style="width:48px;height:48px;background:rgba(255,255,255,0.22);border-radius:14px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);box-shadow:inset 0 1px 0 rgba(255,255,255,0.3);">
+                            <svg style="width:25px;height:25px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+                        </div>
+                    </div>
+                    <p style="font-size:46px;font-weight:900;color:#fff;margin:0;letter-spacing:-0.04em;line-height:1;" x-text="stats.today_sales_count">0</p>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
+                        <p style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.88);margin:0;letter-spacing:0.02em;">Sales Orders</p>
+                        <svg style="width:16px;height:16px;color:rgba(255,255,255,0.6);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    </div>
                 </div>
-                <span class="nav-card-label">Sales</span>
-                <span class="nav-card-sub">POS Billing</span>
             </a>
             {{-- Repairs --}}
-            <a href="/admin/repairs" class="nav-card" style="background:linear-gradient(135deg,#f97316,#c2410c);">
-                <div class="nav-card-icon">
-                    <svg style="width:28px;height:28px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <a href="/admin/repairs" class="count-metric-card" style="background:linear-gradient(135deg,#f97316,#c2410c);">
+                <div style="position:relative;z-index:1;width:100%;">
+                    <div style="margin-bottom:18px;">
+                        <div style="width:48px;height:48px;background:rgba(255,255,255,0.22);border-radius:14px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);box-shadow:inset 0 1px 0 rgba(255,255,255,0.3);">
+                            <svg style="width:25px;height:25px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        </div>
+                    </div>
+                    <p style="font-size:46px;font-weight:900;color:#fff;margin:0;letter-spacing:-0.04em;line-height:1;" x-text="stats.today_repairs_count">0</p>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
+                        <p style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.88);margin:0;letter-spacing:0.02em;">Repair Jobs</p>
+                        <svg style="width:16px;height:16px;color:rgba(255,255,255,0.6);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    </div>
                 </div>
-                <span class="nav-card-label">Repairs</span>
-                <span class="nav-card-sub">Service Jobs</span>
             </a>
-            {{-- Recharge --}}
-            <a href="/recharges" class="nav-card" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);">
-                <div class="nav-card-icon">
-                    <svg style="width:28px;height:28px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            {{-- Recharges --}}
+            <a href="/admin/recharges" class="count-metric-card" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);">
+                <div style="position:relative;z-index:1;width:100%;">
+                    <div style="margin-bottom:18px;">
+                        <div style="width:48px;height:48px;background:rgba(255,255,255,0.22);border-radius:14px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);box-shadow:inset 0 1px 0 rgba(255,255,255,0.3);">
+                            <svg style="width:25px;height:25px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                        </div>
+                    </div>
+                    <p style="font-size:46px;font-weight:900;color:#fff;margin:0;letter-spacing:-0.04em;line-height:1;" x-text="stats.today_recharges_count">0</p>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
+                        <p style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.88);margin:0;letter-spacing:0.02em;">Recharges</p>
+                        <svg style="width:16px;height:16px;color:rgba(255,255,255,0.6);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    </div>
                 </div>
-                <span class="nav-card-label">Recharge</span>
-                <span class="nav-card-sub">Mobile Plans</span>
             </a>
             {{-- Expenses --}}
-            <a href="/expenses" class="nav-card" style="background:linear-gradient(135deg,#ef4444,#b91c1c);">
-                <div class="nav-card-icon">
-                    <svg style="width:28px;height:28px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                </div>
-                <span class="nav-card-label">Expenses</span>
-                <span class="nav-card-sub">Track Costs</span>
-            </a>
-            {{-- PO --}}
-            <a href="/po" class="nav-card" style="background:linear-gradient(135deg,#f59e0b,#b45309);">
-                <div class="nav-card-icon">
-                    <svg style="width:28px;height:28px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                </div>
-                <span class="nav-card-label">PO</span>
-                <span class="nav-card-sub">Customer Requests</span>
-            </a>
-        </div>
-    </div>
-
-    {{-- Reminders --}}
-    <div class="mb-8">
-        <div class="card-wrap">
-            <div class="card-head">
-                <div class="flex items-center gap-2.5">
-                    <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;">
-                        <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                    </div>
-                    <span class="section-title">Reminders</span>
-                </div>
-                <button @click="showReminderForm = !showReminderForm"
-                    style="display:inline-flex;align-items:center;gap:6px;padding:7px 16px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-size:12px;font-weight:600;border-radius:10px;border:none;cursor:pointer;box-shadow:0 2px 8px rgba(99,102,241,0.3);transition:all 0.2s ease;">
-                    <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-                    Add Reminder
-                </button>
-            </div>
-            <div style="padding:16px 20px;">
-                {{-- Add Reminder Form --}}
-                <div x-show="showReminderForm" x-transition style="margin-bottom:16px;padding:16px;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
-                    <div style="display:flex;flex-direction:column;gap:10px;">
-                        <input x-model="newReminder.title" type="text" placeholder="What do you need to remember?"
-                            style="width:100%;padding:10px 14px;font-size:13px;border:1px solid #e2e8f0;border-radius:10px;outline:none;font-family:inherit;background:#fff;">
-                        <div style="display:flex;gap:8px;">
-                            <input x-model="newReminder.due_date" type="date"
-                                style="flex:1;padding:9px 12px;font-size:13px;border:1px solid #e2e8f0;border-radius:10px;outline:none;font-family:inherit;background:#fff;">
-                            <button @click="addReminder()"
-                                style="padding:9px 20px;background:#4f46e5;color:#fff;font-size:12px;font-weight:600;border-radius:10px;border:none;cursor:pointer;">Save</button>
-                            <button @click="showReminderForm = false"
-                                style="padding:9px 14px;color:#6b7280;font-size:12px;border-radius:10px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;">Cancel</button>
+            <a href="/admin/expenses" class="count-metric-card" style="background:linear-gradient(135deg,#ef4444,#b91c1c);">
+                <div style="position:relative;z-index:1;width:100%;">
+                    <div style="margin-bottom:18px;">
+                        <div style="width:48px;height:48px;background:rgba(255,255,255,0.22);border-radius:14px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);box-shadow:inset 0 1px 0 rgba(255,255,255,0.3);">
+                            <svg style="width:25px;height:25px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         </div>
                     </div>
-                </div>
-
-                {{-- Reminder list --}}
-                <div class="custom-scrollbar" style="max-height:200px;overflow-y:auto;">
-                    <template x-for="rem in stats.reminders" :key="rem.id">
-                        <div class="reminder-item" :style="rem.is_completed ? 'opacity:0.5' : ''">
-                            <div class="reminder-check" :class="rem.is_completed ? 'done' : ''" @click="toggleReminder(rem.id)">
-                                <svg x-show="rem.is_completed" style="width:12px;height:12px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                            </div>
-                            <div style="flex:1;min-width:0;">
-                                <p style="font-size:13px;font-weight:500;color:#374151;margin:0;" :style="rem.is_completed ? 'text-decoration:line-through;color:#9ca3af' : ''" x-text="rem.title"></p>
-                                <p x-show="rem.due_date" style="font-size:11px;color:#9ca3af;margin:2px 0 0;" x-text="rem.due_date ? new Date(rem.due_date).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) : ''"></p>
-                            </div>
-                            <button @click="deleteReminder(rem.id)" style="opacity:0;transition:opacity 0.2s;background:none;border:none;cursor:pointer;color:#ef4444;padding:4px;" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0">
-                                <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                            </button>
-                        </div>
-                    </template>
-                    <div x-show="!stats.reminders || stats.reminders.length === 0" style="text-align:center;padding:30px 10px;">
-                        <svg style="width:40px;height:40px;color:#e5e7eb;margin:0 auto 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                        <p style="font-size:12px;color:#9ca3af;">No reminders yet. Click "Add Reminder" to get started.</p>
+                    <p style="font-size:46px;font-weight:900;color:#fff;margin:0;letter-spacing:-0.04em;line-height:1;" x-text="stats.today_expenses_count">0</p>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;">
+                        <p style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.88);margin:0;letter-spacing:0.02em;">Expenses</p>
+                        <svg style="width:16px;height:16px;color:rgba(255,255,255,0.6);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 
@@ -566,6 +555,61 @@
         </div>
     </div>
 
+    {{-- ============ ROW 5: Reminders ============ --}}
+    <div style="margin-top:32px;">
+        <div class="card-wrap">
+            <div class="card-head">
+                <div class="flex items-center gap-2.5">
+                    <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#d97706);display:flex;align-items:center;justify-content:center;">
+                        <svg style="width:16px;height:16px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                    </div>
+                    <span class="section-title">Reminders</span>
+                </div>
+                <button @click="showReminderForm = !showReminderForm"
+                    style="display:inline-flex;align-items:center;gap:6px;padding:7px 16px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-size:12px;font-weight:600;border-radius:10px;border:none;cursor:pointer;box-shadow:0 2px 8px rgba(99,102,241,0.3);transition:all 0.2s ease;">
+                    <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                    Add Reminder
+                </button>
+            </div>
+            <div style="padding:16px 20px;">
+                <div x-show="showReminderForm" x-transition style="margin-bottom:16px;padding:16px;background:#f8fafc;border-radius:14px;border:1px solid #e2e8f0;">
+                    <div style="display:flex;flex-direction:column;gap:10px;">
+                        <input x-model="newReminder.title" type="text" placeholder="What do you need to remember?"
+                            style="width:100%;padding:10px 14px;font-size:13px;border:1px solid #e2e8f0;border-radius:10px;outline:none;font-family:inherit;background:#fff;">
+                        <div style="display:flex;gap:8px;">
+                            <input x-model="newReminder.due_date" type="date"
+                                style="flex:1;padding:9px 12px;font-size:13px;border:1px solid #e2e8f0;border-radius:10px;outline:none;font-family:inherit;background:#fff;">
+                            <button @click="addReminder()"
+                                style="padding:9px 20px;background:#4f46e5;color:#fff;font-size:12px;font-weight:600;border-radius:10px;border:none;cursor:pointer;">Save</button>
+                            <button @click="showReminderForm = false"
+                                style="padding:9px 14px;color:#6b7280;font-size:12px;border-radius:10px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="custom-scrollbar" style="max-height:240px;overflow-y:auto;">
+                    <template x-for="rem in stats.reminders" :key="rem.id">
+                        <div class="reminder-item" :style="rem.is_completed ? 'opacity:0.5' : ''">
+                            <div class="reminder-check" :class="rem.is_completed ? 'done' : ''" @click="toggleReminder(rem.id)">
+                                <svg x-show="rem.is_completed" style="width:12px;height:12px;color:#fff;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                            </div>
+                            <div style="flex:1;min-width:0;">
+                                <p style="font-size:13px;font-weight:500;color:#374151;margin:0;" :style="rem.is_completed ? 'text-decoration:line-through;color:#9ca3af' : ''" x-text="rem.title"></p>
+                                <p x-show="rem.due_date" style="font-size:11px;color:#9ca3af;margin:2px 0 0;" x-text="rem.due_date ? new Date(rem.due_date).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) : ''"></p>
+                            </div>
+                            <button @click="deleteReminder(rem.id)" style="opacity:0;transition:opacity 0.2s;background:none;border:none;cursor:pointer;color:#ef4444;padding:4px;" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0">
+                                <svg style="width:16px;height:16px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </div>
+                    </template>
+                    <div x-show="!stats.reminders || stats.reminders.length === 0" style="text-align:center;padding:30px 10px;">
+                        <svg style="width:40px;height:40px;color:#e5e7eb;margin:0 auto 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                        <p style="font-size:12px;color:#9ca3af;">No reminders yet. Click "Add Reminder" to get started.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 @endsection
 
@@ -582,6 +626,8 @@ function dashboardPage() {
             new_customers_today: 0, repeat_customers_today: 0,
             gross_sale_payments: 0, customer_purchase_amount: 0,
             purchase_order_amount: 0, refund_amount: 0,
+            today_sales_count: 0, today_repairs_count: 0,
+            today_recharges_count: 0, today_expenses_count: 0,
             repair_counts: { received: 0, in_progress: 0, completed: 0, payment: 0, closed: 0 },
             sales_by_category: { pos_sales: 0, repair_sales: 0, total_sales: 0 },
             sales_chart: { labels: [], data: [], repair_data: [] },
@@ -616,6 +662,10 @@ function dashboardPage() {
                     customer_purchase_amount: data.customer_purchase_amount ?? 0,
                     purchase_order_amount:    data.purchase_order_amount ?? 0,
                     refund_amount:            data.refund_amount ?? 0,
+                    today_sales_count:        data.today_sales_count ?? 0,
+                    today_repairs_count:      data.today_repairs_count ?? 0,
+                    today_recharges_count:    data.today_recharges_count ?? 0,
+                    today_expenses_count:     data.today_expenses_count ?? 0,
                     repair_counts:            data.repair_counts ?? this.stats.repair_counts,
                     sales_by_category:        data.sales_by_category ?? this.stats.sales_by_category,
                     sales_chart:              data.sales_chart ?? this.stats.sales_chart,
