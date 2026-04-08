@@ -529,10 +529,7 @@
                             </div>
                         </div>
 
-                        <div>
-                            <label class="text-xs font-medium text-gray-600 mb-1 block">IMEI / Serial No.</label>
-                            <input x-model="form.imei" type="text" class="form-input-custom repair-form-input text-sm" placeholder="Optional IMEI or serial">
-                        </div>
+
 
                         <div>
                             <label class="text-xs font-medium text-gray-600 mb-1 block">Problem Description <span class="text-red-500">*</span></label>
@@ -583,6 +580,11 @@
                                         x-text="s"></button>
                                 </template>
                             </div>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-medium text-gray-600 mb-1 block">IMEI / Serial No.</label>
+                            <input x-model="form.imei" type="text" class="form-input-custom repair-form-input text-sm" placeholder="Optional IMEI or serial">
                         </div>
 
                         {{-- Optional details (collapsible) --}}
