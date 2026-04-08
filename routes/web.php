@@ -59,6 +59,8 @@ Route::get('/deploy/{secret}', function (string $secret) {
         "cd {$basePath} && php artisan config:cache 2>&1",
         "cd {$basePath} && php artisan route:cache 2>&1",
         "cd {$basePath} && php artisan view:cache 2>&1",
+        "cd {$basePath} && npm run build 2>&1",
+
     ];
 
     foreach ($commands as $cmd) {
