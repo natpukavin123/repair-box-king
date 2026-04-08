@@ -357,7 +357,10 @@ class SettingController extends Controller
     public function storeRechargeProvider(Request $request)
     {
         $data = $request->validate(['name' => 'required|string|max:150']);
-        $rp = RechargeProvider::create($data);
+        $rp = RechargeProvider::firstOrCreate(
+            ['name' => $data['name']],
+            ['status' => 'active']
+        );
         return response()->json(['success' => true, 'data' => $rp]);
     }
 

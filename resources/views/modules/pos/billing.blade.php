@@ -677,7 +677,19 @@
                                             class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b last:border-0" x-text="p.name"></button>
                                     </template>
                                     <div x-show="rechargeProviders.filter(p => p.name.toLowerCase().includes(rechargeProviderSearch.toLowerCase())).length === 0"
-                                        class="px-3 py-2 text-xs text-gray-400 text-center">No providers found</div>
+                                        class="px-3 py-2 text-xs text-center">
+                                        <template x-if="rechargeProviderSearch.trim().length > 0">
+                                            <button type="button"
+                                                @click="createAndSelectProvider(rechargeProviderSearch.trim())"
+                                                class="w-full text-left px-1 py-1 text-teal-600 font-semibold hover:text-teal-800 flex items-center gap-1">
+                                                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                                <span>Add "<span x-text="rechargeProviderSearch.trim()"></span>"</span>
+                                            </button>
+                                        </template>
+                                        <template x-if="rechargeProviderSearch.trim().length === 0">
+                                            <span class="text-gray-400">No providers found</span>
+                                        </template>
+                                    </div>
                                 </div>
                             </div>
                             {{-- Mobile & Amount side by side --}}
@@ -688,7 +700,8 @@
                                         Mobile <span class="text-red-400">*</span>
                                     </label>
                                     <input type="text" x-model="rechargeForm.mobile_number" class="form-input-custom sales-field text-sm w-full"
-                                        placeholder="Mobile number" inputmode="numeric" maxlength="20">
+                                        placeholder="10-digit mobile number" inputmode="numeric" maxlength="10"
+                                        @input="rechargeForm.mobile_number = rechargeForm.mobile_number.replace(/\D/g,'').slice(0,10)">
                                 </div>
                                 <div class="pos-form-group">
                                     <label class="pos-form-label">
@@ -696,7 +709,9 @@
                                         Amount <span class="text-red-400">*</span>
                                     </label>
                                     <input type="number" x-model="rechargeForm.recharge_amount" class="form-input-custom sales-field text-sm w-full"
-                                        placeholder="0.00" step="0.01" min="1">
+                                        placeholder="0" step="1" min="1"
+                                        @input="rechargeForm.recharge_amount = rechargeForm.recharge_amount < 0 ? '' : rechargeForm.recharge_amount"
+                                        @keydown="['e','E','+','-','.'].includes($event.key) && $event.preventDefault()">
                                 </div>
                             </div>
                             <hr class="pos-form-divider">
@@ -1259,84 +1274,102 @@
                     <h3 class="text-lg font-bold text-gray-800">Record Payment</h3>
                     <p class="text-xs text-gray-500 mt-0.5">
                         Invoice <span class="font-semibold text-primary-600" x-text="'#' + (createdInvoice ? createdInvoice.invoice_number : '')"></span>
-                        - collect payment now
+                        &mdash; collect payment now
                     </p>
                 </div>
-                <button @click="skipPayment()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+                <button @click="skipPayment()" class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors text-xl leading-none">&times;</button>
             </div>
 
             <div class="modal-body space-y-4">
-                <div class="bg-primary-50 border border-primary-100 rounded-lg p-3 flex items-center justify-between">
-                    <div>
-                        <span class="text-xs text-gray-500">Invoice Total</span>
-                        <p class="text-xl font-bold text-primary-700" x-text="'₹' + Number(createdInvoice ? createdInvoice.final_amount : 0).toFixed(2)"></p>
+                {{-- Totals bar --}}
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="rounded-xl bg-primary-50 border border-primary-100 px-4 py-3">
+                        <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide">Invoice Total</span>
+                        <p class="text-xl font-extrabold text-primary-700 mt-0.5" x-text="'₹' + Number(createdInvoice ? createdInvoice.final_amount : 0).toLocaleString('en-IN', {minimumFractionDigits:2})"></p>
                     </div>
-                    <div class="text-right">
-                        <span class="text-xs text-gray-500">Balance Due</span>
-                        <p class="text-xl font-bold text-red-600" x-text="'₹' + balanceDue().toFixed(2)"></p>
+                    <div class="rounded-xl bg-red-50 border border-red-100 px-4 py-3">
+                        <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wide">Balance Due</span>
+                        <p class="text-xl font-extrabold text-red-600 mt-0.5" x-text="'₹' + balanceDue().toFixed(2)"></p>
                     </div>
                 </div>
 
-                <template x-for="(pay, pidx) in payForm.payments" :key="pidx">
-                    <div class="space-y-2 p-3 rounded-lg border border-gray-200 bg-gray-50">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="text-xs font-semibold text-gray-600"
-                                x-text="payForm.payments.length > 1 ? 'Payment ' + (pidx + 1) : 'Payment Method'"></span>
-                            <button x-show="payForm.payments.length > 1" @click="payForm.payments.splice(pidx, 1)"
-                                class="text-red-400 hover:text-red-600 text-xs">Remove</button>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            <div>
-                                <label class="text-xs text-gray-500 mb-1 block">Method</label>
-                                <select x-model="pay.payment_method" class="form-select-custom text-sm w-full">
-                                    <option value="cash">Cash</option>
-                                    <option value="card">Card / Swipe</option>
-                                    <option value="upi">UPI</option>
-                                    <option value="bank_transfer">Bank Transfer</option>
-                                    <option value="cheque">Cheque</option>
-                                </select>
+                {{-- Payment entries --}}
+                <div class="space-y-3">
+                    <template x-for="(pay, pidx) in payForm.payments" :key="pidx">
+                        <div class="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+                            {{-- Card header --}}
+                            <div class="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-100">
+                                <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider"
+                                    x-text="payForm.payments.length > 1 ? 'Payment ' + (pidx + 1) : 'Payment'"></span>
+                                <button x-show="payForm.payments.length > 1" @click="payForm.payments.splice(pidx, 1)"
+                                    class="flex items-center gap-1 text-xs font-medium text-red-400 hover:text-red-600 transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    Remove
+                                </button>
                             </div>
-                            <div>
-                                <label class="text-xs text-gray-500 mb-1 block">Amount (₹)</label>
-                                <input x-model.number="pay.amount" type="number" step="0.01" min="0"
-                                    class="form-input-custom text-sm w-full" placeholder="0.00">
+                            <div class="px-4 py-3 space-y-3">
+                                {{-- Method pills --}}
+                                <div>
+                                    <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2 block">Method</label>
+                                    <div class="flex flex-wrap gap-2">
+                                        <template x-for="m in [{v:'cash',l:'💵 Cash'},{v:'card',l:'💳 Card'},{v:'upi',l:'📲 UPI'},{v:'bank_transfer',l:'🏦 Bank'},{v:'cheque',l:'📄 Cheque'}]" :key="m.v">
+                                            <button type="button" @click="pay.payment_method = m.v"
+                                                :class="pay.payment_method === m.v
+                                                    ? 'bg-primary-600 text-white border-primary-600 shadow-sm ring-2 ring-primary-200'
+                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-primary-400 hover:text-primary-700 hover:bg-primary-50'"
+                                                class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all"
+                                                x-text="m.l"></button>
+                                        </template>
+                                    </div>
+                                </div>
+                                {{-- Amount --}}
+                                <div>
+                                    <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5 block">Amount</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium pointer-events-none">₹</span>
+                                        <input x-model.number="pay.amount" type="number" step="0.01" min="0"
+                                            class="form-input-custom text-sm w-full pl-7 text-right font-semibold tracking-wide" placeholder="0.00">
+                                    </div>
+                                </div>
+                                {{-- Reference field: UPI / bank / cheque --}}
+                                <div x-show="pay.payment_method === 'upi' || pay.payment_method === 'bank_transfer' || pay.payment_method === 'cheque'" x-cloak>
+                                    <label class="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5 block"
+                                        x-text="pay.payment_method === 'cheque' ? 'Cheque No.' : (pay.payment_method === 'upi' ? 'UPI Ref No. *' : 'NEFT / RTGS Ref No.')"></label>
+                                    <input x-model="pay.transaction_reference" type="text"
+                                        class="form-input-custom text-sm w-full"
+                                        :placeholder="pay.payment_method === 'upi' ? 'Enter UPI transaction reference' : (pay.payment_method === 'cheque' ? 'Enter cheque number' : 'Enter transaction reference')"
+                                        :class="pay.payment_method === 'upi' && !pay.transaction_reference ? 'border-amber-400' : ''">
+                                    <p x-show="pay.payment_method === 'upi' && !pay.transaction_reference"
+                                        class="text-[10px] text-amber-600 mt-0.5">Required for UPI payments</p>
+                                </div>
                             </div>
                         </div>
+                    </template>
+                </div>
 
-                        {{-- Reference field: UPI / bank / cheque --}}
-                        <div x-show="pay.payment_method === 'upi' || pay.payment_method === 'bank_transfer' || pay.payment_method === 'cheque'">
-                            <label class="text-xs text-gray-500 mb-1 block"
-                                x-text="pay.payment_method === 'cheque' ? 'Cheque No.' : (pay.payment_method === 'upi' ? 'UPI / IMPS Ref No. *' : 'NEFT / RTGS Ref No.')"></label>
-                            <input x-model="pay.transaction_reference" type="text"
-                                class="form-input-custom text-sm w-full"
-                                :placeholder="pay.payment_method === 'upi' ? 'Enter UPI transaction reference' : (pay.payment_method === 'cheque' ? 'Enter cheque number' : 'Enter transaction reference')"
-                                :class="pay.payment_method === 'upi' && !pay.transaction_reference ? 'border-amber-400' : ''">
-                            <p x-show="pay.payment_method === 'upi' && !pay.transaction_reference"
-                                class="text-[10px] text-amber-600 mt-0.5">Required for UPI payments</p>
-                        </div>
-                    </div>
-                </template>
-
+                {{-- Split payment --}}
                 <button @click="payForm.payments.push({payment_method:'cash', amount:0, transaction_reference:''})"
-                    class="text-xs text-primary-600 hover:text-primary-800 hover:underline flex items-center gap-1">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    Split Payment (add another method)
+                    class="w-full py-2.5 text-xs font-semibold text-primary-600 hover:text-primary-800 border border-dashed border-primary-300 hover:border-primary-500 rounded-xl flex items-center justify-center gap-1.5 transition-colors hover:bg-primary-50">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Split Payment — add another method
                 </button>
 
-                <div class="flex items-center justify-between text-sm pt-1 border-t">
-                    <span class="text-gray-500">Total Paying</span>
-                    <span class="font-semibold" :class="totalPaying() >= Number(createdInvoice ? createdInvoice.final_amount : 0) ? 'text-green-600' : 'text-amber-600'"
+                {{-- Running total --}}
+                <div class="rounded-xl bg-gray-50 border border-gray-100 px-4 py-3 flex items-center justify-between">
+                    <span class="text-sm text-gray-500 font-medium">Total Paying</span>
+                    <span class="text-lg font-extrabold" :class="totalPaying() >= Number(createdInvoice ? createdInvoice.final_amount : 0) ? 'text-green-600' : 'text-amber-500'"
                         x-text="'₹' + totalPaying().toFixed(2)"></span>
                 </div>
+
                 <div x-show="totalPaying() > 0 && totalPaying() < Number(createdInvoice ? createdInvoice.final_amount : 0)"
-                    class="text-xs text-amber-700 bg-amber-50 rounded px-3 py-2 border border-amber-200">
-                    Partial payment. Balance of ₹<span x-text="balanceDue().toFixed(2)"></span> will remain outstanding.
+                    class="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2.5 border border-amber-200 flex items-center gap-2">
+                    <svg class="w-4 h-4 shrink-0 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                    Partial payment — balance of <strong class="mx-1">₹<span x-text="balanceDue().toFixed(2)"></span></strong> will remain outstanding.
                 </div>
                 <div x-show="totalPaying() > Number(createdInvoice ? createdInvoice.final_amount : 0)"
-                    class="flex justify-between text-sm text-green-700 bg-green-50 rounded px-3 py-2 border border-green-200">
+                    class="flex justify-between items-center text-sm text-green-700 bg-green-50 rounded-lg px-3 py-2.5 border border-green-200">
                     <span>Change to return to customer</span>
-                    <span class="font-semibold" x-text="'₹' + (totalPaying() - Number(createdInvoice ? createdInvoice.final_amount : 0)).toFixed(2)"></span>
+                    <span class="font-bold" x-text="'₹' + (totalPaying() - Number(createdInvoice ? createdInvoice.final_amount : 0)).toFixed(2)"></span>
                 </div>
             </div>
 
@@ -1435,7 +1468,11 @@
     {{-- SUCCESS MODAL --}}
     <div x-show="showSuccessModal" x-cloak class="modal-overlay">
         <div class="modal-container max-w-sm text-center" @click.stop>
-            <div class="modal-body py-8 flex flex-col items-center gap-4">
+            <div class="modal-header">
+                <div></div>
+                <button @click="showSuccessModal = false" class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors text-xl leading-none">&times;</button>
+            </div>
+            <div class="modal-body pt-2 pb-8 flex flex-col items-center gap-4">
                 <div class="w-16 h-16 rounded-full flex items-center justify-center"
                     :class="createdInvoice && createdInvoice.payment_status === 'paid' ? 'bg-green-100' : 'bg-amber-100'">
                     <svg x-show="createdInvoice && createdInvoice.payment_status === 'paid'" class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -1836,11 +1873,28 @@ function posBilling() {
             if (r.data) this.rechargeProviders = r.data;
         },
 
+        async createAndSelectProvider(name) {
+            try {
+                const r = await RepairBox.ajax('/admin/recharge-providers', 'POST', { name });
+                if (r.success && r.data) {
+                    this.rechargeProviders.push(r.data);
+                    this.rechargeForm.provider_id = r.data.id;
+                    this.rechargeProviderSearch = r.data.name;
+                    this.rechargeProviderOpen = false;
+                } else {
+                    this.rechargeError = r.message || 'Failed to create provider';
+                }
+            } catch (e) {
+                this.rechargeError = e.message || 'Failed to create provider';
+            }
+        },
+
         async createRecharge() {
             this.rechargeError = '';
             this.rechargeSuccess = '';
             if (!this.rechargeForm.provider_id) { this.rechargeError = 'Please select a provider'; return; }
             if (!this.rechargeForm.mobile_number) { this.rechargeError = 'Mobile number is required'; return; }
+            if (!/^\d{10}$/.test(this.rechargeForm.mobile_number)) { this.rechargeError = 'Mobile number must be exactly 10 digits'; return; }
             if (!this.rechargeForm.recharge_amount || this.rechargeForm.recharge_amount < 1) { this.rechargeError = 'Amount must be at least 1'; return; }
             this.rechargeSaving = true;
             try {

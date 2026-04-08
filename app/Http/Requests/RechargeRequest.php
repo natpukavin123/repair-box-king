@@ -11,13 +11,13 @@ class RechargeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_id' => 'nullable|exists:customers,id',
-            'provider_id' => 'required|exists:recharge_providers,id',
-            'mobile_number' => 'required|string|max:20',
-            'plan_name' => 'nullable|string|max:150',
-            'recharge_amount' => 'required|numeric|min:1',
-            'payment_method' => 'required|string|max:50',
-            'transaction_id' => 'nullable|string|max:100',
+            'customer_id'     => 'nullable|exists:customers,id',
+            'provider_id'     => 'required|exists:recharge_providers,id',
+            'mobile_number'   => 'required|digits:10',
+            'plan_name'       => 'nullable|string|max:150',
+            'recharge_amount' => 'required|integer|min:1',
+            'payment_method'  => 'required|string|max:50',
+            'transaction_id'  => 'nullable|string|max:100',
         ];
     }
 }
