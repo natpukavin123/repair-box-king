@@ -9,7 +9,8 @@ use App\Http\Controllers\{
     PoRequestController, UserController, SettingController, ReportController,
     PartController, RepairReturnController, RoleController, MenuController,
     CreditNoteController, SetupController, DevToolsController, HomeController,
-    ReturnController, BlogController, FaqController, SeoPageController
+    ReturnController, BlogController, FaqController, SeoPageController,
+    AepsController
 };
 
 // ─── Dynamic Favicon ──────────────────────────────────────────────────────
@@ -60,7 +61,6 @@ Route::get('/deploy/{secret}', function (string $secret) {
         "cd {$basePath} && php artisan route:cache 2>&1",
         "cd {$basePath} && php artisan view:cache 2>&1",
         "cd {$basePath} && npm run build 2>&1",
-
     ];
 
     foreach ($commands as $cmd) {
@@ -180,6 +180,16 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     // Recharges
     Route::resource('recharges', RechargeController::class)->except(['create', 'edit', 'update', 'destroy']);
+
+    // AePS Banking
+    Route::get('aeps', [AepsController::class, 'index'])->name('aeps.index');
+    Route::get('aeps/stats', [AepsController::class, 'stats']);
+    Route::get('aeps/wallet-balance', [AepsController::class, 'walletBalance']);
+    Route::get('aeps/wallet-transactions', [AepsController::class, 'walletTransactions']);
+    Route::post('aeps/top-up', [AepsController::class, 'topUp']);
+    Route::post('aeps/withdraw', [AepsController::class, 'withdraw']);
+    Route::get('aeps/customer-services', [AepsController::class, 'customerServices']);
+    Route::post('aeps/customer-services', [AepsController::class, 'storeCustomerService']);
 
     // Expenses – category routes MUST come before the resource to avoid {expense} swallowing "categories"
     Route::get('expenses/categories', [ExpenseController::class, 'categories'])->name('expenses.categories');
