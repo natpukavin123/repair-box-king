@@ -206,6 +206,7 @@
         try {
           var res = await fetch('/login', {
             method: 'POST',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, 'Accept': 'application/json' },
             body: JSON.stringify({ email: this.email, password: this.password, remember: this.remember })
           });

@@ -9,7 +9,8 @@ use App\Http\Controllers\{
     PoRequestController, UserController, SettingController, ReportController,
     PartController, RepairReturnController, RoleController, MenuController,
     CreditNoteController, SetupController, DevToolsController, HomeController,
-    ReturnController, BlogController, FaqController, SeoPageController
+    ReturnController, BlogController, FaqController, SeoPageController,
+    WhatsappController
 };
 
 // ─── Dynamic Favicon ──────────────────────────────────────────────────────
@@ -280,6 +281,32 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     // SEO Settings
     Route::get('seo-settings', [SettingController::class, 'seoSettings'])->name('seo-settings.index');
     Route::put('seo-settings', [SettingController::class, 'updateSeoSettings'])->name('seo-settings.update');
+
+    // ─── WhatsApp Messaging ────────────────────────────────────────────────
+    Route::prefix('whatsapp')->name('whatsapp.')->group(function () {
+        Route::get('/',       [WhatsappController::class, 'index'])->name('index');
+        Route::get('/status', [WhatsappController::class, 'status'])->name('status');
+        Route::post('/logout',[WhatsappController::class, 'logoutDevice'])->name('logout');
+
+        Route::get('/groups',            [WhatsappController::class, 'groups'])->name('groups');
+        Route::post('/groups',           [WhatsappController::class, 'storeGroup'])->name('groups.store');
+        Route::put('/groups/{group}',    [WhatsappController::class, 'updateGroup'])->name('groups.update');
+        Route::delete('/groups/{group}', [WhatsappController::class, 'destroyGroup'])->name('groups.destroy');
+        Route::get('/fetch-groups',      [WhatsappController::class, 'fetchGroups'])->name('fetch-groups');
+
+        Route::get('/schedules',                      [WhatsappController::class, 'schedules'])->name('schedules');
+        Route::get('/schedules/create',               [WhatsappController::class, 'createSchedule'])->name('schedules.create');
+        Route::get('/schedules/{schedule}/edit',      [WhatsappController::class, 'editSchedulePage'])->name('schedules.edit');
+        Route::post('/schedules',                     [WhatsappController::class, 'storeSchedule'])->name('schedules.store');
+        Route::put('/schedules/{schedule}',           [WhatsappController::class, 'updateSchedule'])->name('schedules.update');
+        Route::delete('/schedules/{schedule}',        [WhatsappController::class, 'destroySchedule'])->name('schedules.destroy');
+        Route::post('/schedules/{schedule}/toggle',   [WhatsappController::class, 'toggleSchedule'])->name('schedules.toggle');
+        Route::post('/schedules/{schedule}/send-now', [WhatsappController::class, 'sendNow'])->name('schedules.send-now');
+
+        Route::get('/history',          [WhatsappController::class, 'history'])->name('history');
+        Route::delete('/history/{log}', [WhatsappController::class, 'destroyLog'])->name('history.destroy');
+        Route::post('/history/clear',   [WhatsappController::class, 'clearHistory'])->name('history.clear');
+    });
 
     // ─── Dev Tools (admin only) ────────────────────────────────────────────
     Route::prefix('dev-tools')->name('dev-tools.')->group(function () {

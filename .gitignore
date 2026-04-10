@@ -17,3 +17,12 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+# WhatsApp Node.js service
+/whatsapp-service/node_modules
+/whatsapp-service/.env
+/whatsapp-service/wa_session
+/whatsapp-service/.wwebjs_auth
+/whatsapp-service/.wwebjs_cache
+/whatsapp-service/*.log
+/whatsapp-service/npm-debug.log

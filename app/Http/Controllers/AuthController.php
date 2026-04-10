@@ -48,12 +48,20 @@ class AuthController extends Controller
             ], 429);
         }
 
+        $remember = $request->boolean('remember');
+
         if (Auth::attempt([
             'email'    => $request->input('email'),
             'password' => $request->input('password'),
-        ], $request->boolean('remember'))) {
+        ], $remember)) {
             RateLimiter::clear($key);
             $request->session()->regenerate();
+
+            // Extend session cookie lifetime when "remember me" is checked
+            if ($remember) {
+                config(['session.lifetime' => 43200]); // 30 days
+            }
+
             ActivityLog::log('login', 'auth', null, 'User logged in');
             return response()->json(['success' => true, 'redirect' => '/admin/dashboard']);
         }
