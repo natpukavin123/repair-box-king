@@ -42,7 +42,17 @@ class InvoiceController extends Controller
             ->map(fn($b) => ['name' => $b->name, 'models' => $b->models ?? []])->values();
         $brands = $brandModelMap->pluck('name');
 
-        return view('modules.pos.billing', compact('canViewCostPrice', 'brands', 'brandModelMap'));
+        // Gather unique issues from past repairs for auto-suggest
+        $dbProblemSuggestions = \App\Models\Repair::whereNotNull('problem_description')
+            ->where('problem_description', '!=', '')
+            ->pluck('problem_description')
+            ->flatMap(fn($desc) => array_map('trim', explode(',', $desc)))
+            ->filter(fn($s) => strlen($s) > 1)
+            ->unique()
+            ->values()
+            ->toArray();
+
+        return view('modules.pos.billing', compact('canViewCostPrice', 'brands', 'brandModelMap', 'dbProblemSuggestions'));
     }
 
     public function store(InvoiceRequest $request, InvoiceService $service)

@@ -545,31 +545,30 @@
                             </div>
 
                             {{-- Autocomplete input --}}
-                            <div class="relative flex gap-1.5">
-                                <div class="relative flex-1">
-                                    <input type="text"
-                                        x-model="probQuery"
-                                        @input="probShowSugg = true"
-                                        @keydown.enter.prevent="addProbIssue()"
-                                        @keydown.escape="probQuery = ''"
-                                        @blur="setTimeout(() => { probShowSugg = false }, 150)"
-                                        class="form-input-custom repair-form-input text-sm w-full"
-                                        placeholder="Type issue, press Enter to add">
-                                    <div x-show="probShowSugg && probQuery.trim().length > 0 && getProbSuggestions().length > 0" x-cloak
-                                        class="absolute z-50 left-0 right-0 top-full mt-1 rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden">
-                                        <template x-for="s in getProbSuggestions()" :key="s">
-                                            <button type="button" @mousedown.prevent="pickProbSugg(s)"
-                                                class="flex w-full items-center gap-2 border-b border-slate-100 px-3 py-2 text-left text-xs text-slate-700 hover:bg-amber-50 hover:text-amber-800 transition last:border-0">
-                                                <svg class="w-3 h-3 shrink-0 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                                                <span x-text="s"></span>
-                                            </button>
-                                        </template>
-                                    </div>
+                            <div class="relative">
+                                <input type="text"
+                                    x-model="probQuery"
+                                    @input="probShowSugg = true; probHighlight = -1"
+                                    @focus="probShowSugg = true; probHighlight = -1"
+                                    @keydown.enter.prevent="if(probHighlight >= 0 && getProbSuggestions()[probHighlight]) { pickProbSugg(getProbSuggestions()[probHighlight]) } else { addProbIssue() }"
+                                    @keydown.tab.prevent="(() => { const s = getProbSuggestions(); if(s.length > 0) { pickProbSugg(s[Math.max(0, probHighlight)]) } else { addProbIssue() } })()"
+                                    @keydown.arrow-down.prevent="probHighlight = (probHighlight + 1) % Math.max(1, getProbSuggestions().length); probShowSugg = true"
+                                    @keydown.arrow-up.prevent="probHighlight = probHighlight <= 0 ? getProbSuggestions().length - 1 : probHighlight - 1; probShowSugg = true"
+                                    @keydown.escape="probQuery = ''; probShowSugg = false"
+                                    @blur="setTimeout(() => { if(probHighlight >= 0 && getProbSuggestions()[probHighlight]) { pickProbSugg(getProbSuggestions()[probHighlight]) } else { addProbIssue() }; probShowSugg = false }, 150)"
+                                    class="form-input-custom repair-form-input text-sm w-full"
+                                    placeholder="Type issue, ↑↓ to navigate, Enter/Tab to add">
+                                <div x-show="probShowSugg && probQuery.trim().length > 0 && getProbSuggestions().length > 0" x-cloak
+                                    class="absolute z-50 left-0 right-0 top-full mt-1 rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden max-h-48 overflow-y-auto">
+                                    <template x-for="(s, si) in getProbSuggestions()" :key="s">
+                                        <button type="button" @mousedown.prevent="pickProbSugg(s)" @mouseenter="probHighlight = si"
+                                            :class="si === probHighlight ? 'bg-amber-50 text-amber-800' : 'text-slate-700 hover:bg-amber-50 hover:text-amber-800'"
+                                            class="flex w-full items-center gap-2 border-b border-slate-100 px-3 py-2 text-left text-xs transition last:border-0">
+                                            <svg class="w-3 h-3 shrink-0 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                            <span x-text="s"></span>
+                                        </button>
+                                    </template>
                                 </div>
-                                <button type="button" @click="addProbIssue()"
-                                    class="shrink-0 inline-flex items-center justify-center rounded-lg bg-amber-500 px-2.5 text-white hover:bg-amber-600 transition text-xs font-semibold">
-                                    + Add
-                                </button>
                             </div>
 
                             {{-- Quick-pick pills --}}
@@ -778,7 +777,9 @@ function repairsPage() {
         probIssues: [],
         probQuery: '',
         probShowSugg: false,
-        allProbSugg: [
+        probHighlight: -1,
+        allProbSugg: [...new Set([
+            ...@json($dbProblemSuggestions ?? []),
             'Screen cracked','Display not working','Touch not responding','Display flickering',
             'Black screen','LCD damaged','Display lines / spots','Ghost touch',
             'Battery draining fast','Battery not charging','Battery swollen','Phone not turning on',
@@ -793,7 +794,7 @@ function repairsPage() {
             'Fingerprint not working','Face unlock issue','Power button not working',
             'Volume button not working','Home button not working','Vibration not working',
             'Software issue / stuck','App crashing','Phone running slow','Storage full',
-        ],
+        ])],
         getProbSuggestions() {
             if (!this.probQuery.trim()) return [];
             const q = this.probQuery.toLowerCase();
@@ -809,6 +810,8 @@ function repairsPage() {
                 this.probIssues.push(v);
                 this.form.problem_description = this.probIssues.join(', ');
             }
+            // Add to suggestions for immediate reuse without page refresh
+            if (!this.allProbSugg.includes(v)) this.allProbSugg.push(v);
             this.probQuery = '';
             this.probShowSugg = false;
         },
@@ -817,6 +820,7 @@ function repairsPage() {
                 this.probIssues.push(s);
                 this.form.problem_description = this.probIssues.join(', ');
             }
+            if (!this.allProbSugg.includes(s)) this.allProbSugg.push(s);
             this.probQuery = '';
             this.probShowSugg = false;
         },
@@ -1073,6 +1077,17 @@ function repairsPage() {
             this.saving = false;
 
             if (r.success !== false) {
+                // Dynamically update brand/model lists for immediate auto-suggest
+                const b = this.form.device_brand.trim();
+                const m = this.form.device_model.trim();
+                if (b && !this.brandList.includes(b)) this.brandList.push(b);
+                const existing = this.brandModelMap.find(x => x.name === b);
+                if (b && existing) {
+                    if (m && !existing.models.includes(m)) existing.models.push(m);
+                } else if (b) {
+                    this.brandModelMap.push({ name: b, models: m ? [m] : [] });
+                }
+
                 this.createdRepair = r.data;
                 this.showSuccess = true;
                 RepairBox.toast('Repair created: ' + r.data.ticket_number, 'success');

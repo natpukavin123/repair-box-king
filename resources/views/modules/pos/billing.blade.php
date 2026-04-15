@@ -883,15 +883,16 @@
                                     <svg class="pos-label-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg>
                                     Brand <span class="text-red-400">*</span>
                                 </label>
-                                <input type="text" x-model="repairBrandSearch" @focus="repairBrandOpen = true" @input="repairBrandOpen = true; repairForm.device_brand = ''; repairForm.device_model = ''; repairModelSearch = '';"
-                                    class="form-input-custom sales-field text-sm w-full" placeholder="Search brand...">
+                                <input type="text" x-model="repairBrandSearch" @focus="repairBrandOpen = true" @input="repairBrandOpen = true; repairForm.device_brand = repairBrandSearch; repairForm.device_model = ''; repairModelSearch = '';"
+                                    @blur="setTimeout(() => { repairForm.device_brand = repairBrandSearch.trim(); repairBrandOpen = false; }, 200)"
+                                    class="form-input-custom sales-field text-sm w-full" placeholder="Type or search brand...">
                                 <div x-show="repairBrandOpen" x-cloak class="absolute left-0 right-0 mt-1 rounded-lg border bg-white shadow-lg z-50 max-h-40 overflow-y-auto">
                                     <template x-for="b in brandList.filter(b => b.toLowerCase().includes(repairBrandSearch.toLowerCase()))" :key="b">
                                         <button type="button" @click="repairForm.device_brand = b; repairBrandSearch = b; repairBrandOpen = false; repairForm.device_model = ''; repairModelSearch = '';"
                                             class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b last:border-0" x-text="b"></button>
                                     </template>
-                                    <div x-show="brandList.filter(b => b.toLowerCase().includes(repairBrandSearch.toLowerCase())).length === 0"
-                                        class="px-3 py-2 text-xs text-gray-400 text-center">No brands found</div>
+                                    <div x-show="repairBrandSearch.trim() && brandList.filter(b => b.toLowerCase().includes(repairBrandSearch.toLowerCase())).length === 0"
+                                        class="px-3 py-2 text-xs text-emerald-500 text-center"><svg class='w-3 h-3 inline -mt-0.5 mr-0.5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'/></svg>"<span x-text="repairBrandSearch.trim()"></span>" will be created on save</div>
                                 </div>
                             </div>
                             {{-- Device Model --}}
@@ -900,15 +901,16 @@
                                     <svg class="pos-label-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                                     Model <span class="text-red-400">*</span>
                                 </label>
-                                <input type="text" x-model="repairModelSearch" @focus="repairModelOpen = true" @input="repairModelOpen = true"
-                                    class="form-input-custom sales-field text-sm w-full" placeholder="Search model...">
+                                <input type="text" x-model="repairModelSearch" @focus="repairModelOpen = true" @input="repairModelOpen = true; repairForm.device_model = repairModelSearch;"
+                                    @blur="setTimeout(() => { repairForm.device_model = repairModelSearch.trim(); repairModelOpen = false; }, 200)"
+                                    class="form-input-custom sales-field text-sm w-full" placeholder="Type or search model...">
                                 <div x-show="repairModelOpen" x-cloak class="absolute left-0 right-0 mt-1 rounded-lg border bg-white shadow-lg z-50 max-h-40 overflow-y-auto">
                                     <template x-for="m in filteredRepairModels()" :key="m">
                                         <button type="button" @click="repairForm.device_model = m; repairModelSearch = m; repairModelOpen = false;"
                                             class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b last:border-0" x-text="m"></button>
                                     </template>
-                                    <div x-show="filteredRepairModels().length === 0"
-                                        class="px-3 py-2 text-xs text-gray-400 text-center" x-text="repairForm.device_brand ? 'No models found' : 'Select a brand first'"></div>
+                                    <div x-show="repairModelSearch.trim() && filteredRepairModels().length === 0"
+                                        class="px-3 py-2 text-xs text-emerald-500 text-center"><svg class='w-3 h-3 inline -mt-0.5 mr-0.5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'/></svg>"<span x-text="repairModelSearch.trim()"></span>" will be created on save</div>
                                 </div>
                             </div>
                             {{-- IMEI & Estimated Cost side by side --}}
@@ -936,8 +938,48 @@
                                     <svg class="pos-label-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
                                     Problem <span class="text-red-400">*</span>
                                 </label>
-                                <textarea x-model="repairForm.problem_description" class="form-input-custom sales-field text-sm w-full" rows="2"
-                                    placeholder="Describe the issue..."></textarea>
+                                {{-- Chips --}}
+                                <div class="flex flex-wrap gap-1.5 mb-1.5" x-show="repairProbIssues.length > 0">
+                                    <template x-for="(issue, idx) in repairProbIssues" :key="idx">
+                                        <span class="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-800">
+                                            <span x-text="issue"></span>
+                                            <button type="button" @click="repairProbIssues.splice(idx, 1); repairForm.problem_description = repairProbIssues.join(', ')" class="ml-0.5 text-amber-400 hover:text-red-500 text-sm leading-none font-bold">&times;</button>
+                                        </span>
+                                    </template>
+                                </div>
+                                {{-- Auto-suggest input --}}
+                                <div class="relative">
+                                    <input type="text" x-model="repairProbQuery"
+                                        @input="repairProbShowSugg = true; repairProbHighlight = -1"
+                                        @focus="repairProbShowSugg = true; repairProbHighlight = -1"
+                                        @keydown.enter.prevent="if(repairProbHighlight >= 0 && getRepairProbSuggestions()[repairProbHighlight]) { pickRepairProbSugg(getRepairProbSuggestions()[repairProbHighlight]) } else { addRepairProbIssue() }"
+                                        @keydown.tab.prevent="(() => { const s = getRepairProbSuggestions(); if(s.length > 0) { pickRepairProbSugg(s[Math.max(0, repairProbHighlight)]) } else { addRepairProbIssue() } })()"
+                                        @keydown.arrow-down.prevent="repairProbHighlight = (repairProbHighlight + 1) % Math.max(1, getRepairProbSuggestions().length); repairProbShowSugg = true"
+                                        @keydown.arrow-up.prevent="repairProbHighlight = repairProbHighlight <= 0 ? getRepairProbSuggestions().length - 1 : repairProbHighlight - 1; repairProbShowSugg = true"
+                                        @keydown.escape="repairProbQuery = ''; repairProbShowSugg = false"
+                                        @blur="setTimeout(() => { if(repairProbHighlight >= 0 && getRepairProbSuggestions()[repairProbHighlight]) { pickRepairProbSugg(getRepairProbSuggestions()[repairProbHighlight]) } else { addRepairProbIssue() }; repairProbShowSugg = false }, 150)"
+                                        class="form-input-custom sales-field text-sm w-full"
+                                        placeholder="Type issue, ↑↓ to navigate, Enter/Tab to add">
+                                    <div x-show="repairProbShowSugg && repairProbQuery.trim().length > 0 && getRepairProbSuggestions().length > 0" x-cloak
+                                        class="absolute z-50 left-0 right-0 top-full mt-1 rounded-xl border border-slate-200 bg-white shadow-xl overflow-hidden max-h-40 overflow-y-auto">
+                                        <template x-for="(s, si) in getRepairProbSuggestions()" :key="s">
+                                            <button type="button" @mousedown.prevent="pickRepairProbSugg(s)" @mouseenter="repairProbHighlight = si"
+                                                :class="si === repairProbHighlight ? 'bg-amber-50 text-amber-800' : 'text-slate-700 hover:bg-amber-50 hover:text-amber-800'"
+                                                class="flex w-full items-center gap-2 border-b border-slate-100 px-3 py-2 text-left text-xs transition last:border-0">
+                                                <svg class="w-3 h-3 shrink-0 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                                <span x-text="s"></span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                                {{-- Quick-pick pills --}}
+                                <div class="mt-1.5 flex flex-wrap gap-1">
+                                    <template x-for="s in getQuickRepairProbSugg()" :key="s">
+                                        <button type="button" @mousedown.prevent="pickRepairProbSugg(s)"
+                                            class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] text-slate-500 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700 transition"
+                                            x-text="s"></button>
+                                    </template>
+                                </div>
                             </div>
                             {{-- Expected delivery date --}}
                             <div class="pos-form-group">
@@ -1621,6 +1663,29 @@ function posBilling() {
         repairSuccess: '',
         repairAddToBill: true,
 
+        // Repair problem description chip state
+        repairProbIssues: [],
+        repairProbQuery: '',
+        repairProbShowSugg: false,
+        repairProbHighlight: -1,
+        allRepairProbSugg: [...new Set([
+            ...@json($dbProblemSuggestions ?? []),
+            'Screen cracked','Display not working','Touch not responding','Display flickering',
+            'Black screen','LCD damaged','Display lines / spots','Ghost touch',
+            'Battery draining fast','Battery not charging','Battery swollen','Phone not turning on',
+            'Charging port not working','Charging very slow','USB port damaged',
+            'Speaker not working','Microphone not working','Earpiece not working','No sound',
+            'Sound distorted','Headphone jack not working',
+            'Camera not working','Camera blurry','Front camera not working','Flash not working',
+            'Camera app crashing','Video recording issue',
+            'No network signal','SIM not detecting','WiFi not connecting','Bluetooth not working',
+            'Mobile data not working','Call keeps dropping',
+            'Water damage','Phone overheating','Phone hanging / freezing','Phone restarting itself',
+            'Fingerprint not working','Face unlock issue','Power button not working',
+            'Volume button not working','Home button not working','Vibration not working',
+            'Software issue / stuck','App crashing','Phone running slow','Storage full',
+        ])],
+
         form: { customer_id: null, discount: 0 },
 
         createdInvoice: null,
@@ -1935,6 +2000,35 @@ function posBilling() {
             this.rechargeSaving = false;
         },
 
+        addRepairProbIssue() {
+            const v = this.repairProbQuery.trim();
+            if (!v) return;
+            if (!this.repairProbIssues.includes(v)) {
+                this.repairProbIssues.push(v);
+                this.repairForm.problem_description = this.repairProbIssues.join(', ');
+            }
+            if (!this.allRepairProbSugg.includes(v)) this.allRepairProbSugg.push(v);
+            this.repairProbQuery = '';
+            this.repairProbShowSugg = false;
+        },
+        pickRepairProbSugg(s) {
+            if (!this.repairProbIssues.includes(s)) {
+                this.repairProbIssues.push(s);
+                this.repairForm.problem_description = this.repairProbIssues.join(', ');
+            }
+            if (!this.allRepairProbSugg.includes(s)) this.allRepairProbSugg.push(s);
+            this.repairProbQuery = '';
+            this.repairProbShowSugg = false;
+        },
+        getRepairProbSuggestions() {
+            if (!this.repairProbQuery.trim()) return [];
+            const q = this.repairProbQuery.toLowerCase();
+            return this.allRepairProbSugg.filter(s => s.toLowerCase().includes(q) && !this.repairProbIssues.includes(s)).slice(0, 8);
+        },
+        getQuickRepairProbSugg() {
+            return this.allRepairProbSugg.filter(s => !this.repairProbIssues.includes(s)).slice(0, 10);
+        },
+
         filteredRepairModels() {
             if (!this.repairForm.device_brand) return [];
             const brand = this.brandModelMap.find(b => b.name === this.repairForm.device_brand);
@@ -1947,8 +2041,14 @@ function posBilling() {
             this.repairError = '';
             this.repairSuccess = '';
             if (!this.selectedCustomer) { this.repairError = 'Please select a customer first'; return; }
+            // Accept free-text from search fields if form values are empty
+            if (!this.repairForm.device_brand && this.repairBrandSearch.trim()) this.repairForm.device_brand = this.repairBrandSearch.trim();
+            if (!this.repairForm.device_model && this.repairModelSearch.trim()) this.repairForm.device_model = this.repairModelSearch.trim();
             if (!this.repairForm.device_brand) { this.repairError = 'Device brand is required'; return; }
             if (!this.repairForm.device_model) { this.repairError = 'Device model is required'; return; }
+            // Build problem_description from chips
+            if (this.repairProbQuery.trim()) this.addRepairProbIssue();
+            this.repairForm.problem_description = this.repairProbIssues.join(', ');
             if (!this.repairForm.problem_description) { this.repairError = 'Problem description is required'; return; }
             this.repairSaving = true;
             try {
@@ -1966,6 +2066,17 @@ function posBilling() {
                 };
                 const r = await RepairBox.ajax('/admin/repairs', 'POST', payload);
                 if (r.success) {
+                    // Dynamically update brand/model lists for immediate auto-suggest
+                    const nb = this.repairForm.device_brand.trim();
+                    const nm = this.repairForm.device_model.trim();
+                    if (nb && !this.brandList.includes(nb)) this.brandList.push(nb);
+                    const bm = this.brandModelMap.find(x => x.name === nb);
+                    if (nb && bm) {
+                        if (nm && !bm.models.includes(nm)) bm.models.push(nm);
+                    } else if (nb) {
+                        this.brandModelMap.push({ name: nb, models: nm ? [nm] : [] });
+                    }
+
                     const ticket = r.data?.ticket_number || '';
                     if (this.repairAddToBill && r.data) {
                         const rp = r.data;
@@ -1984,6 +2095,8 @@ function posBilling() {
                     this.repairForm = { device_brand: '', device_model: '', imei: '', problem_description: '', estimated_cost: '', expected_delivery_date: '', advance_amount: '', advance_method: 'cash', advance_reference: '' };
                     this.repairBrandSearch = '';
                     this.repairModelSearch = '';
+                    this.repairProbIssues = [];
+                    this.repairProbQuery = '';
                     this.loadCustomerRepairs();
                     setTimeout(() => this.repairSuccess = '', 4000);
                 } else {
@@ -2180,6 +2293,8 @@ function posBilling() {
             this.repairForm = { device_brand: '', device_model: '', imei: '', problem_description: '', estimated_cost: '', expected_delivery_date: '', advance_amount: '', advance_method: 'cash', advance_reference: '' };
             this.repairBrandSearch = '';
             this.repairModelSearch = '';
+            this.repairProbIssues = [];
+            this.repairProbQuery = '';
             this.repairError = '';
             this.repairSuccess = '';
             this.linkedRecharges = [];
