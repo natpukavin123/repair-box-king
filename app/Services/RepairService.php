@@ -13,6 +13,23 @@ class RepairService
     public function create(array $data): Repair
     {
         $repair = DB::transaction(function () use ($data) {
+            // Auto-create brand & model if they don't exist
+            $brandName = trim($data['device_brand'] ?? '');
+            $modelName = trim($data['device_model'] ?? '');
+            if ($brandName) {
+                $brand = \App\Models\Brand::firstOrCreate(
+                    ['name' => $brandName],
+                    ['status' => 'active', 'models' => []]
+                );
+                if ($modelName) {
+                    $models = $brand->models ?? [];
+                    if (!in_array($modelName, $models)) {
+                        $models[] = $modelName;
+                        $brand->update(['models' => $models]);
+                    }
+                }
+            }
+
             $repair = Repair::create([
                 'ticket_number' => Repair::generateTicketNumber(),
                 'tracking_id' => Repair::generateTrackingId(),
