@@ -256,16 +256,60 @@
 
 
 
-            <!-- ===== COMBINED PARTS + SERVICES (EDITABLE/READ-ONLY) ===== -->
+            <!-- ===== SIMPLE CHARGE + OPTIONAL PARTS/SERVICES ===== -->
             <template x-if="['in_progress'].includes(repair.status) && !repair.is_locked">
-                <div class="bg-white rounded-xl shadow-sm border overflow-visible">
-                    <div class="bg-gradient-to-r from-indigo-50 to-blue-50 border-b px-5 py-4">
-                        <h3 class="font-bold text-sm text-gray-900 uppercase tracking-wider flex items-center gap-2">
-                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 015.646 5.646 9.003 9.003 0 0020.354 15.354z"/></svg>
-                            Work Items & Services
-                        </h3>
-                        <p class="text-xs text-gray-600 mt-1">Manage parts and services for this repair</p>
+                <div class="space-y-4">
+
+                    <!-- Final Charge Banner -->
+                    <div class="rounded-xl border-2 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+                        :class="isUsingEstimate() ? 'border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50' : 'border-indigo-300 bg-gradient-to-r from-indigo-50 to-blue-50'">
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap mb-1">
+                                <span class="text-xs font-bold uppercase tracking-wider" :class="isUsingEstimate() ? 'text-amber-700' : 'text-indigo-700'">Final Customer Charge</span>
+                                <span x-show="isUsingEstimate()" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-800">From Estimate</span>
+                                <span x-show="!isUsingEstimate()" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-200 text-indigo-800">Itemized</span>
+                            </div>
+                            <div class="text-3xl font-black" :class="isUsingEstimate() ? 'text-amber-700' : 'text-indigo-700'" x-text="'₹' + grandTotal().toFixed(2)"></div>
+                            <p class="text-xs mt-1.5" :class="isUsingEstimate() ? 'text-amber-600' : 'text-indigo-500'">
+                                <span x-show="isUsingEstimate()">Using your quoted estimate as the final charge. Add parts/services below to create an itemized bill.</span>
+                                <span x-show="!isUsingEstimate()">Calculated from parts &amp; services added below.</span>
+                            </p>
+                        </div>
+                        <div x-show="advancePaid() > 0" class="flex gap-6 sm:gap-8 sm:text-right border-t sm:border-t-0 sm:border-l pt-3 sm:pt-0 sm:pl-6" :class="isUsingEstimate() ? 'border-amber-200' : 'border-indigo-200'">
+                            <div>
+                                <div class="text-[10px] uppercase tracking-wider font-semibold mb-1 text-gray-500">Advance Paid</div>
+                                <div class="font-bold text-green-600" x-text="'₹' + advancePaid().toFixed(2)"></div>
+                            </div>
+                            <div>
+                                <div class="text-[10px] uppercase tracking-wider font-semibold mb-1 text-gray-500">Remaining</div>
+                                <div class="font-bold" :class="balanceDue() > 0 ? 'text-red-600' : 'text-emerald-600'" x-text="'₹' + balanceDue().toFixed(2)"></div>
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- Optional: Parts & Services (collapsible) -->
+                    <div x-data="{ open: ((repair.parts || []).length > 0 || (repair.repair_services || []).length > 0 || Number(repair.service_charge) > 0) }">
+                        <button @click="open = !open"
+                            class="w-full flex items-center justify-between text-sm font-semibold text-gray-500 hover:text-gray-700 py-3 px-4 bg-gray-50 hover:bg-gray-100 rounded-xl border-2 border-dashed border-gray-300 hover:border-indigo-300 transition-all">
+                            <span class="flex items-center gap-2 flex-wrap">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                <span>Parts &amp; Services</span>
+                                <template x-if="(repair.parts || []).length > 0 || (repair.repair_services || []).length > 0">
+                                    <span class="bg-indigo-100 text-indigo-700 text-[10px] font-bold px-1.5 py-0.5 rounded-full" x-text="((repair.parts || []).length + (repair.repair_services || []).length) + ' item(s)'"></span>
+                                </template>
+                                <template x-if="(repair.parts || []).length === 0 && (repair.repair_services || []).length === 0 && !Number(repair.service_charge)">
+                                    <span class="text-gray-400 text-xs font-normal">(Optional — will override estimated charge)</span>
+                                </template>
+                            </span>
+                            <svg class="w-4 h-4 flex-shrink-0 transition-transform" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </button>
+
+                        <div x-show="open" x-transition class="mt-3">
+                        <div class="bg-white rounded-xl shadow-sm border overflow-visible">
+                            <div class="bg-gradient-to-r from-gray-50 to-slate-50 border-b px-4 py-3">
+                                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Track Parts &amp; Services</p>
+                                <p class="text-xs text-gray-400 mt-0.5">When added, the itemized total replaces the estimated amount as the final charge.</p>
+                            </div>
 
                     <div x-data="{ tab: 'parts' }" class="h-full">
                         <!-- Tab Buttons -->
@@ -491,6 +535,9 @@
                             </div>
                         </div>
                     </div>
+                        </div>
+                        </div>
+                    </div>
                 </div>
             </template>
 
@@ -662,7 +709,7 @@
                                         <template x-if="nextStatus === 'payment'"><svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></template>
                                         <template x-if="nextStatus === 'closed'"><svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></template>
                                         <template x-if="nextStatus === 'cancelled'"><svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></template>
-                                        <span x-text="statusLabel(nextStatus)"></span>
+                                        <span x-text="nextStatus === 'completed' ? 'Done — Collect Payment' : statusLabel(nextStatus)"></span>
                                     </button>
                                 </template>
                             </div>
@@ -738,29 +785,40 @@
                 <!-- Content -->
                 <div class="p-5 space-y-3">
                     <!-- Line Items -->
-                    <div class="space-y-2.5">
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600 font-medium">Parts Cost</span>
-                            <span class="text-sm font-bold text-gray-800" x-text="'₹' + partsTotal().toFixed(2)"></span>
+                    <template x-if="isUsingEstimate()">
+                        <div class="flex items-center justify-between py-2.5 px-3 rounded-lg bg-amber-50 border border-amber-200">
+                            <span class="text-sm text-amber-800 font-medium flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-amber-400 inline-block flex-shrink-0"></span>
+                                Quoted Estimate
+                            </span>
+                            <span class="text-sm font-bold text-amber-900" x-text="'₹' + Number(repair.estimated_cost || 0).toFixed(2)"></span>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600 font-medium">Other Services</span>
-                            <span class="text-sm font-bold text-gray-800" x-text="'₹' + servicesTotal().toFixed(2)"></span>
+                    </template>
+                    <template x-if="!isUsingEstimate()">
+                        <div class="space-y-2.5">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600 font-medium">Parts Cost</span>
+                                <span class="text-sm font-bold text-gray-800" x-text="'₹' + partsTotal().toFixed(2)"></span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600 font-medium">Other Services</span>
+                                <span class="text-sm font-bold text-gray-800" x-text="'₹' + servicesTotal().toFixed(2)"></span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600 font-medium">Our Service Fee</span>
+                                <span class="text-sm font-bold text-gray-800" x-text="'₹' + Number(repair.service_charge || 0).toFixed(2)"></span>
+                            </div>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600 font-medium">Our Service Fee</span>
-                            <span class="text-sm font-bold text-gray-800" x-text="'₹' + Number(repair.service_charge || 0).toFixed(2)"></span>
-                        </div>
-                    </div>
+                    </template>
 
                     <!-- Divider -->
                     <div class="border-t-2 border-gray-200 my-3"></div>
 
                     <!-- Grand Total -->
-                    <div class="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg p-3 border border-indigo-200">
+                    <div class="rounded-lg p-3 border" :class="isUsingEstimate() ? 'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-200' : 'bg-gradient-to-r from-indigo-50 to-blue-50 border-indigo-200'">
                         <div class="flex justify-between items-center">
-                            <span class="font-bold uppercase text-sm text-gray-800">Grand Total</span>
-                            <span class="text-xl font-bold text-indigo-600" x-text="'₹' + grandTotal().toFixed(2)"></span>
+                            <span class="font-bold uppercase text-sm" :class="isUsingEstimate() ? 'text-amber-800' : 'text-gray-800'" x-text="isUsingEstimate() ? 'Final Charge' : 'Grand Total'"></span>
+                            <span class="text-xl font-bold" :class="isUsingEstimate() ? 'text-amber-700' : 'text-indigo-600'" x-text="'₹' + grandTotal().toFixed(2)"></span>
                         </div>
                     </div>
 
@@ -1228,23 +1286,23 @@
     <div x-show="showCompletedConfirm" class="modal-overlay" x-cloak>
         <div class="modal-container max-w-md" @click.away="showCompletedConfirm = false">
             <div class="modal-header">
-                <h3 class="text-lg font-bold text-emerald-700">Confirm Repair Completed</h3>
+                <h3 class="text-lg font-bold text-emerald-700">Repair Done?</h3>
                 <button @click="showCompletedConfirm = false" class="text-gray-400 hover:text-gray-600">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="bg-emerald-50 rounded-lg p-4 mb-4 text-center">
                     <svg class="w-12 h-12 text-emerald-500 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <p class="font-semibold text-emerald-800">Mark this repair as completed?</p>
-                    <p class="text-sm text-emerald-600 mt-1">Once confirmed, you cannot change it back to in-progress.</p>
+                    <p class="font-semibold text-emerald-800">Mark repair as done &amp; collect payment?</p>
+                    <p class="text-sm text-emerald-600 mt-1">This will move directly to the <strong>Payment</strong> stage.</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Notes (optional)</label>
-                    <input x-model="statusForm.notes" type="text" class="form-input-custom text-sm" placeholder="Completion notes...">
+                    <input x-model="statusForm.notes" type="text" class="form-input-custom text-sm" placeholder="e.g. Screen replaced, tested ok">
                 </div>
             </div>
             <div class="modal-footer">
                 <button @click="showCompletedConfirm = false" class="btn-secondary">Go Back</button>
-                <button @click="confirmCompleted()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">Yes, Mark Completed</button>
+                <button @click="confirmCompleted()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">Done — Collect Payment</button>
             </div>
         </div>
     </div>
@@ -1259,11 +1317,10 @@ function repairDetail() {
         statusMeta: @json($statusMeta),
         activeTab: 'work',
 
-        // Progress steps
+        // Progress steps (completed is instant / server-side auto-transition so hidden from stepper)
         progressSteps: [
             { key: 'received', label: 'Received' },
             { key: 'in_progress', label: 'In Progress' },
-            { key: 'completed', label: 'Completed' },
             { key: 'payment', label: 'Payment' },
             { key: 'closed', label: 'Closed' },
         ],
@@ -1409,7 +1466,9 @@ function repairDetail() {
         },
         stepReached(current, step) {
             const order = ['received', 'in_progress', 'completed', 'payment', 'closed'];
-            return order.indexOf(current) >= order.indexOf(step);
+            // treat 'completed' same level as 'payment' in the 4-step stepper
+            const normalize = s => s === 'completed' ? 'payment' : s;
+            return order.indexOf(normalize(current)) >= order.indexOf(normalize(step));
         },
 
         // ===== DATE FORMATTING =====
@@ -1437,7 +1496,7 @@ function repairDetail() {
         async confirmCompleted() {
             const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/status', 'PUT', { status: 'completed', notes: this.statusForm.notes || 'Repair completed', confirm: true });
             if (r.success !== false) {
-                RepairBox.toast('Repair marked as completed', 'success');
+                RepairBox.toast('Repair completed — moved to Payment', 'success');
                 this.showCompletedConfirm = false;
                 await this.reload();
             }
@@ -1641,7 +1700,14 @@ function repairDetail() {
         partsTotal() { return (this.repair.parts || []).reduce((s, p) => s + Number(p.cost_price) * p.quantity, 0); },
         servicesTotal() { return (this.repair.repair_services || []).reduce((s, svc) => s + Number(svc.customer_charge), 0); },
         vendorChargesTotal() { return (this.repair.repair_services || []).reduce((s, svc) => s + Number(svc.vendor_charge), 0); },
-        grandTotal() { return this.partsTotal() + Number(this.repair.service_charge || 0) + this.servicesTotal(); },
+        isUsingEstimate() {
+            const itemized = this.partsTotal() + Number(this.repair.service_charge || 0) + this.servicesTotal();
+            return itemized === 0 && Number(this.repair.estimated_cost || 0) > 0;
+        },
+        grandTotal() {
+            const itemized = this.partsTotal() + Number(this.repair.service_charge || 0) + this.servicesTotal();
+            return itemized > 0 ? itemized : Number(this.repair.estimated_cost || 0);
+        },
         totalPaid() { return (this.repair.payments || []).filter(p => p.direction === 'IN').reduce((s, p) => s + Number(p.amount), 0); },
         totalRefunded() { return (this.repair.payments || []).filter(p => p.direction === 'OUT').reduce((s, p) => s + Number(p.amount), 0); },
         advancePaid() { return (this.repair.payments || []).filter(p => p.direction === 'IN' && p.payment_type === 'advance').reduce((s, p) => s + Number(p.amount), 0); },

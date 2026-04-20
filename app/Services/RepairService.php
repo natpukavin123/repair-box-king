@@ -127,6 +127,13 @@ class RepairService
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::error('[RepairService] Completed notification failed: ' . $e->getMessage());
             }
+
+            // Auto-advance to payment immediately after completed
+            try {
+                $updated = $this->updateStatus($updated, 'payment', 'Auto-moved to payment after completion');
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('[RepairService] Auto payment transition failed: ' . $e->getMessage());
+            }
         }
 
         return $updated;

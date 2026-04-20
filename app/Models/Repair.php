@@ -151,7 +151,8 @@ class Repair extends Model
 
     public function getGrandTotalAttribute(): float
     {
-        return $this->total_parts + (float) $this->service_charge + $this->total_services;
+        $itemized = $this->total_parts + (float) $this->service_charge + $this->total_services;
+        return $itemized > 0 ? $itemized : (float) $this->estimated_cost;
     }
 
     public function getBalanceDueAttribute(): float
