@@ -70,7 +70,6 @@ class ReportService
                 'received'    => $repairCounts['received'] ?? 0,
                 'in_progress' => $repairCounts['in_progress'] ?? 0,
                 'completed'   => $repairCounts['completed'] ?? 0,
-                'payment'     => $repairCounts['payment'] ?? 0,
                 'closed'      => $repairCounts['closed'] ?? 0,
             ],
 
