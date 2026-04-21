@@ -89,14 +89,6 @@ class RepairService
 
             $updateData = ['status' => $status];
 
-            if ($status === 'completed') {
-                $updateData['completed_at'] = now();
-            }
-
-            if ($status === 'payment') {
-                // Moving to payment stage - ensure service charges are set
-            }
-
             if ($status === 'closed') {
                 $updateData['closed_at'] = now();
                 $updateData['is_locked'] = true;
@@ -117,22 +109,15 @@ class RepairService
 
             ActivityLog::log('update', 'repairs', $repair->id, "Updated repair {$repair->ticket_number} to {$status}");
 
-            return $repair->fresh('customer', 'statusHistory.updater', 'parts.part', 'payments');
+            return $repair->fresh('customer', 'statusHistory.updater', 'payments');
         });
 
-        // Fire completed notification outside the transaction so a mail failure won't rollback
-        if ($status === 'completed') {
+        // Fire closed notification (was completed) outside the transaction
+        if ($status === 'closed') {
             try {
                 $this->notifications->sendRepairCompleted($updated);
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('[RepairService] Completed notification failed: ' . $e->getMessage());
-            }
-
-            // Auto-advance to payment immediately after completed
-            try {
-                $updated = $this->updateStatus($updated, 'payment', 'Auto-moved to payment after completion');
-            } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('[RepairService] Auto payment transition failed: ' . $e->getMessage());
+                \Illuminate\Support\Facades\Log::error('[RepairService] Closed notification failed: ' . $e->getMessage());
             }
         }
 

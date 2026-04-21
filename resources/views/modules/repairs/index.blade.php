@@ -581,47 +581,73 @@
                             </div>
                         </div>
 
-                        <div>
-                            <label class="text-xs font-medium text-gray-600 mb-1 block">IMEI / Serial No.</label>
-                            <input x-model="form.imei" type="text" class="form-input-custom repair-form-input text-sm" placeholder="Optional IMEI or serial">
+                        {{-- Estimated Cost + Advance Amount --}}
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-xs font-medium text-gray-600 mb-1 block">Estimated Cost</label>
+                                <input x-model="form.estimated_cost" type="number" step="0.01" class="form-input-custom repair-form-input text-sm" placeholder="0.00">
+                            </div>
+                            <div>
+                                <label class="text-xs font-medium text-gray-600 mb-1 block">Advance Amount</label>
+                                <input x-model="form.advance_amount" type="number" step="0.01" class="form-input-custom repair-form-input text-sm" placeholder="0.00">
+                            </div>
                         </div>
 
-                        {{-- Optional details (collapsible) --}}
+                        {{-- Payment Method — shown only when advance amount entered --}}
+                        <div x-show="Number(form.advance_amount) > 0">
+                            <label class="text-xs font-medium text-gray-600 mb-1 block">Payment Method</label>
+                            <div class="flex gap-1.5">
+                                {{-- Cash --}}
+                                <button type="button" @click="form.advance_method = 'cash'" title="Cash"
+                                    class="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg border text-[10px] font-semibold transition"
+                                    :class="form.advance_method === 'cash' ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-gray-200 text-gray-400 hover:border-primary-300 hover:text-primary-600'">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
+                                    Cash
+                                </button>
+                                {{-- Card --}}
+                                <button type="button" @click="form.advance_method = 'card'" title="Card"
+                                    class="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg border text-[10px] font-semibold transition"
+                                    :class="form.advance_method === 'card' ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-gray-200 text-gray-400 hover:border-primary-300 hover:text-primary-600'">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                                    Card
+                                </button>
+                                {{-- UPI --}}
+                                <button type="button" @click="form.advance_method = 'upi'" title="UPI"
+                                    class="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg border text-[10px] font-semibold transition"
+                                    :class="form.advance_method === 'upi' ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-gray-200 text-gray-400 hover:border-primary-300 hover:text-primary-600'">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m0 14v1m8-8h-1M5 12H4m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+                                    UPI
+                                </button>
+                                {{-- Bank --}}
+                                <button type="button" @click="form.advance_method = 'bank_transfer'" title="Bank Transfer"
+                                    class="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg border text-[10px] font-semibold transition"
+                                    :class="form.advance_method === 'bank_transfer' ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-gray-200 text-gray-400 hover:border-primary-300 hover:text-primary-600'">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
+                                    Bank
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Reference / Txn ID — shown only for non-cash when advance entered --}}
+                        <div x-show="Number(form.advance_amount) > 0 && ['card','upi','bank_transfer'].includes(form.advance_method)" x-cloak>
+                            <label class="text-xs font-medium text-gray-600 mb-1 block">Reference / Txn ID</label>
+                            <input x-model="form.advance_reference" type="text" class="form-input-custom repair-form-input text-sm" placeholder="Optional reference number">
+                        </div>
+
+                        {{-- Optional Details (collapsible) --}}
                         <div class="border-t border-gray-100 pt-2">
                             <button type="button" @click="optionalOpen = !optionalOpen" class="flex w-full items-center justify-between text-left text-xs font-semibold text-gray-500 hover:text-gray-700">
                                 <span>Optional Details</span>
                                 <svg class="w-3.5 h-3.5 transition-transform" :class="optionalOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                             </button>
-
                             <div x-show="optionalOpen" x-cloak x-collapse class="mt-2 space-y-2">
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label class="text-xs font-medium text-gray-600 mb-1 block">Delivery Date</label>
-                                        <input x-model="form.expected_delivery_date" type="date" class="form-input-custom repair-form-input text-sm">
-                                    </div>
-                                    <div>
-                                        <label class="text-xs font-medium text-gray-600 mb-1 block">Estimated Cost</label>
-                                        <input x-model="form.estimated_cost" type="number" step="0.01" class="form-input-custom repair-form-input text-sm" placeholder="0.00">
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label class="text-xs font-medium text-gray-600 mb-1 block">Advance Amount</label>
-                                        <input x-model="form.advance_amount" type="number" step="0.01" class="form-input-custom repair-form-input text-sm" placeholder="0.00">
-                                    </div>
-                                    <div>
-                                        <label class="text-xs font-medium text-gray-600 mb-1 block">Payment Method</label>
-                                        <select x-model="form.advance_method" class="form-select-custom repair-form-select text-sm">
-                                            <option value="cash">Cash</option>
-                                            <option value="card">Card</option>
-                                            <option value="upi">UPI</option>
-                                            <option value="bank_transfer">Bank Transfer</option>
-                                        </select>
-                                    </div>
+                                <div>
+                                    <label class="text-xs font-medium text-gray-600 mb-1 block">Delivery Date</label>
+                                    <input x-model="form.expected_delivery_date" type="date" class="form-input-custom repair-form-input text-sm">
                                 </div>
                                 <div>
-                                    <label class="text-xs font-medium text-gray-600 mb-1 block">Reference / Txn ID</label>
-                                    <input x-model="form.advance_reference" type="text" class="form-input-custom repair-form-input text-sm" placeholder="Optional">
+                                    <label class="text-xs font-medium text-gray-600 mb-1 block">IMEI / Serial No.</label>
+                                    <input x-model="form.imei" type="text" class="form-input-custom repair-form-input text-sm" placeholder="Optional IMEI or serial">
                                 </div>
                             </div>
                         </div>
@@ -703,29 +729,63 @@
 
     {{-- SUCCESS MODAL --}}
     <div x-show="showSuccess" x-cloak class="modal-overlay">
-        <div class="modal-container max-w-sm text-center" @click.stop>
-            <div class="modal-body py-8 flex flex-col items-center gap-4">
-                <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        <div class="modal-container max-w-sm overflow-hidden !p-0" @click.stop>
+
+            {{-- Green header --}}
+            <div class="bg-gradient-to-br from-green-500 to-emerald-600 px-6 pt-8 pb-12 flex flex-col items-center gap-3 text-center">
+                <div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center ring-4 ring-white/30">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                 </div>
                 <div>
-                    <h3 class="text-lg font-bold text-gray-800">Repair Created!</h3>
-                    <p class="text-sm text-gray-500 mt-1">
-                        Ticket <span class="font-semibold text-primary-600" x-text="'#' + (createdRepair ? createdRepair.ticket_number : '')"></span>
-                    </p>
-                </div>
-                <div class="flex gap-3 flex-wrap justify-center">
-                    <a :href="'/admin/repairs/' + (createdRepair ? createdRepair.id : '') + '/print'" target="_blank" class="btn-secondary text-sm px-4">
-                        <svg class="w-4 h-4 inline mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                        Print Ticket
-                    </a>
-                    <a :href="'/admin/repairs/' + (createdRepair ? createdRepair.id : '')" class="btn-secondary text-sm px-4">View Details</a>
-                    <button @click="newRepair()" class="btn-primary text-sm px-4">
-                        <svg class="w-4 h-4 inline mr-1 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                        New Repair
-                    </button>
+                    <h3 class="text-lg font-bold text-white">Repair Ticket Created!</h3>
+                    <div class="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/25 border border-white/30 px-3 py-1">
+                        <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                        <span class="text-sm font-bold text-white tracking-wide" x-text="createdRepair ? createdRepair.ticket_number : ''"></span>
+                    </div>
                 </div>
             </div>
+
+            {{-- Device + customer card (overlaps green) --}}
+            <div class="-mt-6 mx-4 rounded-2xl bg-white shadow-xl border border-gray-100 px-4 py-3.5">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-bold text-gray-900 truncate"
+                             x-text="createdRepair ? [createdRepair.device_brand, createdRepair.device_model].filter(Boolean).join(' ') || 'Device' : '—'"></div>
+                        <div class="text-xs text-gray-500 mt-0.5 truncate"
+                             x-text="createdRepair?.customer?.name || 'Walk-in Customer'"></div>
+                    </div>
+                    <span class="flex-shrink-0 text-[10px] font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 uppercase tracking-wide">Active</span>
+                </div>
+            </div>
+
+            {{-- Actions --}}
+            <div class="px-4 pt-4 pb-5 space-y-2">
+                <a :href="'/admin/repairs/' + (createdRepair ? createdRepair.id : '')"
+                   class="flex items-center justify-between w-full rounded-xl border border-gray-200 bg-white hover:bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 transition group">
+                    <span class="flex items-center gap-2.5">
+                        <svg class="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        View Details
+                    </span>
+                    <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
+                <a :href="'/admin/repairs/' + (createdRepair ? createdRepair.id : '') + '/print'" target="_blank"
+                   class="flex items-center justify-between w-full rounded-xl border border-gray-200 bg-white hover:bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 transition group">
+                    <span class="flex items-center gap-2.5">
+                        <svg class="w-4 h-4 text-gray-400 group-hover:text-primary-500 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                        Print Receipt
+                    </span>
+                    <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
+                <button @click="newRepair()"
+                    class="w-full flex items-center justify-center gap-2 rounded-xl bg-primary-600 hover:bg-primary-700 px-4 py-3 text-sm font-bold text-white transition shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Create Another Repair
+                </button>
+            </div>
+
         </div>
     </div>
 </div>

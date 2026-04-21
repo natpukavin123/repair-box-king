@@ -148,31 +148,17 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     // Repairs
     Route::resource('repairs', RepairController::class)->except(['edit', 'destroy']);
     Route::put('repairs/{repair}/status', [RepairController::class, 'updateStatus']);
-    Route::put('repairs/{repair}/service-charge', [RepairController::class, 'updateServiceCharge']);
     Route::post('repairs/{repair}/payment', [RepairController::class, 'addPayment']);
     Route::post('repairs/{repair}/cancel', [RepairController::class, 'cancel']);
-    Route::post('repairs/{repair}/parts', [RepairController::class, 'addPart']);
-    Route::delete('repairs/{repair}/parts/{partId}', [RepairController::class, 'removePart']);
-    Route::post('repairs/{repair}/services', [RepairController::class, 'addService']);
-    Route::put('repairs/{repair}/services/{serviceId}', [RepairController::class, 'updateService']);
-    Route::delete('repairs/{repair}/services/{serviceId}', [RepairController::class, 'removeService']);
-    Route::post('repairs/{repair}/cancel-refund', [RepairController::class, 'cancelWithRefund']);
     Route::post('repairs/{repair}/duplicate', [RepairController::class, 'duplicateRepair']);
     Route::get('repairs/{repair}/print', [RepairController::class, 'print'])->name('repairs.print');
     Route::get('repairs/{repair}/invoice', [RepairController::class, 'invoice'])->name('repairs.invoice');
-    Route::get('repairs/{repair}/cost-breakdown', [RepairController::class, 'costBreakdown'])->name('repairs.cost-breakdown');
 
     // Customer Returns
     Route::get('returns', [ReturnController::class, 'index']);
     Route::get('returns/refunds', [ReturnController::class, 'refunds']);
     Route::post('returns/customer', [ReturnController::class, 'storeCustomerReturn']);
     Route::put('returns/{type}/{id}/status', [ReturnController::class, 'updateStatus']);
-
-    // Repair Returns
-    Route::get('repairs/{repair}/returns/create', [RepairReturnController::class, 'create'])->name('repair-returns.create');
-    Route::post('repairs/{repair}/returns', [RepairReturnController::class, 'store'])->name('repair-returns.store');
-    Route::get('repairs/{repair}/returns/{return}', [RepairReturnController::class, 'show'])->name('repair-returns.show');
-    Route::get('repairs/{repair}/returns/{return}/invoice', [RepairReturnController::class, 'invoice'])->name('repair-returns.invoice');
 
     // Customers
     Route::resource('customers', CustomerController::class)->except(['edit']);

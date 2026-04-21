@@ -19,45 +19,23 @@
     $docNumber      = $repair->ticket_number;
     $docDate        = $repair->created_at->format('d M Y');
 
-    // Line items
-    $lineItems = collect();
-    foreach ($repair->parts as $part) {
-        $mrp = $part->product
-            ? (float) ($part->product->mrp ?? $part->cost_price)
-            : ($part->part ? (float) ($part->part->selling_price ?? $part->cost_price) : (float) $part->cost_price);
-        $lineItems->push([
-            'name'   => $part->part ? $part->part->name : ($part->product ? $part->product->name : 'Part'),
-            'serial' => $part->imei ?? null,
-            'qty'    => (int) $part->quantity,
-            'mrp'    => $mrp,
-            'rate'   => (float) $part->cost_price,
-            'total'  => (float) $part->cost_price * (int) $part->quantity,
-        ]);
-    }
-    foreach ($repair->repairServices as $svc) {
-        $lineItems->push([
-            'name'   => $svc->service_type_name,
-            'serial' => null,
+    // Line items — use actual paid amount; estimated_cost shown as MRP if different
+    $totalPaidIn  = (float) $repair->payments->where('direction','IN')->sum('amount');
+    $estimateCost = (float) ($repair->estimated_cost ?? 0);
+    $actualCost   = $totalPaidIn > 0 ? $totalPaidIn : $estimateCost;
+    $lineItems = collect([
+        [
+            'name'   => $repair->problem_description ?: 'Repair Service',
+            'serial' => $repair->imei ?: null,
             'qty'    => 1,
-            'mrp'    => (float) $svc->customer_charge,
-            'rate'   => (float) $svc->customer_charge,
-            'total'  => (float) $svc->customer_charge,
-        ]);
-    }
-    if (($repair->service_charge ?? 0) > 0) {
-        $lineItems->push([
-            'name'   => 'Service Charge',
-            'serial' => null,
-            'qty'    => 1,
-            'mrp'    => (float) $repair->service_charge,
-            'rate'   => (float) $repair->service_charge,
-            'total'  => (float) $repair->service_charge,
-        ]);
-    }
+            'mrp'    => $estimateCost !== $actualCost ? $estimateCost : 0, // show estimate as MRP only if different
+            'rate'   => $actualCost,
+            'total'  => $actualCost,
+        ]
+    ]);
 
     $grandTotal  = $lineItems->sum('total');
     $totalQty    = $lineItems->sum('qty');
-    $totalPaidIn = $repair->payments->where('direction','IN')->sum('amount');
     $balanceDue  = max(0, $grandTotal - $totalPaidIn);
     $amtWords    = numWords((float) $grandTotal);
     $amtWordsTa  = numWordsTa((float) $grandTotal);
@@ -95,7 +73,7 @@
                 <table class="inv-tbl">
                     <thead><tr>
                         <th style="width:18px;">#</th>
-                        <th class="tl" data-en="Product / Service" data-ta="பொருள் / சேவை">{{ $defaultLang === 'ta' ? 'பொருள் / சேவை' : 'Product / Service' }}</th>
+                        <th class="tl" data-en="Repair Description" data-ta="பழுதுபார்க்கப்பட்ட சாதனம்">{{ $defaultLang === 'ta' ? 'பழுதுபார்க்கப்பட்ட சாதனம்' : 'Repair Description' }}</th>
                         <th style="width:24px;" data-en="Qty" data-ta="எண்.">{{ $defaultLang === 'ta' ? 'எண்.' : 'Qty' }}</th>
                         <th style="width:46px;" class="tr" data-en="MRP" data-ta="அதிகபட்ச விலை">{{ $defaultLang === 'ta' ? 'அதிகபட்ச விலை' : 'MRP' }}</th>
                         <th style="width:46px;" class="tr" data-en="Price" data-ta="விலை">{{ $defaultLang === 'ta' ? 'விலை' : 'Price' }}</th>

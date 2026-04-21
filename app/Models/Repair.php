@@ -6,40 +6,36 @@ use Illuminate\Database\Eloquent\Model;
 
 class Repair extends Model
 {
-    // Status flow: received → in_progress → completed → payment → closed
-    // Side statuses: cancelled
-    const STATUS_RECEIVED = 'received';
+    // Status flow: received → in_progress → completed → closed
+    // Side status: cancelled
+    const STATUS_RECEIVED    = 'received';
     const STATUS_IN_PROGRESS = 'in_progress';
-    const STATUS_COMPLETED = 'completed';
-    const STATUS_PAYMENT = 'payment';
-    const STATUS_CLOSED = 'closed';
-    const STATUS_CANCELLED = 'cancelled';
+    const STATUS_COMPLETED   = 'completed';
+    const STATUS_CLOSED      = 'closed';
+    const STATUS_CANCELLED   = 'cancelled';
 
     const STATUSES = [
         self::STATUS_RECEIVED,
         self::STATUS_IN_PROGRESS,
         self::STATUS_COMPLETED,
-        self::STATUS_PAYMENT,
         self::STATUS_CLOSED,
         self::STATUS_CANCELLED,
     ];
 
     // Which statuses can transition to which
     const STATUS_TRANSITIONS = [
-        'received' => ['in_progress', 'cancelled'],
+        'received'    => ['in_progress', 'cancelled'],
         'in_progress' => ['completed', 'cancelled'],
-        'completed' => ['payment', 'cancelled'],
-        'payment' => ['closed', 'cancelled'],
-        'closed' => [],
-        'cancelled' => [],
+        'completed'   => ['closed', 'cancelled'],
+        'closed'      => [],
+        'cancelled'   => [],
     ];
 
     // Labels and colors for UI
     const STATUS_META = [
         'received'    => ['label' => 'Received',    'color' => 'blue',   'icon' => 'inbox'],
         'in_progress' => ['label' => 'In Progress', 'color' => 'amber',  'icon' => 'wrench'],
-        'completed'   => ['label' => 'Completed',   'color' => 'emerald','icon' => 'check-circle'],
-        'payment'     => ['label' => 'Payment',     'color' => 'purple', 'icon' => 'currency'],
+        'completed'   => ['label' => 'Completed',   'color' => 'teal',   'icon' => 'check'],
         'closed'      => ['label' => 'Closed',      'color' => 'green',  'icon' => 'lock'],
         'cancelled'   => ['label' => 'Cancelled',   'color' => 'red',    'icon' => 'x-circle'],
     ];
@@ -71,29 +67,9 @@ class Repair extends Model
         return $this->hasMany(RepairStatusHistory::class);
     }
 
-    public function parts()
-    {
-        return $this->hasMany(RepairPart::class);
-    }
-
     public function payments()
     {
         return $this->hasMany(RepairPayment::class);
-    }
-
-    public function repairVendors()
-    {
-        return $this->hasMany(RepairVendor::class);
-    }
-
-    public function repairServices()
-    {
-        return $this->hasMany(RepairServiceItem::class);
-    }
-
-    public function repairReturns()
-    {
-        return $this->hasMany(RepairReturn::class);
     }
 
     public function parentRepair()
@@ -151,40 +127,16 @@ class Repair extends Model
 
     public function getGrandTotalAttribute(): float
     {
-        $itemized = $this->total_parts + (float) $this->service_charge + $this->total_services;
-        return $itemized > 0 ? $itemized : (float) $this->estimated_cost;
+        return (float) $this->estimated_cost;
     }
 
     public function getBalanceDueAttribute(): float
     {
-        return max(0, $this->grand_total - $this->total_paid);
+        return max(0, $this->grand_total - $this->net_paid);
     }
 
     public function getIsFullyPaidAttribute(): bool
     {
         return $this->grand_total > 0 && $this->net_paid >= $this->grand_total;
-    }
-
-    public function getPartsCostAttribute(): float
-    {
-        return $this->parts->sum(function ($rp) {
-            $actualCost = $rp->part ? $rp->part->cost_price : $rp->cost_price;
-            return (float) $actualCost * $rp->quantity;
-        });
-    }
-
-    public function getVendorChargesAttribute(): float
-    {
-        return $this->repairServices->sum('vendor_charge');
-    }
-
-    public function getTotalCostAttribute(): float
-    {
-        return $this->parts_cost + $this->vendor_charges;
-    }
-
-    public function getProfitAttribute(): float
-    {
-        return $this->grand_total - $this->total_cost;
     }
 }
