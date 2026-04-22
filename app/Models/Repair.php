@@ -100,16 +100,6 @@ class Repair extends Model
         return in_array($status, $allowed);
     }
 
-    public function getTotalPartsAttribute(): float
-    {
-        return $this->parts->sum(fn($p) => $p->cost_price * $p->quantity);
-    }
-
-    public function getTotalServicesAttribute(): float
-    {
-        return $this->repairServices->sum('customer_charge');
-    }
-
     public function getTotalPaidAttribute(): float
     {
         return $this->payments->where('direction', 'IN')->sum('amount');

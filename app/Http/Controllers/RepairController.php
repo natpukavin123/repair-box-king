@@ -126,7 +126,8 @@ class RepairController extends Controller
         }
 
         $repair->update($request->validated());
-        $repair->load('customer', 'statusHistory.updater', 'parts.part', 'payments', 'repairVendors.vendor', 'repairServices.vendor', 'repairServices.serviceType', 'childRepairs', 'repairReturns.items');
+
+        $repair->load('customer', 'statusHistory.updater', 'payments', 'childRepairs');
 
         return response()->json(['success' => true, 'data' => $repair, 'message' => 'Repair intake details updated']);
     }
