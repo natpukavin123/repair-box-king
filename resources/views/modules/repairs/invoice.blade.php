@@ -19,46 +19,26 @@
     $docNumber      = $repair->ticket_number;
     $docDate        = $repair->created_at->format('d M Y');
 
-    // Line items
-    $lineItems = collect();
-    foreach ($repair->parts as $part) {
-        $mrp = $part->product
-            ? (float) ($part->product->mrp ?? $part->cost_price)
-            : ($part->part ? (float) ($part->part->selling_price ?? $part->cost_price) : (float) $part->cost_price);
-        $lineItems->push([
-            'name'   => $part->part ? $part->part->name : ($part->product ? $part->product->name : 'Part'),
-            'serial' => $part->imei ?? null,
-            'qty'    => (int) $part->quantity,
-            'mrp'    => $mrp,
-            'rate'   => (float) $part->cost_price,
-            'total'  => (float) $part->cost_price * (int) $part->quantity,
-        ]);
-    }
-    foreach ($repair->repairServices as $svc) {
-        $lineItems->push([
-            'name'   => $svc->service_type_name,
-            'serial' => null,
+    // Line items — use final_cost (actual charged amount)
+    $totalPaidIn  = (float) $repair->payments->where('direction','IN')->sum('amount');
+    $finalCost    = $repair->final_cost !== null ? (float) $repair->final_cost : null;
+    $actualCost   = $finalCost ?? ($totalPaidIn > 0 ? $totalPaidIn : (float) ($repair->estimated_cost ?? 0));
+    $lineItems = collect([
+        [
+            'name'   => $repair->problem_description ?: 'Repair Service',
+            'serial' => $repair->imei ?: null,
             'qty'    => 1,
-            'mrp'    => (float) $svc->customer_charge,
-            'rate'   => (float) $svc->customer_charge,
-            'total'  => (float) $svc->customer_charge,
-        ]);
-    }
-    if (($repair->service_charge ?? 0) > 0) {
-        $lineItems->push([
-            'name'   => 'Service Charge',
-            'serial' => null,
-            'qty'    => 1,
-            'mrp'    => (float) $repair->service_charge,
-            'rate'   => (float) $repair->service_charge,
-            'total'  => (float) $repair->service_charge,
-        ]);
-    }
+            'rate'   => $actualCost,
+            'total'  => $actualCost,
+        ]
+    ]);
 
     $grandTotal  = $lineItems->sum('total');
     $totalQty    = $lineItems->sum('qty');
-    $totalPaidIn = $repair->payments->where('direction','IN')->sum('amount');
-    $balanceDue  = max(0, $grandTotal - $totalPaidIn);
+    $totalRefunded = (float) $repair->payments->where('direction','OUT')->sum('amount');
+    $netPaid     = $totalPaidIn - $totalRefunded;
+    $refundDue   = max(0, $netPaid - $grandTotal);
+    $balanceDue  = max(0, $grandTotal - $netPaid);
     $amtWords    = numWords((float) $grandTotal);
     $amtWordsTa  = numWordsTa((float) $grandTotal);
     $emptyRows   = max(0, 6 - $lineItems->count());
@@ -95,11 +75,10 @@
                 <table class="inv-tbl">
                     <thead><tr>
                         <th style="width:18px;">#</th>
-                        <th class="tl" data-en="Product / Service" data-ta="பொருள் / சேவை">{{ $defaultLang === 'ta' ? 'பொருள் / சேவை' : 'Product / Service' }}</th>
+                        <th class="tl" data-en="Repair Description" data-ta="பழுதுபார்க்கப்பட்ட சாதனம்">{{ $defaultLang === 'ta' ? 'பழுதுபார்க்கப்பட்ட சாதனம்' : 'Repair Description' }}</th>
                         <th style="width:24px;" data-en="Qty" data-ta="எண்.">{{ $defaultLang === 'ta' ? 'எண்.' : 'Qty' }}</th>
-                        <th style="width:46px;" class="tr" data-en="MRP" data-ta="அதிகபட்ச விலை">{{ $defaultLang === 'ta' ? 'அதிகபட்ச விலை' : 'MRP' }}</th>
-                        <th style="width:46px;" class="tr" data-en="Price" data-ta="விலை">{{ $defaultLang === 'ta' ? 'விலை' : 'Price' }}</th>
-                        <th style="width:58px;" class="tr" data-en="Amount" data-ta="தொகை">{{ $defaultLang === 'ta' ? 'தொகை' : 'Amount' }}</th>
+                        <th style="width:58px;" class="tr" data-en="Price" data-ta="விலை">{{ $defaultLang === 'ta' ? 'விலை' : 'Price' }}</th>
+                        <th style="width:68px;" class="tr" data-en="Amount" data-ta="தொகை">{{ $defaultLang === 'ta' ? 'தொகை' : 'Amount' }}</th>
                     </tr></thead>
                     <tbody>
                         @foreach($lineItems as $idx => $item)
@@ -107,19 +86,17 @@
                             <td class="tc">{{ $idx+1 }}</td>
                             <td>{{ $item['name'] }}@if($item['serial'])<div class="serial-sub">IMEI: {{ $item['serial'] }}</div>@endif</td>
                             <td class="tc">{{ $item['qty'] }}</td>
-                            <td class="tr" style="color:#000;font-weight:500;">@if($item['mrp'] > $item['rate']){{ number_format($item['mrp'],2) }}@else&mdash;@endif</td>
                             <td class="tr" style="font-weight:600;">{{ number_format($item['rate'],2) }}</td>
                             <td class="tr" style="font-weight:600;">{{ number_format($item['total'],2) }}</td>
                         </tr>
                         @endforeach
                         @for($e=0;$e<$emptyRows;$e++)
-                        <tr class="erow"><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+                        <tr class="erow"><td></td><td></td><td></td><td></td><td></td></tr>
                         @endfor
                     </tbody>
                     <tfoot><tr>
                         <td colspan="2" class="tr" style="letter-spacing:1px;font-size:7px;" data-en="TOTAL" data-ta="மொத்தம்">{{ $defaultLang === 'ta' ? 'மொத்தம்' : 'TOTAL' }}</td>
                         <td class="tc">{{ number_format($totalQty) }}</td>
-                        <td></td>
                         <td></td>
                         <td class="tr">{{ number_format($grandTotal,2) }}</td>
                     </tr></tfoot>
@@ -171,10 +148,21 @@
                             <td data-en="Total Paid" data-ta="செலுத்தியது">{{ $defaultLang === 'ta' ? 'செலுத்தியது' : 'Total Paid' }}</td>
                             <td>&#8377;{{ number_format($totalPaidIn,2) }}</td>
                         </tr>
+                        @if($totalRefunded > 0)
+                        <tr style="color:#dc2626;">
+                            <td data-en="Refunded" data-ta="திருப்பி அளிக்கப்பட்டது">{{ $defaultLang === 'ta' ? 'திருப்பி அளிக்கப்பட்டது' : 'Refunded' }}</td>
+                            <td>-&#8377;{{ number_format($totalRefunded,2) }}</td>
+                        </tr>
+                        @endif
                         @if($balanceDue > 0)
                         <tr class="row-bal">
                             <td data-en="Balance Due" data-ta="நிலுவை">{{ $defaultLang === 'ta' ? 'நிலுவை' : 'Balance Due' }}</td>
                             <td>&#8377;{{ number_format($balanceDue,2) }}</td>
+                        </tr>
+                        @elseif($refundDue > 0)
+                        <tr class="row-bal">
+                            <td data-en="Refund Due" data-ta="பணத்தை திருப்பி">{{ $defaultLang === 'ta' ? 'பணத்தை திருப்பி' : 'Refund Due' }}</td>
+                            <td style="color:#d97706;">&#8377;{{ number_format($refundDue,2) }}</td>
                         </tr>
                         @else
                         <tr class="row-full"><td colspan="2">&#10003; <span data-en="PAID IN FULL" data-ta="முழுமையாக செலுத்தப்பட்டது">{{ $defaultLang === 'ta' ? 'முழுமையாக செலுத்தப்பட்டது' : 'PAID IN FULL' }}</span></td></tr>

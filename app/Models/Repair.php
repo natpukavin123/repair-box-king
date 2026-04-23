@@ -6,40 +6,36 @@ use Illuminate\Database\Eloquent\Model;
 
 class Repair extends Model
 {
-    // Status flow: received → in_progress → completed → payment → closed
-    // Side statuses: cancelled
-    const STATUS_RECEIVED = 'received';
+    // Status flow: received → in_progress → completed → closed
+    // Side status: cancelled
+    const STATUS_RECEIVED    = 'received';
     const STATUS_IN_PROGRESS = 'in_progress';
-    const STATUS_COMPLETED = 'completed';
-    const STATUS_PAYMENT = 'payment';
-    const STATUS_CLOSED = 'closed';
-    const STATUS_CANCELLED = 'cancelled';
+    const STATUS_COMPLETED   = 'completed';
+    const STATUS_CLOSED      = 'closed';
+    const STATUS_CANCELLED   = 'cancelled';
 
     const STATUSES = [
         self::STATUS_RECEIVED,
         self::STATUS_IN_PROGRESS,
         self::STATUS_COMPLETED,
-        self::STATUS_PAYMENT,
         self::STATUS_CLOSED,
         self::STATUS_CANCELLED,
     ];
 
     // Which statuses can transition to which
     const STATUS_TRANSITIONS = [
-        'received' => ['in_progress', 'cancelled'],
+        'received'    => ['in_progress', 'cancelled'],
         'in_progress' => ['completed', 'cancelled'],
-        'completed' => ['payment', 'cancelled'],
-        'payment' => ['closed', 'cancelled'],
-        'closed' => [],
-        'cancelled' => [],
+        'completed'   => ['closed', 'cancelled'],
+        'closed'      => [],
+        'cancelled'   => [],
     ];
 
     // Labels and colors for UI
     const STATUS_META = [
         'received'    => ['label' => 'Received',    'color' => 'blue',   'icon' => 'inbox'],
         'in_progress' => ['label' => 'In Progress', 'color' => 'amber',  'icon' => 'wrench'],
-        'completed'   => ['label' => 'Completed',   'color' => 'emerald','icon' => 'check-circle'],
-        'payment'     => ['label' => 'Payment',     'color' => 'purple', 'icon' => 'currency'],
+        'completed'   => ['label' => 'Completed',   'color' => 'teal',   'icon' => 'check'],
         'closed'      => ['label' => 'Closed',      'color' => 'green',  'icon' => 'lock'],
         'cancelled'   => ['label' => 'Cancelled',   'color' => 'red',    'icon' => 'x-circle'],
     ];
@@ -47,13 +43,14 @@ class Repair extends Model
     protected $fillable = [
         'ticket_number', 'tracking_id', 'customer_id', 'device_brand',
         'device_model', 'imei', 'problem_description', 'estimated_cost',
-        'service_charge', 'expected_delivery_date', 'status',
+        'final_cost', 'service_charge', 'expected_delivery_date', 'status',
         'is_locked', 'parent_id', 'record_type', 'cancel_reason',
         'completed_at', 'closed_at',
     ];
 
     protected $casts = [
         'estimated_cost' => 'decimal:2',
+        'final_cost' => 'decimal:2',
         'service_charge' => 'decimal:2',
         'expected_delivery_date' => 'date',
         'is_locked' => 'boolean',
@@ -71,29 +68,9 @@ class Repair extends Model
         return $this->hasMany(RepairStatusHistory::class);
     }
 
-    public function parts()
-    {
-        return $this->hasMany(RepairPart::class);
-    }
-
     public function payments()
     {
         return $this->hasMany(RepairPayment::class);
-    }
-
-    public function repairVendors()
-    {
-        return $this->hasMany(RepairVendor::class);
-    }
-
-    public function repairServices()
-    {
-        return $this->hasMany(RepairServiceItem::class);
-    }
-
-    public function repairReturns()
-    {
-        return $this->hasMany(RepairReturn::class);
     }
 
     public function parentRepair()
@@ -124,16 +101,6 @@ class Repair extends Model
         return in_array($status, $allowed);
     }
 
-    public function getTotalPartsAttribute(): float
-    {
-        return $this->parts->sum(fn($p) => $p->cost_price * $p->quantity);
-    }
-
-    public function getTotalServicesAttribute(): float
-    {
-        return $this->repairServices->sum('customer_charge');
-    }
-
     public function getTotalPaidAttribute(): float
     {
         return $this->payments->where('direction', 'IN')->sum('amount');
@@ -151,39 +118,22 @@ class Repair extends Model
 
     public function getGrandTotalAttribute(): float
     {
-        return $this->total_parts + (float) $this->service_charge + $this->total_services;
+        // Use final_cost when set (after closing), otherwise estimated_cost
+        return (float) ($this->final_cost ?? $this->estimated_cost);
     }
 
     public function getBalanceDueAttribute(): float
     {
-        return max(0, $this->grand_total - $this->total_paid);
+        return max(0, $this->grand_total - $this->net_paid);
+    }
+
+    public function getRefundDueAttribute(): float
+    {
+        return max(0, $this->net_paid - $this->grand_total);
     }
 
     public function getIsFullyPaidAttribute(): bool
     {
         return $this->grand_total > 0 && $this->net_paid >= $this->grand_total;
-    }
-
-    public function getPartsCostAttribute(): float
-    {
-        return $this->parts->sum(function ($rp) {
-            $actualCost = $rp->part ? $rp->part->cost_price : $rp->cost_price;
-            return (float) $actualCost * $rp->quantity;
-        });
-    }
-
-    public function getVendorChargesAttribute(): float
-    {
-        return $this->repairServices->sum('vendor_charge');
-    }
-
-    public function getTotalCostAttribute(): float
-    {
-        return $this->parts_cost + $this->vendor_charges;
-    }
-
-    public function getProfitAttribute(): float
-    {
-        return $this->grand_total - $this->total_cost;
     }
 }
