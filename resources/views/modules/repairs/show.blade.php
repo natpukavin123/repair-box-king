@@ -119,35 +119,14 @@
                                     <div>
                                         <label class="block text-xs font-semibold text-red-700 mb-1.5">Payment Method</label>
                                         <div class="flex gap-1.5">
-                                            <button type="button" @click="latePayForm.method = 'cash'"
-                                                class="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg border text-[10px] font-semibold transition"
-                                                :class="latePayForm.method === 'cash' ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-gray-200 text-gray-400 hover:border-primary-300'">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
-                                                Cash
-                                            </button>
-                                            <button type="button" @click="latePayForm.method = 'card'"
-                                                class="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg border text-[10px] font-semibold transition"
-                                                :class="latePayForm.method === 'card' ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-gray-200 text-gray-400 hover:border-primary-300'">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-                                                Card
-                                            </button>
-                                            <button type="button" @click="latePayForm.method = 'upi'"
-                                                class="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg border text-[10px] font-semibold transition"
-                                                :class="latePayForm.method === 'upi' ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-gray-200 text-gray-400 hover:border-primary-300'">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m0 14v1m8-8h-1M5 12H4m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
-                                                UPI
-                                            </button>
-                                            <button type="button" @click="latePayForm.method = 'bank_transfer'"
-                                                class="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg border text-[10px] font-semibold transition"
-                                                :class="latePayForm.method === 'bank_transfer' ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-gray-200 text-gray-400 hover:border-primary-300'">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
-                                                Bank
-                                            </button>
+                                            <template x-for="m in [{key:'cash',label:'Cash'},{key:'upi',label:'UPI'},{key:'card',label:'Card'}]" :key="m.key">
+                                                <button type="button" @click="latePayForm.method = m.key"
+                                                    class="flex-1 py-2 rounded-lg border text-[10px] font-semibold transition text-center"
+                                                    :class="latePayForm.method === m.key ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-gray-200 text-gray-400 hover:border-primary-300'">
+                                                    <span x-text="m.label"></span>
+                                                </button>
+                                            </template>
                                         </div>
-                                    </div>
-                                    <div x-show="['card','upi','bank_transfer'].includes(latePayForm.method)" class="sm:col-span-2" x-cloak>
-                                        <label class="block text-xs font-semibold text-red-700 mb-1.5">Reference / Txn ID</label>
-                                        <input x-model="latePayForm.ref" type="text" class="form-input-custom w-full text-sm" placeholder="Optional">
                                     </div>
                                 </div>
                                 <button @click="recordLatePayment()" :disabled="savingLatePay"
@@ -159,7 +138,22 @@
                         </div>
                     </template>
 
-                    {{-- Normal closed banner (fully paid) --}}
+                    {{-- Refund due notice (advance exceeds final cost) --}}
+                    <template x-if="refundDue() > 0">
+                        <div class="mb-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 flex-shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-amber-800">Refund Due</p>
+                                    <p class="text-sm text-amber-600">Customer overpaid by <span class="font-bold" x-text="'₹' + refundDue().toFixed(2)"></span>. Please refund the excess amount.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    {{-- Normal closed banner --}}
                     <div class="bg-green-50 border border-green-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 flex-shrink-0">
@@ -167,7 +161,7 @@
                             </div>
                             <div>
                                 <p class="font-bold text-green-800">Repair Closed</p>
-                                <p class="text-sm" :class="balanceDue() > 0 ? 'text-orange-600' : 'text-green-600'" x-text="balanceDue() > 0 ? 'Closed with pending payment.' : 'Repair complete and payment settled.'"></p>
+                                <p class="text-sm" :class="balanceDue() > 0 ? 'text-orange-600' : (refundDue() > 0 ? 'text-amber-600' : 'text-green-600')" x-text="balanceDue() > 0 ? 'Closed with pending payment.' : (refundDue() > 0 ? 'Closed — refund of ₹' + refundDue().toFixed(2) + ' is due.' : 'Repair complete and payment settled.')"></p>
                             </div>
                         </div>
                         <a :href="'/admin/repairs/' + repair.id + '/invoice'" target="_blank"
@@ -388,10 +382,27 @@
                     <h3 class="font-bold text-sm text-gray-900 uppercase tracking-wider">Financial Summary</h3>
                 </div>
                 <div class="p-4 space-y-3">
-                    <div class="flex justify-between items-center py-2 px-3 rounded-lg bg-amber-50 border border-amber-100">
-                        <span class="text-sm font-medium text-amber-800">Estimated Cost</span>
-                        <span class="text-sm font-bold text-amber-900" x-text="'₹' + grandTotal().toFixed(2)"></span>
+                    {{-- Final Cost (primary billing amount) --}}
+                    <div class="flex justify-between items-center py-2.5 px-3 rounded-lg border"
+                         :class="repair.final_cost !== null && repair.final_cost !== undefined ? 'bg-green-50 border-green-200' : 'bg-indigo-50 border-indigo-100'">
+                        <span class="text-sm font-semibold"
+                              :class="repair.final_cost !== null && repair.final_cost !== undefined ? 'text-green-800' : 'text-indigo-800'"
+                              x-text="repair.final_cost !== null && repair.final_cost !== undefined ? 'Final Cost' : 'Billing Amount'"></span>
+                        <span class="text-base font-bold"
+                              :class="repair.final_cost !== null && repair.final_cost !== undefined ? 'text-green-900' : 'text-indigo-900'"
+                              x-text="'₹' + grandTotal().toFixed(2)"></span>
                     </div>
+
+                    {{-- Estimated Cost (info only - shown as secondary when different from final) --}}
+                    <template x-if="Number(repair.estimated_cost || 0) > 0 && (repair.final_cost === null || repair.final_cost === undefined || Number(repair.final_cost) !== Number(repair.estimated_cost))">
+                        <div class="flex justify-between items-center py-1.5 px-3 text-xs text-amber-600">
+                            <span class="flex items-center gap-1.5">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Initial Estimate
+                            </span>
+                            <span class="font-semibold" x-text="'₹' + Number(repair.estimated_cost || 0).toFixed(2)"></span>
+                        </div>
+                    </template>
 
                     <div class="border-t-2 border-gray-100 pt-3 space-y-2">
                         <template x-if="advancePaid() > 0">
@@ -412,25 +423,46 @@
                                 <span class="font-bold text-green-600" x-text="'₹' + finalPaid().toFixed(2)"></span>
                             </div>
                         </template>
+                        <template x-if="totalRefunded() > 0">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600 flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-red-400 inline-block"></span>
+                                    Refunded
+                                </span>
+                                <span class="font-bold text-red-500" x-text="'-₹' + totalRefunded().toFixed(2)"></span>
+                            </div>
+                        </template>
                         <div class="flex justify-between text-sm pt-1 border-t border-gray-100">
-                            <span class="font-semibold text-gray-700">Total Paid</span>
-                            <span class="font-bold text-indigo-600" x-text="'₹' + totalPaid().toFixed(2)"></span>
+                            <span class="font-semibold text-gray-700">Net Paid</span>
+                            <span class="font-bold text-indigo-600" x-text="'₹' + netPaid().toFixed(2)"></span>
                         </div>
                     </div>
 
-                    <div class="rounded-lg p-3 border"
-                         :class="balanceDue() > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'">
-                        <div class="flex justify-between items-center">
-                            <span class="font-bold uppercase text-sm"
-                                  :class="balanceDue() > 0 ? 'text-red-800' : 'text-green-800'">Balance Due</span>
-                            <span class="text-xl font-bold"
-                                  :class="balanceDue() > 0 ? 'text-red-600' : 'text-green-600'"
-                                  x-text="'₹' + balanceDue().toFixed(2)"></span>
+                    {{-- Balance Due or Refund Due --}}
+                    <template x-if="refundDue() > 0">
+                        <div class="rounded-lg p-3 border bg-amber-50 border-amber-200">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold uppercase text-sm text-amber-800">Refund Due</span>
+                                <span class="text-xl font-bold text-amber-600" x-text="'₹' + refundDue().toFixed(2)"></span>
+                            </div>
+                            <p class="text-xs text-amber-700 mt-1">⟲ Customer overpaid — refund needed</p>
                         </div>
-                        <template x-if="balanceDue() <= 0 && grandTotal() > 0">
-                            <p class="text-xs text-green-700 mt-1">✓ Fully Paid</p>
-                        </template>
-                    </div>
+                    </template>
+                    <template x-if="refundDue() <= 0">
+                        <div class="rounded-lg p-3 border"
+                             :class="balanceDue() > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold uppercase text-sm"
+                                      :class="balanceDue() > 0 ? 'text-red-800' : 'text-green-800'">Balance Due</span>
+                                <span class="text-xl font-bold"
+                                      :class="balanceDue() > 0 ? 'text-red-600' : 'text-green-600'"
+                                      x-text="'₹' + balanceDue().toFixed(2)"></span>
+                            </div>
+                            <template x-if="balanceDue() <= 0 && grandTotal() > 0">
+                                <p class="text-xs text-green-700 mt-1">✓ Fully Paid</p>
+                            </template>
+                        </div>
+                    </template>
                 </div>
             </div>
 
@@ -459,7 +491,7 @@
                             </template>
                             <div class="pt-3 mt-1 border-t flex justify-between text-sm font-bold">
                                 <span class="text-gray-700">Net Paid</span>
-                                <span class="text-primary-600" x-text="'₹' + totalPaid().toFixed(2)"></span>
+                                <span class="text-primary-600" x-text="'₹' + netPaid().toFixed(2)"></span>
                             </div>
                         </div>
                     </template>
@@ -490,7 +522,7 @@
 
     {{-- ===== CLOSE REPAIR MODAL ===== --}}
     <div x-show="showCloseModal" class="modal-overlay" x-cloak>
-        <div class="modal-container max-w-md" @click.away="showCloseModal = false">
+        <div class="modal-container max-w-sm" @click.away="showCloseModal = false">
 
             {{-- Header --}}
             <div class="modal-header border-b">
@@ -499,168 +531,50 @@
                         <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         Close Repair
                     </h3>
-                    <p class="text-xs text-gray-500 mt-0.5">Confirm final payment before closing the repair.</p>
                 </div>
                 <button @click="showCloseModal = false" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
             </div>
 
             <div class="modal-body space-y-4">
 
-                {{-- Summary strip --}}
-                <div class="grid grid-cols-3 gap-2 text-center">
-                    <div class="rounded-xl bg-amber-50 border border-amber-100 px-3 py-2.5">
-                        <div class="text-[10px] text-amber-600 font-semibold uppercase tracking-wide">Estimated</div>
-                        <div class="text-sm font-bold text-amber-800 mt-0.5" x-text="'₹' + grandTotal().toFixed(2)"></div>
-                    </div>
-                    <div class="rounded-xl bg-blue-50 border border-blue-100 px-3 py-2.5">
-                        <div class="text-[10px] text-blue-600 font-semibold uppercase tracking-wide">Advance Paid</div>
-                        <div class="text-sm font-bold text-blue-800 mt-0.5" x-text="'₹' + advancePaid().toFixed(2)"></div>
-                    </div>
-                    <div class="rounded-xl border px-3 py-2.5"
-                         :class="balanceDue() > 0 ? 'bg-red-50 border-red-100' : 'bg-green-50 border-green-100'">
-                        <div class="text-[10px] font-semibold uppercase tracking-wide"
-                             :class="balanceDue() > 0 ? 'text-red-600' : 'text-green-600'">Balance</div>
-                        <div class="text-sm font-bold mt-0.5"
-                             :class="balanceDue() > 0 ? 'text-red-800' : 'text-green-800'"
-                             x-text="'₹' + balanceDue().toFixed(2)"></div>
-                    </div>
-                </div>
-
-                {{-- Quick options --}}
+                {{-- Editable Final Amount --}}
                 <div>
-                    <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Final Payment Amount</div>
-                    <div class="space-y-2">
-
-                        {{-- Option 1: advance already covers it --}}
-                        <template x-if="advancePaid() > 0 && balanceDue() <= 0">
-                            <div class="rounded-xl border-2 border-green-300 bg-green-50 px-4 py-3 flex items-center gap-3">
-                                <svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                <div>
-                                    <div class="text-sm font-bold text-green-800">Fully Paid via Advance</div>
-                                    <div class="text-xs text-green-600 mt-0.5">Advance of ₹<span x-text="advancePaid().toFixed(2)"></span> covers the full amount. No additional payment needed.</div>
-                                </div>
-                            </div>
-                        </template>
-
-                        {{-- Option A: Use advance as final (when advance exists but balance remains) --}}
-                        <template x-if="advancePaid() > 0 && balanceDue() > 0">
-                            <button type="button" @click="setCloseMode('advance')"
-                                class="w-full text-left rounded-xl border-2 px-4 py-3 transition"
-                                :class="closePayMode === 'advance' ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-white hover:border-blue-200'">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <div class="text-sm font-semibold text-gray-800">Use Advance as Full Payment</div>
-                                        <div class="text-xs text-gray-500 mt-0.5">Mark ₹<span x-text="advancePaid().toFixed(2)"></span> advance as the final settled amount</div>
-                                    </div>
-                                    <div class="w-4 h-4 rounded-full border-2 flex-shrink-0"
-                                         :class="closePayMode === 'advance' ? 'border-blue-500 bg-blue-500' : 'border-gray-300'"></div>
-                                </div>
-                            </button>
-                        </template>
-
-                        {{-- Option B: Use estimated cost --}}
-                        <button type="button" @click="setCloseMode('estimated')"
-                            class="w-full text-left rounded-xl border-2 px-4 py-3 transition"
-                            :class="closePayMode === 'estimated' ? 'border-amber-400 bg-amber-50' : 'border-gray-200 bg-white hover:border-amber-200'">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <div class="text-sm font-semibold text-gray-800">Pay Estimated Amount</div>
-                                    <div class="text-xs text-gray-500 mt-0.5">Collect ₹<span x-text="balanceDue().toFixed(2)"></span> as final payment (balance due)</div>
-                                </div>
-                                <div class="w-4 h-4 rounded-full border-2 flex-shrink-0"
-                                     :class="closePayMode === 'estimated' ? 'border-amber-500 bg-amber-500' : 'border-gray-300'"></div>
-                            </div>
-                        </button>
-
-                        {{-- Option C: Custom amount --}}
-                        <button type="button" @click="setCloseMode('custom')"
-                            class="w-full text-left rounded-xl border-2 px-4 py-3 transition"
-                            :class="closePayMode === 'custom' ? 'border-purple-400 bg-purple-50' : 'border-gray-200 bg-white hover:border-purple-200'">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <div class="text-sm font-semibold text-gray-800">Enter Custom Amount</div>
-                                    <div class="text-xs text-gray-500 mt-0.5">Manually enter the actual amount collected</div>
-                                </div>
-                                <div class="w-4 h-4 rounded-full border-2 flex-shrink-0"
-                                     :class="closePayMode === 'custom' ? 'border-purple-500 bg-purple-500' : 'border-gray-300'"></div>
-                            </div>
-                        </button>
-
-                        {{-- No additional payment --}}
-                        <button type="button" @click="setCloseMode('none')"
-                            class="w-full text-left rounded-xl border-2 px-4 py-3 transition"
-                            :class="closePayMode === 'none' ? 'border-gray-400 bg-gray-50' : 'border-gray-200 bg-white hover:border-gray-300'">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <div class="text-sm font-semibold text-gray-800">Close Without Payment</div>
-                                    <div class="text-xs text-gray-500 mt-0.5">Mark as closed, record payment later if needed</div>
-                                </div>
-                                <div class="w-4 h-4 rounded-full border-2 flex-shrink-0"
-                                     :class="closePayMode === 'none' ? 'border-gray-500 bg-gray-500' : 'border-gray-300'"></div>
-                            </div>
-                        </button>
-
-                    </div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Final Amount (₹)</label>
+                    <input x-model="closeFinalAmount" type="number" step="0.01" min="0"
+                           class="form-input-custom w-full text-lg font-bold text-center" placeholder="0.00">
                 </div>
 
-                {{-- Custom amount input --}}
-                <div x-show="closePayMode === 'custom'" x-cloak>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1.5">Final Amount (₹)</label>
-                    <input x-model="closePayAmount" type="number" step="0.01"
-                           class="form-input-custom w-full text-sm" placeholder="0.00">
-                </div>
-
-                {{-- Payment method (shown when a payment will be recorded) --}}
-                <div x-show="closePayMode && closePayMode !== 'none' && closePayMode !== 'advance'" x-cloak class="space-y-3">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Payment Method</label>
-                        <div class="flex gap-1.5">
-                            <button type="button" @click="closePayMethod = 'cash'" title="Cash"
-                                class="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg border text-[10px] font-semibold transition"
-                                :class="closePayMethod === 'cash' ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-gray-200 text-gray-400 hover:border-primary-300 hover:text-primary-600'">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
-                                Cash
-                            </button>
-                            <button type="button" @click="closePayMethod = 'card'" title="Card"
-                                class="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg border text-[10px] font-semibold transition"
-                                :class="closePayMethod === 'card' ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-gray-200 text-gray-400 hover:border-primary-300 hover:text-primary-600'">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-                                Card
-                            </button>
-                            <button type="button" @click="closePayMethod = 'upi'" title="UPI"
-                                class="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg border text-[10px] font-semibold transition"
-                                :class="closePayMethod === 'upi' ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-gray-200 text-gray-400 hover:border-primary-300 hover:text-primary-600'">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m0 14v1m8-8h-1M5 12H4m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
-                                UPI
-                            </button>
-                            <button type="button" @click="closePayMethod = 'bank_transfer'" title="Bank Transfer"
-                                class="flex-1 flex flex-col items-center gap-0.5 py-2 rounded-lg border text-[10px] font-semibold transition"
-                                :class="closePayMethod === 'bank_transfer' ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-gray-200 text-gray-400 hover:border-primary-300 hover:text-primary-600'">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
-                                Bank
-                            </button>
-                        </div>
-                    </div>
-                    <div x-show="['card','upi','bank_transfer'].includes(closePayMethod)" x-cloak>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Reference / Txn ID</label>
-                        <input x-model="closePayRef" type="text" class="form-input-custom w-full text-sm" placeholder="Optional">
-                    </div>
-                </div>
-
-                {{-- Final preview --}}
-                <div x-show="closePayMode && closePayMode !== 'none'" x-cloak
-                     class="rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 space-y-1.5 text-sm">
+                {{-- Auto-calculated breakdown --}}
+                <div class="rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 space-y-2 text-sm">
                     <div class="flex justify-between text-gray-600">
                         <span>Advance Paid</span>
-                        <span class="font-semibold" x-text="'₹' + advancePaid().toFixed(2)"></span>
+                        <span class="font-semibold text-blue-700" x-text="'₹' + advancePaid().toFixed(2)"></span>
                     </div>
-                    <div class="flex justify-between text-gray-600" x-show="closePayMode !== 'advance'">
-                        <span>This Payment</span>
-                        <span class="font-semibold text-green-700" x-text="'₹' + closePayAmountCalc().toFixed(2)"></span>
+                    <div class="flex justify-between border-t border-gray-200 pt-2 font-bold text-base">
+                        <span class="text-gray-800">Amount to Collect</span>
+                        <span :class="closeAmountToCollect() > 0 ? 'text-red-600' : 'text-green-600'"
+                              x-text="'₹' + closeAmountToCollect().toFixed(2)"></span>
                     </div>
-                    <div class="flex justify-between font-bold border-t border-gray-200 pt-1.5">
-                        <span>Total After Close</span>
-                        <span class="text-primary-700" x-text="'₹' + (advancePaid() + closePayAmountCalc()).toFixed(2)"></span>
+                </div>
+
+                {{-- Fully paid notice --}}
+                <div x-show="closeAmountToCollect() <= 0" x-cloak
+                     class="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-3 py-2">
+                    <svg class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span class="text-xs font-semibold text-green-700">Fully covered by advance. No collection needed.</span>
+                </div>
+
+                {{-- Payment method — only when there's something to collect --}}
+                <div x-show="closeAmountToCollect() > 0" x-cloak>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Payment Method</label>
+                    <div class="flex gap-1.5">
+                        <template x-for="m in [{key:'cash',label:'Cash'},{key:'upi',label:'UPI'},{key:'card',label:'Card'}]" :key="m.key">
+                            <button type="button" @click="closePayMethod = m.key"
+                                class="flex-1 py-2 rounded-lg border text-xs font-semibold transition text-center"
+                                :class="closePayMethod === m.key ? 'bg-primary-600 border-primary-600 text-white' : 'bg-white border-gray-200 text-gray-500 hover:border-primary-300'">
+                                <span x-text="m.label"></span>
+                            </button>
+                        </template>
                     </div>
                 </div>
 
@@ -672,7 +586,7 @@
                     class="btn-primary w-full sm:w-auto bg-green-600 hover:bg-green-700 border-green-600 inline-flex items-center justify-center gap-2">
                     <span x-show="closingRepair" class="spinner"></span>
                     <svg x-show="!closingRepair" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <span x-text="closingRepair ? 'Closing...' : 'Confirm & Close Repair'"></span>
+                    <span x-text="closingRepair ? 'Closing...' : 'Confirm & Close'"></span>
                 </button>
             </div>
         </div>
@@ -827,10 +741,8 @@ function repairDetail() {
         // Close repair modal
         showCloseModal: false,
         closingRepair: false,
-        closePayMode: null,
-        closePayAmount: '',
+        closeFinalAmount: '',
         closePayMethod: 'cash',
-        closePayRef: '',
 
         // Late payment (closed with balance)
         showLatePayment: false,
@@ -942,67 +854,64 @@ function repairDetail() {
         },
 
         openCloseModal() {
-            // Auto-select the most sensible default
-            if (this.balanceDue() <= 0 && this.advancePaid() > 0) {
-                this.closePayMode = 'none'; // fully paid via advance
-            } else if (this.balanceDue() > 0) {
-                this.closePayMode = 'estimated'; // default: collect balance
-                this.closePayAmount = this.balanceDue().toFixed(2);
-            } else {
-                this.closePayMode = 'none';
-            }
+            // Pre-fill with estimated cost
+            this.closeFinalAmount = this.grandTotal().toFixed(2);
             this.closePayMethod = 'cash';
-            this.closePayRef = '';
             this.showCloseModal = true;
         },
 
-        setCloseMode(mode) {
-            this.closePayMode = mode;
-            if (mode === 'estimated') {
-                this.closePayAmount = this.balanceDue().toFixed(2);
-            } else if (mode === 'advance') {
-                this.closePayAmount = '';
-            } else if (mode === 'custom') {
-                this.closePayAmount = '';
-            } else {
-                this.closePayAmount = '';
-            }
-        },
-
-        closePayAmountCalc() {
-            if (!this.closePayMode || this.closePayMode === 'none' || this.closePayMode === 'advance') return 0;
-            return Number(this.closePayAmount) || 0;
+        closeAmountToCollect() {
+            const finalAmt = Number(this.closeFinalAmount) || 0;
+            return Math.max(0, finalAmt - this.advancePaid());
         },
 
         async confirmClose() {
-            // If a final payment needs to be recorded first
-            if (this.closePayMode && this.closePayMode !== 'none' && this.closePayMode !== 'advance') {
-                const amt = this.closePayAmountCalc();
-                if (amt <= 0) {
-                    RepairBox.toast('Enter a valid payment amount', 'error');
-                    return;
-                }
-                this.closingRepair = true;
+            const finalAmt = Number(this.closeFinalAmount) || 0;
+            if (finalAmt < 0) {
+                RepairBox.toast('Final amount cannot be negative', 'error');
+                return;
+            }
+
+            this.closingRepair = true;
+
+            // Record final payment if there's an amount to collect
+            const toCollect = this.closeAmountToCollect();
+            if (toCollect > 0) {
                 const pr = await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/payment', 'POST', {
                     payment_type:     'final',
                     payment_method:   this.closePayMethod,
-                    amount:           amt,
-                    reference_number: this.closePayRef || null,
+                    amount:           toCollect,
+                    reference_number: null,
                 });
                 if (pr.success === false) {
                     this.closingRepair = false;
                     return;
                 }
-            } else {
-                this.closingRepair = true;
             }
-            // Now close the repair
-            const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/status', 'PUT', { status: 'closed' });
-            this.closingRepair = false;
+
+            // Close the repair — send final_cost to backend
+            const r = await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/status', 'PUT', { status: 'closed', final_cost: finalAmt });
+
             if (r.success !== false) {
-                RepairBox.toast('Repair closed', 'success');
+                // Auto-refund if customer overpaid
+                const totalPaidNow = this.totalPaid() + (toCollect > 0 ? toCollect : 0);
+                const refundAmt = totalPaidNow - finalAmt;
+                if (refundAmt > 0) {
+                    await RepairBox.ajax('/admin/repairs/' + this.repair.id + '/payment', 'POST', {
+                        payment_type:     'refund',
+                        payment_method:   this.closePayMethod,
+                        amount:           refundAmt,
+                        direction:        'OUT',
+                        notes:            'Auto-refund on close (overpayment)',
+                    });
+                }
+
+                RepairBox.toast('Repair closed' + (refundAmt > 0 ? ' — ₹' + refundAmt.toFixed(2) + ' refunded' : ''), 'success');
                 this.showCloseModal = false;
+                this.closingRepair = false;
                 await this.reload();
+            } else {
+                this.closingRepair = false;
             }
         },
 
@@ -1041,11 +950,14 @@ function repairDetail() {
             }
         },
 
-        grandTotal()    { return Number(this.repair.estimated_cost || 0); },
+        grandTotal()    { return Number(this.repair.final_cost ?? this.repair.estimated_cost ?? 0); },
         totalPaid()     { return (this.repair.payments || []).filter(p => p.direction !== 'OUT').reduce((s, p) => s + Number(p.amount), 0); },
+        totalRefunded() { return (this.repair.payments || []).filter(p => p.direction === 'OUT').reduce((s, p) => s + Number(p.amount), 0); },
+        netPaid()       { return this.totalPaid() - this.totalRefunded(); },
         advancePaid()   { return (this.repair.payments || []).filter(p => p.direction !== 'OUT' && p.payment_type === 'advance').reduce((s, p) => s + Number(p.amount), 0); },
         finalPaid()     { return (this.repair.payments || []).filter(p => p.direction !== 'OUT' && p.payment_type === 'final').reduce((s, p) => s + Number(p.amount), 0); },
-        balanceDue()    { return Math.max(0, this.grandTotal() - this.totalPaid()); },
+        balanceDue()    { return Math.max(0, this.grandTotal() - this.netPaid()); },
+        refundDue()     { return Math.max(0, this.netPaid() - this.grandTotal()); },
 
         async collectPayment(type) {
             if (!this.payForm.amount || Number(this.payForm.amount) <= 0) {

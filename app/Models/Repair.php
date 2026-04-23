@@ -43,13 +43,14 @@ class Repair extends Model
     protected $fillable = [
         'ticket_number', 'tracking_id', 'customer_id', 'device_brand',
         'device_model', 'imei', 'problem_description', 'estimated_cost',
-        'service_charge', 'expected_delivery_date', 'status',
+        'final_cost', 'service_charge', 'expected_delivery_date', 'status',
         'is_locked', 'parent_id', 'record_type', 'cancel_reason',
         'completed_at', 'closed_at',
     ];
 
     protected $casts = [
         'estimated_cost' => 'decimal:2',
+        'final_cost' => 'decimal:2',
         'service_charge' => 'decimal:2',
         'expected_delivery_date' => 'date',
         'is_locked' => 'boolean',
@@ -117,12 +118,18 @@ class Repair extends Model
 
     public function getGrandTotalAttribute(): float
     {
-        return (float) $this->estimated_cost;
+        // Use final_cost when set (after closing), otherwise estimated_cost
+        return (float) ($this->final_cost ?? $this->estimated_cost);
     }
 
     public function getBalanceDueAttribute(): float
     {
         return max(0, $this->grand_total - $this->net_paid);
+    }
+
+    public function getRefundDueAttribute(): float
+    {
+        return max(0, $this->net_paid - $this->grand_total);
     }
 
     public function getIsFullyPaidAttribute(): bool

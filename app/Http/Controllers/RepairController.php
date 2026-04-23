@@ -104,6 +104,7 @@ class RepairController extends Controller
         $repair->total_paid      = $repair->total_paid;
         $repair->net_paid        = $repair->net_paid;
         $repair->balance_due     = $repair->balance_due;
+        $repair->refund_due      = $repair->refund_due;
         $repair->total_refunded  = $repair->total_refunded;
         $repair->allowed_transitions = Repair::STATUS_TRANSITIONS[$repair->status] ?? [];
         $repair->status_meta     = Repair::STATUS_META;
@@ -116,7 +117,15 @@ class RepairController extends Controller
         $brandModelMap = \App\Models\Brand::where('status', 'active')->orderBy('name')->get(['name', 'models'])
             ->map(fn($b) => ['name' => $b->name, 'models' => $b->models ?? []])->values();
         $brands = $brandModelMap->pluck('name');
-        return view('modules.repairs.show', compact('repair', 'statusMeta', 'brands', 'brandModelMap'));
+        $dbProblemSuggestions = Repair::whereNotNull('problem_description')
+            ->where('problem_description', '!=', '')
+            ->pluck('problem_description')
+            ->flatMap(fn($desc) => array_map('trim', explode(',', $desc)))
+            ->filter(fn($s) => strlen($s) > 1)
+            ->unique()
+            ->values()
+            ->toArray();
+        return view('modules.repairs.show', compact('repair', 'statusMeta', 'brands', 'brandModelMap', 'dbProblemSuggestions'));
     }
 
     public function update(RepairRequest $request, Repair $repair)
@@ -138,7 +147,13 @@ class RepairController extends Controller
             'status'        => 'required|string|in:' . implode(',', Repair::STATUSES),
             'notes'         => 'nullable|string|max:500',
             'cancel_reason' => 'nullable|string|max:500',
+            'final_cost'    => 'nullable|numeric|min:0',
         ]);
+
+        // Save final_cost when closing
+        if ($data['status'] === 'closed' && isset($data['final_cost'])) {
+            $repair->update(['final_cost' => $data['final_cost']]);
+        }
 
         try {
             $repair = $service->updateStatus(
