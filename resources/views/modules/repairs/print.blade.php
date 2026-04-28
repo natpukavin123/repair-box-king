@@ -11,10 +11,31 @@
     require_once resource_path('views/partials/print-a4-vars.php');
 
     // Receipt-only settings
-    $notesEn = \App\Models\Setting::getValue('receipt_notes_en',
+    $notesEnRaw = \App\Models\Setting::getValue('receipt_notes_en',
         "Keep this receipt to claim your device.\nEstimated cost may change upon diagnosis.\nData backup is customer's responsibility.\nUnclaimed devices after 30 days — not our liability.");
-    $notesTa = \App\Models\Setting::getValue('receipt_notes_ta',
+    $notesTaRaw = \App\Models\Setting::getValue('receipt_notes_ta',
         "உங்கள் சாதனத்தை பெற இந்த ரசீதை வைத்திருங்கள்.\nமதிப்பீட்டுச் செலவு ஆய்வுக்குப் பிறகு மாறலாம்.\nதரவு காப்புப்பிரதி வாடிக்கையாளரின் பொறுப்பு.\n30 நாட்களுக்குப் பிறகு உரிமை கோரப்படாத சாதனங்கள் — எங்கள் பொறுப்பல்ல.");
+
+    // Clean corrupted data: strip ✳ symbols, "Important Notes" header lines, and Tamil equivalent
+    $cleanNotes = function($text) {
+        $lines = explode("\n", $text);
+        $cleaned = [];
+        foreach ($lines as $line) {
+            $line = trim($line);
+            // Strip leading ✳ symbols (one or more)
+            $line = preg_replace('/^[\x{2733}\*]+\s*/u', '', $line);
+            $line = trim($line);
+            // Skip empty lines and "Important Notes" header lines
+            if ($line === '' || preg_match('/^important\s+notes$/i', $line) || preg_match('/^முக்கிய குறிப்புகள்$/u', $line)) {
+                continue;
+            }
+            $cleaned[] = $line;
+        }
+        return $cleaned;
+    };
+
+    $notesEn    = $notesEnRaw;
+    $notesTa    = $notesTaRaw;
 
     // Layout variables
     $pageTitle      = 'Repair ' . $repair->ticket_number;
@@ -25,8 +46,8 @@
 
     $advancePaid   = $repair->payments->where('direction','IN')->where('payment_type','advance')->sum('amount');
     $repairStatus  = ucfirst(str_replace('_',' ',$repair->status ?? 'pending'));
-    $notesEnArr    = array_filter(explode("\n", $notesEn));
-    $notesTaArr    = array_filter(explode("\n", $notesTa));
+    $notesEnArr    = $cleanNotes($notesEn);
+    $notesTaArr    = $cleanNotes($notesTa);
 
     $statusTa = [
         'received'=>'பெறப்பட்டது','in_progress'=>'பணியில்','completed'=>'முடிந்தது',
@@ -120,9 +141,9 @@
                     @endif
                 </div>
                 <div class="inv-br">
-                    <div style="padding:7px 10px;flex:1;" data-setting-en="receipt_notes_en" data-setting-ta="receipt_notes_ta">
+                    <div style="padding:7px 10px;flex:1;">
                         <div class="sec-lbl" data-en="Important Notes" data-ta="முக்கிய குறிப்புகள்">{{ $defaultLang === 'ta' ? 'முக்கிய குறிப்புகள்' : 'Important Notes' }}</div>
-                        <div class="note-list" id="notesList">
+                        <div class="note-list" id="notesList" data-setting-en="receipt_notes_en" data-setting-ta="receipt_notes_ta">
                             @foreach(($defaultLang === 'ta' ? $notesTaArr : $notesEnArr) as $note)
                             <div class="note-item">&#10033; {{ $note }}</div>
                             @endforeach
@@ -140,17 +161,23 @@
 
 @section('extraJs')
 <script>
-var notesEn = @json($notesEnArr);
-var notesTa = @json($notesTaArr);
+var notesEn = @json(array_values($notesEnArr));
+var notesTa = @json(array_values($notesTaArr));
+function cleanNote(note) {
+    // Strip any leading ✳ or * symbols that may have been saved
+    return note.replace(/^[\u2733*]+\s*/g, '').trim();
+}
 function onSwitchLang(lang) {
     var notes = lang === 'ta' ? notesTa : notesEn;
     var container = document.getElementById('notesList');
     if (!container) return;
     container.innerHTML = '';
     (Array.isArray(notes) ? notes : Object.values(notes)).forEach(function(note) {
+        var cleaned = cleanNote(note);
+        if (!cleaned || /^important\s+notes$/i.test(cleaned) || /^முக்கிய குறிப்புகள்$/.test(cleaned)) return;
         var div = document.createElement('div');
         div.className = 'note-item';
-        div.textContent = '\u2733 ' + note;
+        div.textContent = '\u2733 ' + cleaned;
         container.appendChild(div);
     });
 }
