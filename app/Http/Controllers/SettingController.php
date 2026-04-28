@@ -205,7 +205,7 @@ class SettingController extends Controller
         }
 
         if ($type === 'repair-receipt') {
-            $repair = \App\Models\Repair::with('customer', 'parts.part', 'payments', 'repairServices', 'statusHistory')->latest()->first();
+            $repair = \App\Models\Repair::with('customer','payments', 'statusHistory')->latest()->first();
             if (!$repair) {
                 $repair = new \App\Models\Repair([
                     'ticket_number' => 'RPR-SAMPLE',
@@ -224,15 +224,13 @@ class SettingController extends Controller
                 $repair->setRelation('customer', new \App\Models\Customer(['name' => 'Jane Smith', 'mobile_number' => '9876543210']));
                 $pay = new \App\Models\RepairPayment(['amount' => 500, 'payment_method' => 'cash', 'direction' => 'IN', 'payment_type' => 'advance']);
                 $repair->setRelation('payments', collect([$pay]));
-                $repair->setRelation('parts', collect([]));
-                $repair->setRelation('repairServices', collect([]));
                 $repair->setRelation('statusHistory', collect([]));
             }
             return view('modules.repairs.print', compact('repair'));
         }
 
         if ($type === 'repair-invoice') {
-            $repair = \App\Models\Repair::with('customer', 'parts.part', 'payments', 'repairServices', 'repairReturns.items')->latest()->first();
+            $repair = \App\Models\Repair::with('customer','payments')->latest()->first();
             if (!$repair) {
                 $repair = new \App\Models\Repair([
                     'ticket_number' => 'RPR-SAMPLE',
