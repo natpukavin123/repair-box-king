@@ -156,9 +156,8 @@ table.sum-tbl .row-full td{color:#000;font-weight:900;text-align:center;border-b
 .track-box{border:2px solid #000;padding:7px 10px;text-align:center;background:#fff;}
 .track-id{font-family:'Courier New',Courier,monospace;font-size:17px;font-weight:700;color:#000;letter-spacing:2px;line-height:1.2;word-break:break-all;}
 .track-hint{font-size:8px;color:#000;margin-top:3px;}
-.note-list{display:flex;flex-direction:column;gap:2px;}
+.note-list{display:flex;flex-direction:column;gap:0;}
 .note-item{font-size:9px;color:#000;line-height:1.55;padding:2px 0;border-bottom:1px solid #000;}
-.note-item:last-child{border-bottom:none;}
 
 @page{size:A4 landscape;margin:0;}
 @media print{
@@ -320,6 +319,14 @@ function switchLang(lang) {
             var settingKey = el.getAttribute('data-setting-' + currentLang);
             if (settingKey) {
                 var value = el.innerText.trim();
+                // Clean receipt notes: strip ✳/* symbols and "Important Notes" header lines
+                if (settingKey.indexOf('receipt_notes') === 0) {
+                    value = value.split('\n').map(function(line) {
+                        return line.replace(/^[\u2733*]+\s*/g, '').trim();
+                    }).filter(function(line) {
+                        return line !== '' && !/^important\s+notes$/i.test(line) && !/^\u0bae\u0bc1\u0b95\u0bcd\u0b95\u0bbf\u0baf \u0b95\u0bc1\u0bb1\u0bbf\u0baa\u0bcd\u0baa\u0bc1\u0b95\u0bb3\u0bcd$/.test(line);
+                    }).join('\n');
+                }
                 el.setAttribute('data-' + currentLang, value);
                 window.parent.postMessage({ type: 'setting-changed', key: settingKey, value: value }, '*');
             }
