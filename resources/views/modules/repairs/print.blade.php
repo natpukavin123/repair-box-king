@@ -64,18 +64,16 @@
 @endsection
 
 @section('printContent')
-            <!-- Info -->
+            <!-- Bill To -->
+            <div style="border-bottom:1.5px solid #000;padding:6px 10px;display:flex;align-items:baseline;gap:6px;flex-shrink:0;">
+                <span class="inf-lbl" style="margin-bottom:0;flex-shrink:0;" data-en="Bill To" data-ta="பில் பெறுபவர்">{{ $defaultLang === 'ta' ? 'பில் பெறுபவர்' : 'Bill To' }}</span>
+                <span style="font-size:11px;font-weight:700;color:#000;" data-en="{{ e($repair->customer?->name ?? 'Walk-in Customer') }}" data-ta="{{ e($repair->customer?->name ?? 'நடை வாடிக்கையாளர்') }}">{{ $repair->customer?->name ?? ($defaultLang === 'ta' ? 'நடை வாடிக்கையாளர்' : 'Walk-in Customer') }}</span>
+                @if($repair->customer && $repair->customer->mobile_number)<span style="font-size:9px;color:#000;">&middot; &#128222; {{ $repair->customer->mobile_number }}</span>@endif
+                @if($repair->customer && $repair->customer->address)<span style="font-size:9px;color:#000;">&middot; {{ $repair->customer->address }}</span>@endif
+            </div>
+
+            <!-- Info: Device + Problem -->
             <div class="inv-info">
-                <div class="inf-cell">
-                    <div class="inf-lbl" data-en="Customer" data-ta="வாடிக்கையாளர்">{{ $defaultLang === 'ta' ? 'வாடிக்கையாளர்' : 'Customer' }}</div>
-                    <div class="inf-val" data-en="{{ e($repair->customer?->name ?? 'Walk-in Customer') }}" data-ta="{{ e($repair->customer?->name ?? 'நடை வாடிக்கையாளர்') }}">{{ $repair->customer?->name ?? ($defaultLang === 'ta' ? 'நடை வாடிக்கையாளர்' : 'Walk-in Customer') }}</div>
-                    @if($repair->customer)
-                    <div class="inf-sub">
-                        @if($repair->customer->mobile_number)&#128222; {{ $repair->customer->mobile_number }}@endif
-                        @if($repair->customer->address)<br>{{ $repair->customer->address }}@endif
-                    </div>
-                    @endif
-                </div>
                 <div class="inf-cell">
                     <div class="inf-lbl" data-en="Device" data-ta="சாதனம்">{{ $defaultLang === 'ta' ? 'சாதனம்' : 'Device' }}</div>
                     <div class="inf-val">{{ $repair->device_brand }} {{ $repair->device_model }}</div>
@@ -85,6 +83,12 @@
                         @if($repair->expected_delivery_date)<span data-en="Est" data-ta="எதிர்பார்ப்பு">{{ $defaultLang === 'ta' ? 'எதிர்பார்ப்பு' : 'Est' }}</span>: {{ \Carbon\Carbon::parse($repair->expected_delivery_date)->format('d M Y') }}@endif
                     </div>
                 </div>
+                @if($repair->problem_description)
+                <div class="inf-cell">
+                    <div class="inf-lbl" data-en="Problem Description" data-ta="சிக்கல் விவரணை">{{ $defaultLang === 'ta' ? 'சிக்கல் விவரணை' : 'Problem Description' }}</div>
+                    <div class="prob-text">{{ $repair->problem_description }}</div>
+                </div>
+                @endif
             </div>
 
             <!-- Cost + Status -->
@@ -106,14 +110,6 @@
                     @endif
                 </div>
             </div>
-
-            <!-- Problem -->
-            @if($repair->problem_description)
-            <div class="prob-row">
-                <div class="prob-lbl" data-en="Problem Description" data-ta="சிக்கல் விவரணை">{{ $defaultLang === 'ta' ? 'சிக்கல் விவரணை' : 'Problem Description' }}</div>
-                <div class="prob-text">{{ $repair->problem_description }}</div>
-            </div>
-            @endif
 
             <!-- Bottom -->
             <div class="inv-bottom">

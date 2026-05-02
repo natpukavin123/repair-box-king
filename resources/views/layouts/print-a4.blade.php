@@ -150,8 +150,11 @@ table.sum-tbl .row-full td{color:#000;font-weight:900;text-align:center;border-b
 .cost-val{font-family:'DM Sans',Arial,sans-serif;font-size:26px;font-weight:900;color:#000;line-height:1;letter-spacing:-.5px;}
 .adv-val{font-family:'DM Sans',Arial,sans-serif;font-size:18px;font-weight:900;color:#000;line-height:1;}
 .adv-zero{font-size:8px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:2px;border:1px dashed #ccc;padding:2px 7px;display:inline-block;}
-.prob-row{border-bottom:2px solid #000;padding:7px 12px;flex-shrink:0;}
-.prob-lbl{font-size:8px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#000;margin-bottom:3px;}
+.prob-row{border-bottom:2px solid #000;padding:9px 12px;flex-shrink:0;
+    background:repeating-linear-gradient(45deg,#f2f2f2 0,#f2f2f2 1px,#fff 1px,#fff 8px);
+    border-left:3px solid #000;min-height:56px;}
+.prob-lbl{font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+    color:#000;margin-bottom:4px;}
 .prob-text{font-size:11px;color:#000;line-height:1.6;white-space:pre-line;}
 .track-box{border:2px solid #000;padding:7px 10px;text-align:center;background:#fff;}
 .track-id{font-family:'Courier New',Courier,monospace;font-size:17px;font-weight:700;color:#000;letter-spacing:2px;line-height:1.2;word-break:break-all;}
