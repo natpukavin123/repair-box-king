@@ -209,8 +209,13 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     // Reports
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('reports/sales', [ReportController::class, 'sales']);
-    Route::get('reports/profit', [ReportController::class, 'profit']);
+    Route::get('reports/overview',  [ReportController::class, 'overview']);
+    Route::get('reports/repairs',   [ReportController::class, 'repairs']);
+    Route::get('reports/sales',     [ReportController::class, 'sales']);
+    Route::get('reports/recharges', [ReportController::class, 'recharges']);
+    Route::get('reports/expenses',  [ReportController::class, 'expenses']);
+    Route::get('reports/po',        [ReportController::class, 'po']);
+    Route::get('reports/profit',    [ReportController::class, 'profit']);
 
     // Settings
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
@@ -274,5 +279,6 @@ Route::prefix('admin')->middleware('auth')->group(function () {
         Route::post('/reset-modules', [DevToolsController::class, 'resetModules'])->name('reset-modules');
         Route::post('/seed',          [DevToolsController::class, 'seedDemo'])->name('seed');
         Route::post('/reset-seed',    [DevToolsController::class, 'resetAndSeed'])->name('reset-seed');
+        Route::post('/delete-repair', [DevToolsController::class, 'deleteRepair'])->name('delete-repair');
     });
 });

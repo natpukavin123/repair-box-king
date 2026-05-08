@@ -33,8 +33,6 @@ class DevToolsController extends Controller
             ],
             'Repair' => [
                 'repair_payments',
-                'repair_parts',
-                'repair_services',
                 'repair_status_histories',
                 'repair_returns',
                 'repairs',
@@ -110,8 +108,6 @@ class DevToolsController extends Controller
                 'invoices',
                 // ── Repairs ─────────────────────────────────────────────
                 'repair_payments',
-                'repair_parts',
-                'repair_services',
                 'repair_status_histories',
                 'repair_returns',
                 'repairs',
@@ -222,6 +218,87 @@ class DevToolsController extends Controller
             ]);
 
         } catch (\Throwable $e) {
+            $log[] = ['status' => 'error', 'msg' => 'Error: ' . $e->getMessage()];
+            return response()->json(['success' => false, 'log' => $log], 500);
+        }
+    }
+
+    /**
+     * Hard-delete a single repair ticket and ALL related data.
+     */
+    public function deleteRepair(Request $request)
+    {
+        $request->validate(['repair_id' => 'required|integer']);
+        $repairId = (int) $request->input('repair_id');
+        $log = [];
+
+        $repair = DB::table('repairs')->where('id', $repairId)->first();
+        if (!$repair) {
+            return response()->json(['success' => false, 'log' => [
+                ['status' => 'error', 'msg' => "Repair ID {$repairId} not found."]
+            ]], 404);
+        }
+
+        $ticket = $repair->ticket_number ?? "#{$repairId}";
+        $log[] = ['status' => 'info', 'msg' => "Deleting repair ticket {$ticket} (ID: {$repairId})…"];
+
+        try {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+            // Related child tables
+            $childTables = [
+                'repair_payments'       => 'repair_id',
+                'repair_status_history' => 'repair_id',
+            ];
+
+            foreach ($childTables as $table => $fk) {
+                if (!Schema::hasTable($table)) {
+                    $log[] = ['status' => 'warning', 'msg' => "Table not found, skipped: {$table}"];
+                    continue;
+                }
+                if (!Schema::hasColumn($table, $fk)) {
+                    $log[] = ['status' => 'warning', 'msg' => "Column '{$fk}' missing in {$table}, skipped"];
+                    continue;
+                }
+
+                $deleted = DB::table($table)->where($fk, $repairId)->delete();
+                if ($deleted > 0) {
+                    $log[] = ['status' => 'success', 'msg' => "Removed {$deleted} row(s) from {$table}"];
+                }
+            }
+
+            // ledger_transactions — uses reference_module + reference_id
+            if (Schema::hasTable('ledger_transactions')) {
+                $del = DB::table('ledger_transactions')
+                    ->where('reference_module', 'repair')
+                    ->where('reference_id', $repairId)
+                    ->delete();
+                if ($del > 0) {
+                    $log[] = ['status' => 'success', 'msg' => "Removed {$del} row(s) from ledger_transactions"];
+                }
+            }
+
+            // activity_logs — uses module + reference_id
+            if (Schema::hasTable('activity_logs')) {
+                $del = DB::table('activity_logs')
+                    ->where('module', 'repair')
+                    ->where('reference_id', $repairId)
+                    ->delete();
+                if ($del > 0) {
+                    $log[] = ['status' => 'success', 'msg' => "Removed {$del} row(s) from activity_logs"];
+                }
+            }
+
+            // Delete the repair itself
+            DB::table('repairs')->where('id', $repairId)->delete();
+            $log[] = ['status' => 'success', 'msg' => "✅ Repair ticket {$ticket} permanently deleted."];
+
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+            return response()->json(['success' => true, 'log' => $log]);
+
+        } catch (\Throwable $e) {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
             $log[] = ['status' => 'error', 'msg' => 'Error: ' . $e->getMessage()];
             return response()->json(['success' => false, 'log' => $log], 500);
         }
