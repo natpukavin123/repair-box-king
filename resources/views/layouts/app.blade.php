@@ -101,6 +101,7 @@
         ['name' => 'Recharge', 'route' => '/admin/recharges', 'match' => 'admin/recharges*',  'color' => '#8b5cf6', 'color2' => '#a78bfa', 'icon' => 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z'],
         ['name' => 'Expenses', 'route' => '/admin/expenses',  'match' => 'admin/expenses*',   'color' => '#ef4444', 'color2' => '#f87171', 'icon' => 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z'],
         ['name' => 'PO',       'route' => '/admin/po',        'match' => ['admin/po', 'admin/po/*'], 'color' => '#f59e0b', 'color2' => '#fbbf24', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
+        ['name' => 'Reports',  'route' => '/admin/reports',   'match' => 'admin/reports*',    'color' => '#06b6d4', 'color2' => '#22d3ee', 'icon' => 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'],
     ];
 @endphp
 

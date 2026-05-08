@@ -209,8 +209,13 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     // Reports
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('reports/sales', [ReportController::class, 'sales']);
-    Route::get('reports/profit', [ReportController::class, 'profit']);
+    Route::get('reports/overview',  [ReportController::class, 'overview']);
+    Route::get('reports/repairs',   [ReportController::class, 'repairs']);
+    Route::get('reports/sales',     [ReportController::class, 'sales']);
+    Route::get('reports/recharges', [ReportController::class, 'recharges']);
+    Route::get('reports/expenses',  [ReportController::class, 'expenses']);
+    Route::get('reports/po',        [ReportController::class, 'po']);
+    Route::get('reports/profit',    [ReportController::class, 'profit']);
 
     // Settings
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
