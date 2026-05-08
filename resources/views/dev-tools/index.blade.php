@@ -83,6 +83,81 @@
         </div>
     </div>
 
+    {{-- Delete Single Repair Ticket --}}
+    <div style="background: rgba(239,68,68,0.05); border:1px solid rgba(239,68,68,0.2); border-radius:14px; padding:1.5rem; margin-bottom:1.5rem;"
+         x-data="deleteRepairTool()">
+        <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.6rem;">
+            <span style="font-size:1.3rem;">🗑️</span>
+            <h3 style="font-size:1rem; font-weight:600; color:#fca5a5;">Delete Repair Ticket</h3>
+        </div>
+        <p style="font-size:0.825rem; color:#6b7280; margin-bottom:1rem; line-height:1.5;">
+            Search for a wrongly-added ticket and <strong style="color:#fca5a5;">permanently remove</strong> it — including all payments, parts, services, status history, ledger entries, and other related records.
+        </p>
+
+        {{-- Search input --}}
+        <div style="position:relative; margin-bottom:0.75rem;">
+            <input
+                x-model="query"
+                @input.debounce.350ms="search()"
+                @focus="search()"
+                @keydown.escape="results = []; open = false"
+                @click.away="open = false"
+                type="text"
+                placeholder="Type ticket number or customer name…"
+                style="width:100%; padding:0.6rem 1rem; border-radius:8px; border:1px solid rgba(239,68,68,0.3); background:rgba(255,255,255,0.05); color:inherit; font-size:0.875rem; outline:none; box-sizing:border-box;"
+            >
+            {{-- Dropdown results --}}
+            <div x-show="open && results.length > 0" x-cloak
+                 style="position:absolute; left:0; right:0; top:calc(100% + 4px); background:#1e293b; border:1px solid rgba(100,116,139,0.3); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.4); z-index:99; max-height:220px; overflow-y:auto;">
+                <template x-for="r in results" :key="r.id">
+                    <button @click="selectRepair(r)"
+                            style="width:100%; text-align:left; padding:0.65rem 1rem; border:none; background:transparent; cursor:pointer; border-bottom:1px solid rgba(100,116,139,0.15); color:#e2e8f0; font-size:0.85rem;"
+                            onmouseover="this.style.background='rgba(239,68,68,0.1)'" onmouseout="this.style.background='transparent'">
+                        <strong x-text="r.ticket_number" style="color:#fca5a5;"></strong>
+                        <template x-if="r.tracking_id">
+                            <span style="color:#94a3b8; font-size:0.75rem;" x-text="' · Track: ' + r.tracking_id"></span>
+                        </template>
+                        &nbsp;—&nbsp;
+                        <span x-text="r.customer_name || 'Walk-in'"></span>
+                        <span style="color:#6b7280; font-size:0.75rem;" x-text="' · ' + (r.device_brand||'') + ' ' + (r.device_model||'')"></span>
+                    </button>
+                </template>
+            </div>
+            <div x-show="searching" style="position:absolute; right:0.75rem; top:50%; transform:translateY(-50%); font-size:0.75rem; color:#6b7280;">searching…</div>
+        </div>
+
+        {{-- Selected ticket preview --}}
+        <div x-show="selected" x-cloak
+             style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); border-radius:10px; padding:0.875rem 1rem; margin-bottom:0.875rem;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.5rem;">
+                <div>
+                    <div style="font-size:0.95rem; font-weight:700; color:#fca5a5;" x-text="selected?.ticket_number"></div>
+                    <div style="font-size:0.8rem; color:#94a3b8; margin-top:0.2rem;">
+                        <span x-text="selected?.customer_name || 'Walk-in'"></span>
+                        <span style="color:#475569;" x-show="selected?.device_brand"> · <span x-text="(selected?.device_brand||'') + ' ' + (selected?.device_model||'')"></span></span>
+                    </div>
+                    <div style="margin-top:0.3rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                        <span style="font-size:0.72rem; background:rgba(99,102,241,0.15); color:#818cf8; border-radius:99px; padding:0.15rem 0.6rem;" x-text="'Status: ' + (selected?.status || '—')"></span>
+                        <span style="font-size:0.72rem; background:rgba(16,185,129,0.12); color:#6ee7b7; border-radius:99px; padding:0.15rem 0.6rem;" x-text="'ID: ' + selected?.id"></span>
+                        <template x-if="selected?.tracking_id">
+                            <span style="font-size:0.72rem; background:rgba(245,158,11,0.15); color:#fcd34d; border-radius:99px; padding:0.15rem 0.6rem;" x-text="'Tracking: ' + selected.tracking_id"></span>
+                        </template>
+                    </div>
+                </div>
+                <button @click="clearSelection()" style="font-size:0.78rem; color:#6b7280; background:none; border:none; cursor:pointer; padding:0.25rem 0.5rem; border-radius:6px;" onmouseover="this.style.color='#fca5a5'" onmouseout="this.style.color='#6b7280'">✕ Clear</button>
+            </div>
+        </div>
+
+        {{-- Delete button --}}
+        <button @click="deleteSelected()"
+                :disabled="!selected || deleting"
+                class="dev-btn dev-btn-danger"
+                style="width:100%; justify-content:center;">
+            <span x-show="!deleting">🗑️ Permanently Delete This Ticket</span>
+            <span x-show="deleting">⏳ Deleting…</span>
+        </button>
+    </div>
+
     {{-- Log Output --}}
     <div id="log-container" style="display:none;">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem;">
@@ -186,4 +261,113 @@ async function runAction(action, btn) {
     btn.textContent = actionLabels[action][0];
 }
 </script>
+
+<script>
+function deleteRepairTool() {
+    return {
+        query:    '',
+        results:  [],
+        open:     false,
+        searching:false,
+        selected: null,
+        deleting: false,
+
+        async search() {
+            const q = this.query.trim();
+            if (!q) { this.results = []; this.open = false; return; }
+            this.searching = true;
+            try {
+                const res  = await fetch(`/admin/repairs?search=${encodeURIComponent(q)}&per_page=20`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                });
+                const data = await res.json();
+                const list = data.data ?? data.repairs ?? data ?? [];
+                this.results = list.map(r => ({
+                    id:            r.id,
+                    ticket_number: r.ticket_number,
+                    tracking_id:   r.tracking_id ?? null,
+                    status:        r.status,
+                    device_brand:  r.device_brand,
+                    device_model:  r.device_model,
+                    customer_name: r.customer?.name ?? null,
+                }));
+                this.open = this.results.length > 0;
+            } catch(e) {
+                this.results = [];
+            }
+            this.searching = false;
+        },
+
+        selectRepair(r) {
+            this.selected = r;
+            this.query    = r.ticket_number;
+            this.open     = false;
+            this.results  = [];
+        },
+
+        clearSelection() {
+            this.selected = null;
+            this.query    = '';
+        },
+
+        async deleteSelected() {
+            if (!this.selected) return;
+            const ticket = this.selected.ticket_number;
+            const sure = window.confirm(
+                `⚠️ Permanently delete "${ticket}"?\n\nThis will remove the ticket AND all related payments, parts, services, status history, ledger entries, etc.\n\nThis CANNOT be undone.`
+            );
+            if (!sure) return;
+
+            this.deleting = true;
+
+            // Show shared log box
+            const logContainer = document.getElementById('log-container');
+            const logBox       = document.getElementById('log-box');
+            const bar          = document.getElementById('progress-bar');
+            logBox.innerHTML   = '';
+            logContainer.style.display = 'block';
+            bar.style.width    = '15%';
+            bar.style.background = '#ef4444';
+
+            const appendLog = entry => {
+                const colors = { info:'#94a3b8', success:'#6ee7b7', warning:'#fcd34d', error:'#fca5a5' };
+                const icons  = { info:'›', success:'✅', warning:'⚠', error:'❌' };
+                const div = document.createElement('div');
+                div.style.color = colors[entry.status] || '#94a3b8';
+                div.textContent = (icons[entry.status] || '›') + ' ' + entry.msg;
+                logBox.appendChild(div);
+                logBox.scrollTop = logBox.scrollHeight;
+            };
+
+            try {
+                const res  = await fetch('/admin/dev-tools/delete-repair', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                    },
+                    body: JSON.stringify({ repair_id: this.selected.id }),
+                });
+                bar.style.width = '90%';
+                const data = await res.json();
+                (data.log || []).forEach(appendLog);
+                bar.style.width = '100%';
+                if (data.success) {
+                    bar.style.background = '#10b981';
+                    this.clearSelection();
+                    setTimeout(() => location.reload(), 1800);
+                } else {
+                    bar.style.background = '#ef4444';
+                }
+            } catch(e) {
+                appendLog({ status: 'error', msg: 'Request failed: ' + e.message });
+                bar.style.background = '#ef4444';
+            }
+
+            this.deleting = false;
+        }
+    };
+}
+</script>
 @endpush
+

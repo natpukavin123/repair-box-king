@@ -274,5 +274,6 @@ Route::prefix('admin')->middleware('auth')->group(function () {
         Route::post('/reset-modules', [DevToolsController::class, 'resetModules'])->name('reset-modules');
         Route::post('/seed',          [DevToolsController::class, 'seedDemo'])->name('seed');
         Route::post('/reset-seed',    [DevToolsController::class, 'resetAndSeed'])->name('reset-seed');
+        Route::post('/delete-repair', [DevToolsController::class, 'deleteRepair'])->name('delete-repair');
     });
 });
