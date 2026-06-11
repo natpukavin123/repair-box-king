@@ -693,34 +693,55 @@
             </div>
             <div class="modal-body space-y-3">
                 <div x-show="customerSubmitError" x-text="customerSubmitError" class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"></div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Name <span class="text-red-500">*</span></label>
-                    <input x-model="newCust.name" type="text" class="form-input-custom" placeholder="Full name">
-                    <p x-show="customerFormTried && !newCust.name.trim()" class="text-xs text-red-500 mt-1">Name is required</p>
-                </div>
+
+                {{-- Mobile first --}}
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Mobile <span class="text-red-500">*</span> <span class="text-xs text-gray-500">(10 digits)</span></label>
-                    <input x-model="newCust.mobile_number" type="text" class="form-input-custom" placeholder="10-digit mobile number"
-                        inputmode="numeric" pattern="[0-9]{10}" maxlength="10"
-                        @input="newCust.mobile_number = RepairBox.normalizeCustomerMobile(newCust.mobile_number)"
-                        @keydown="if(!/[0-9]/.test($event.key) && !['Backspace','Delete','Tab','ArrowLeft','ArrowRight'].includes($event.key)) $event.preventDefault()">
+                    <div class="relative">
+                        <input x-model="newCust.mobile_number" type="text" class="form-input-custom pr-8" placeholder="10-digit mobile number"
+                            inputmode="numeric" pattern="[0-9]{10}" maxlength="10"
+                            @input="newCust.mobile_number = RepairBox.normalizeCustomerMobile(newCust.mobile_number); checkMobileExists()"
+                            @keydown="if(!/[0-9]/.test($event.key) && !['Backspace','Delete','Tab','ArrowLeft','ArrowRight'].includes($event.key) && !$event.ctrlKey && !$event.metaKey) $event.preventDefault()"
+                            @paste.prevent="(function(e){ const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'').slice(0,10); newCust.mobile_number = pasted; $nextTick(() => checkMobileExists()); })(event)">
+                        <div x-show="mobileChecking" class="absolute right-2 top-1/2 -translate-y-1/2">
+                            <svg class="w-4 h-4 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        </div>
+                    </div>
                     <p x-show="customerFormTried && !newCust.mobile_number.trim()" class="text-xs text-red-500 mt-1">Mobile number is required</p>
                     <p x-show="(customerFormTried || newCust.mobile_number) && newCust.mobile_number.trim() && !/^\d{10}$/.test(newCust.mobile_number.trim())" class="text-xs text-red-500 mt-1">Mobile must be exactly 10 digits</p>
                 </div>
+
+                {{-- Name with existing-customer badge --}}
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <label class="block text-sm font-medium text-gray-700">Name <span class="text-red-500">*</span></label>
+                        <span x-show="existingCustMatch" x-cloak
+                            class="inline-flex items-center gap-1 rounded-full bg-emerald-100 border border-emerald-300 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            Existing customer
+                        </span>
+                    </div>
+                    <input x-model="newCust.name" type="text" class="form-input-custom" placeholder="Full name"
+                        :class="existingCustMatch ? 'border-emerald-400 bg-emerald-50/40' : ''">
+                    <p x-show="customerFormTried && !newCust.name.trim()" class="text-xs text-red-500 mt-1">Name is required</p>
+                </div>
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input x-model="newCust.email" type="email" class="form-input-custom" placeholder="Optional">
+                    <input x-model="newCust.email" type="email" class="form-input-custom" placeholder="Optional"
+                        :class="existingCustMatch ? 'border-emerald-400 bg-emerald-50/40' : ''">
                     <p x-show="(customerFormTried || newCust.email) && newCust.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newCust.email.trim())" class="text-xs text-red-500 mt-1">Please enter a valid email</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                    <input x-model="newCust.address" type="text" class="form-input-custom" placeholder="Optional">
+                    <input x-model="newCust.address" type="text" class="form-input-custom" placeholder="Optional"
+                        :class="existingCustMatch ? 'border-emerald-400 bg-emerald-50/40' : ''">
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" @click="closeAddCustModal()" class="btn-secondary">Cancel</button>
                 <button type="button" @click.prevent="saveNewCust()" class="btn-primary" :disabled="customerSaving">
-                    <span x-show="!customerSaving">Save &amp; Select</span>
+                    <span x-show="!customerSaving" x-text="existingCustMatch ? 'Select Customer' : 'Save & Select'"></span>
                     <span x-show="customerSaving">Saving...</span>
                 </button>
             </div>
@@ -828,6 +849,9 @@ function repairsPage() {
         customerSaving: false,
         customerSubmitError: '',
         newCust: { name: '', mobile_number: '', email: '', address: '' },
+        existingCustMatch: null,
+        mobileChecking: false,
+        _mobileCheckTimer: null,
 
         brandModelMap: @json($brandModelMap),
         brandList: @json($brands),
@@ -1080,6 +1104,8 @@ function repairsPage() {
             this.customerFormTried = false;
             this.customerSaving = false;
             this.customerSubmitError = '';
+            this.existingCustMatch = null;
+            this.mobileChecking = false;
             this.newCust = RepairBox.emptyCustomer();
             this.showAddCust = true;
         },
@@ -1087,9 +1113,47 @@ function repairsPage() {
             this.customerFormTried = false;
             this.customerSaving = false;
             this.customerSubmitError = '';
+            this.existingCustMatch = null;
+            this.mobileChecking = false;
             this.showAddCust = false;
         },
+        checkMobileExists() {
+            const mobile = (this.newCust.mobile_number || '').trim();
+            // Clear previous timer
+            if (this._mobileCheckTimer) clearTimeout(this._mobileCheckTimer);
+            // Only check when exactly 10 digits
+            if (!/^\d{10}$/.test(mobile)) {
+                this.existingCustMatch = null;
+                return;
+            }
+            this.mobileChecking = true;
+            this._mobileCheckTimer = setTimeout(async () => {
+                const r = await RepairBox.ajax('/admin/customers-search?q=' + encodeURIComponent(mobile) + '&page=1');
+                this.mobileChecking = false;
+                const rows = Array.isArray(r.data) ? r.data : [];
+                // Find exact mobile match
+                const match = rows.find(c => c.mobile_number === mobile);
+                this.existingCustMatch = match || null;
+                // Auto-fill fields from existing customer
+                if (match) {
+                    this.newCust.name    = match.name    || this.newCust.name;
+                    this.newCust.email   = match.email   || this.newCust.email;
+                    this.newCust.address = match.address || this.newCust.address;
+                }
+            }, 400);
+        },
+        selectExistingCust() {
+            if (!this.existingCustMatch) return;
+            this.selectCustomer(this.existingCustMatch);
+            this.closeAddCustModal();
+            RepairBox.toast('Customer selected: ' + this.existingCustMatch.name, 'success');
+        },
         async saveNewCust() {
+            // If an existing customer was matched, just select them directly
+            if (this.existingCustMatch) {
+                this.selectExistingCust();
+                return;
+            }
             this.customerFormTried = true;
             this.customerSubmitError = '';
             const validation = RepairBox.validateCustomerPayload(this.newCust);
